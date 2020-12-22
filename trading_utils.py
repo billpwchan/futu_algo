@@ -1,5 +1,5 @@
 import datetime
-
+import pandas as pd
 from futu import *
 
 
@@ -24,9 +24,9 @@ def save_historical_data(quote_ctx, stock_code, start_date, end_date, k_type):
     time.sleep(0.6)
 
 
-def get_indices(input_file):
-    indices = pd.read_excel(input_file, index_col=0)
+def update_indices(input_file):
+    indices = pd.read_excel(input_file, index_col=0, engine='openpyxl')
     indices = indices.iloc[1::2].index.tolist()  # even
     indices = ['.'.join(item.split('.')[::-1]) for item in indices]
-    with open(f'./data/Indices/indices_{datetime.today().date()}.json', 'w+') as f:
+    with open(f'./data/Indicies/indices_{datetime.today().date()}.json', 'w+') as f:
         json.dump(indices, f)
