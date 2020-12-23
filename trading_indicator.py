@@ -27,6 +27,7 @@ def main():
         trading_utils.display_result(ret, data)
         ret, data = futu_trade.quote_ctx.get_history_kl_quota(get_detail=True)  # 设置True代表需要返回详细的拉取历史K 线的记录
         trading_utils.display_result(ret, data)
+        futu_trade.quote_ctx.close()
 
 
 if __name__ == '__main__':

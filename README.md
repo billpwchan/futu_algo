@@ -1,8 +1,8 @@
 Hi, I'm Bill 😉, a FinTech Engineer 👨🏻‍💻 from Hong Kong. I'm an open-source profession and always develop in Python 🐍. Currently, I'm working on Algorithmic Trading.
 
 ### How to reach me: 
-
-<img src="https://img.shields.io/badge/-billpwchan%40hotmail.com-7B83EB?&style=for-the-badge&logo=Microsoft-outlook&logoColor=white" href="billpwchan@hotmail.com" alt="">   <a  href="https://www.instagram.com/sharannyo_/">   <img src="https://img.shields.io/badge/@billpwchan_-%23E4405F.svg?&style=for-the-badge&logo=instagram&logoColor=white"></a>  <a href="https://www.linkedin.com/in/billpwchan1998/"><img src="https://img.shields.io/badge/billpwchan-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" ></a>  <a  href="https://www.billpwchan.com/"><img src="https://img.shields.io/badge/billpwchan.com-%2312100E.svg?&style=for-the-badge&logo=safari&logoColor=white"></a>
+<a href="mailto: billpwchan@hotmail.com">
+<img src="https://img.shields.io/badge/-billpwchan%40hotmail.com-7B83EB?&style=for-the-badge&logo=Microsoft-outlook&logoColor=white" ></a>  <a  href="https://www.instagram.com/billpwchan/">   <img src="https://img.shields.io/badge/@billpwchan_-%23E4405F.svg?&style=for-the-badge&logo=instagram&logoColor=white"></a>  <a href="https://www.linkedin.com/in/billpwchan1998/"><img src="https://img.shields.io/badge/billpwchan-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" ></a>  <a  href="https://www.billpwchan.com/"><img src="https://img.shields.io/badge/billpwchan.com-%2312100E.svg?&style=for-the-badge&logo=safari&logoColor=white"></a>
 
 ### Current Status Quo
 
@@ -11,7 +11,7 @@ Hi, I'm Bill 😉, a FinTech Engineer 👨🏻‍💻 from Hong Kong. I'm an ope
 - 🌱 I’m currently learning <strong>TensorFlow</strong> and <strong>Python</strong>
 - 🤔 My research interests are with Blockchain Systems, Natural Language Processing, etc.
 - 🔍 I’m looking to collaborate on <strong>Front-End Web Dev Projects</strong>
-- 💬 Ask me about <strong>Data Structures in C++, JavaScript, Bootstrap, Graphic Designing (Canva), VCS and Personal Branding</strong>
+- 💬 Ask me about <strong>Image Classification, Fully Homomorphic Encryption, Blockchain in Trade Finance, VCS and Personal Branding</strong>
 - 👀 See my [Personal Portfolio](https://www.billpwchan.com) to get more info.
 
 ### Tools I work upon : 🛠

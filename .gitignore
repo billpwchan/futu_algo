@@ -147,3 +147,5 @@ cython_debug/
 /.idea/inspectionProfiles/Project_Default.xml
 /.idea/vcs.xml
 /.idea/copyright/Default_Copyright.xml
+!/config.ini
+/.idea/copyright/profiles_settings.xml
