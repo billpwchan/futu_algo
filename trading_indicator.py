@@ -10,10 +10,13 @@ def main():
     # Initialization Connection
     futu_trade = trading_utils.FutuTrade()
     try:
-        # Daily Update HSI Constituents
+        # Daily Update HSI Constituents & Customized Stocks
         hsi_constituents = trading_utils.get_hsi_constituents(
             './data/HSI.Constituents/HSI_constituents_2020-12-22.json')
+        customized_stocks = trading_utils.get_customized_stocks('./data/Customized/Customized_Stocks_2020-12-23.json')
         for stock_code in hsi_constituents:
+            futu_trade.update_1M_data(stock_code)
+        for stock_code in customized_stocks:
             futu_trade.update_1M_data(stock_code)
 
         # handler = trading_utils.StockQuoteHandler()

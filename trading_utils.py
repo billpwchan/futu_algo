@@ -3,9 +3,13 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 
-import datetime
 import configparser
+import datetime
+import glob
+
 from futu import *
+
+import logger
 
 
 class FutuTrade():
@@ -13,12 +17,13 @@ class FutuTrade():
         config = configparser.ConfigParser()
 
         self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
+        self.default_logger = logger.get_logger("futu_trade")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def __del__(self):
-        self.quote_ctx.close() # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+        self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -40,17 +45,18 @@ class FutuTrade():
                                                                        extended_time=False)
         if ret == RET_OK:
             data.to_csv(output_path, index=False)
+            self.default_logger.info(f'Saved: {output_path}')
         else:
             print('Historical Data Store Error:', data)
         return True
 
-    def update_1M_data(self, stock_code):
-        for i in range(365 * 2):
+    def update_1M_data(self, stock_code, years=2):
+        for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
             if not self.save_historical_data(stock_code, str(day.date()), str(day.date()),
                                              KLType.K_1M):
                 continue
-            time.sleep(0.55)
+            time.sleep(0.51)
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
@@ -70,14 +76,33 @@ def display_result(ret, data):
         print('error:', data)
 
 
-def update_hsi_constituents(input_file):
-    hsi_constituents = pd.read_excel(input_file, index_col=0, engine='openpyxl')
-    hsi_constituents = hsi_constituents.iloc[1::2].index.tolist()  # even
-    hsi_constituents = ['.'.join(item.split('.')[::-1]) for item in hsi_constituents]
+def update_hsi_constituents(input_path='./data/HSI.Constituents'):
+    file_list = glob.glob(f"{input_path}/*.xlsx")
+    hsi_constituents = []
+    for input_file in file_list:
+        hsi_constituents = pd.read_excel(input_file, index_col=0, engine='openpyxl')
+        hsi_constituents = hsi_constituents.iloc[1::2].index.tolist()
+        hsi_constituents = ['.'.join(item.split('.')[::-1]) for item in hsi_constituents]
     with open(f'./data/HSI.Constituents/HSI_constituents_{datetime.today().date()}.json', 'w+') as f:
-        json.dump(hsi_constituents, f)
+        json.dump(list(set(hsi_constituents)), f)
+
+
+def update_customized_stocks(input_path='./data/Customized', input_list=None):
+    file_list = glob.glob(f"{input_path}/*.xlsx")
+    stock_list = [] if input_list is None else input_list
+    for input_file in file_list:
+        customized_stocks = pd.read_excel(input_file, index_col=0, engine='openpyxl')
+        customized_stocks = customized_stocks.iloc[1::2].index.tolist()
+        stock_list.extend(['.'.join(item.split('.')[::-1]) for item in customized_stocks])
+    with open(f'./data/Customized/Customized_Stocks_{datetime.today().date()}.json', 'w+') as f:
+        json.dump(list(set(stock_list)), f)
 
 
 def get_hsi_constituents(input_file):
+    with open(input_file, 'r') as f:
+        return json.load(f)
+
+
+def get_customized_stocks(input_file):
     with open(input_file, 'r') as f:
         return json.load(f)
