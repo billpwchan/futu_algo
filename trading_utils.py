@@ -4,16 +4,21 @@
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 
 import datetime
-
+import configparser
 from futu import *
 
 
 class FutuTrade():
     def __init__(self):
+        config = configparser.ConfigParser()
+
         self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+
+    def __del__(self):
+        self.quote_ctx.close() # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()

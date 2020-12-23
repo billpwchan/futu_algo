@@ -2,7 +2,6 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
-from futu import *
 
 import trading_utils
 

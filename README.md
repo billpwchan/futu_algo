@@ -10,7 +10,7 @@ Hi, I'm Bill 😉, a FinTech Engineer 👨🏻‍💻 from Hong Kong. I'm an ope
 - 🔭 I’m currently working on <strong>FinTech (Blockchain & Privacy Engineering)</strong> and <strong>Algorithmic Trading</strong>
 - 🌱 I’m currently learning <strong>TensorFlow</strong> and <strong>Python</strong>
 - 🤔 My research interests are with Blockchain Systems, Natural Language Processing, etc.
-- 🔍 I’m looking to collaborate on <strong>Front-End Web Dev Projects</strong>
+- 🔍 I’m looking to collaborate on <strong>Machine Learning Projects</strong>
 - 💬 Ask me about <strong>Image Classification, Fully Homomorphic Encryption, Blockchain in Trade Finance, VCS and Personal Branding</strong>
 - 👀 See my [Personal Portfolio](https://www.billpwchan.com) to get more info.
 
