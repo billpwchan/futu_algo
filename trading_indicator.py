@@ -1,26 +1,33 @@
+#  Copyright (c)  billpwchan - All Rights Reserved
+#  Unauthorized copying of this file, via any medium is strictly prohibited
+#   Proprietary and confidential
+#   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 from futu import *
-import json
+
 import trading_utils
 
 
-def update_1M_data(stock_code):
-    for i in range(365 * 2):
-        day = datetime.today() - timedelta(days=i)
-        trading_utils.save_historical_data(quote_ctx, stock_code, str(day.date()), str(day.date()), KLType.K_1M)
-        time.sleep(0.6)
+def main():
+    # Initialization Connection
+    futu_trade = trading_utils.FutuTrade()
+    try:
+        # Daily Update HSI Constituents
+        hsi_constituents = trading_utils.get_hsi_constituents(
+            './data/HSI.Constituents/HSI_constituents_2020-12-22.json')
+        for stock_code in hsi_constituents:
+            futu_trade.update_1M_data(stock_code)
+
+        # handler = trading_utils.StockQuoteHandler()
+        # futu_trade.quote_ctx.set_handler(handler)  # 设置实时报价回调
+        # futu_trade.quote_ctx.subscribe(['HK.00700'], [SubType.QUOTE])  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
+        # time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
+
+    finally:
+        ret, data = futu_trade.quote_ctx.query_subscription()
+        trading_utils.display_result(ret, data)
+        ret, data = futu_trade.quote_ctx.get_history_kl_quota(get_detail=True)  # 设置True代表需要返回详细的拉取历史K 线的记录
+        trading_utils.display_result(ret, data)
 
 
-# Initialization Connection
-quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
-
-try:
-    # Execute Logics
-    trading_utils.update_indices('./data/Indicies/AAstocks_StockList_2020-12-23.xlsx')
-
-finally:
-    ret, data = quote_ctx.query_subscription()
-    trading_utils.display_result(ret, data)
-    ret, data = quote_ctx.get_history_kl_quota(get_detail=True)  # 设置True代表需要返回详细的拉取历史K 线的记录
-    trading_utils.display_result(ret, data)
-
-    quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+if __name__ == '__main__':
+    main()
