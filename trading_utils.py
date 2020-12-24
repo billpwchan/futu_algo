@@ -12,11 +12,24 @@ from futu import *
 import logger
 
 
+class StockQuoteHandler(StockQuoteHandlerBase):
+    def on_recv_rsp(self, rsp_str):
+        ret_code, data = super(StockQuoteHandler, self).on_recv_rsp(rsp_str)
+        if ret_code != RET_OK:
+            print("StockQuoteTest: error, msg: %s" % data)
+            return RET_ERROR, data
+        print("StockQuoteTest ", data)  # StockQuote自己的处理逻辑
+        return RET_OK, data
+
+
 class FutuTrade():
     def __init__(self):
-        config = configparser.ConfigParser()
-
+        self.config = configparser.ConfigParser()
+        self.config.read("config.ini")
         self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
+        # Initialize Subscription Logic
+        self.handler = StockQuoteHandler()
+        self.quote_ctx.set_handler(handler=self.handler)
         self.default_logger = logger.get_logger("futu_trade")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -47,7 +60,7 @@ class FutuTrade():
             data.to_csv(output_path, index=False)
             self.default_logger.info(f'Saved: {output_path}')
         else:
-            print('Historical Data Store Error:', data)
+            self.default_logger.error(f'Historical Data Store Error: {data}')
         return True
 
     def update_1M_data(self, stock_code, years=2):
@@ -56,17 +69,7 @@ class FutuTrade():
             if not self.save_historical_data(stock_code, str(day.date()), str(day.date()),
                                              KLType.K_1M):
                 continue
-            time.sleep(0.51)
-
-
-class StockQuoteHandler(StockQuoteHandlerBase):
-    def on_recv_rsp(self, rsp_str):
-        ret_code, data = super(StockQuoteHandler, self).on_recv_rsp(rsp_str)
-        if ret_code != RET_OK:
-            print("StockQuoteTest: error, msg: %s" % data)
-            return RET_ERROR, data
-        print("StockQuoteTest ", data)  # StockQuote自己的处理逻辑
-        return RET_OK, data
+            time.sleep(0.5)
 
 
 def display_result(ret, data):
