@@ -24,7 +24,7 @@ def main():
     # Initialization Connection
     futu_trade = trading_utils.FutuTrade()
     try:
-        input_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-23_1M.csv')
+        input_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-23_1M.csv', index_col=None)
         macd_cross = MACDCross(input_data)
         print(macd_cross.parse_data())
 

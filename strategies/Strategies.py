@@ -16,3 +16,11 @@ class Strategies(ABC):
     @abstractmethod
     def parse_data(self):
         pass
+
+    @abstractmethod
+    def buy(self, latest_data: pd.DataFrame) -> bool:
+        pass
+
+    @abstractmethod
+    def sell(self, latest_data: pd.DataFrame) -> bool:
+        pass
