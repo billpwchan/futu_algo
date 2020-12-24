@@ -149,3 +149,4 @@ cython_debug/
 /.idea/copyright/Default_Copyright.xml
 !/config.ini
 /.idea/copyright/profiles_settings.xml
+/data/

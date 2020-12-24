@@ -115,7 +115,7 @@ class FutuTrade():
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
+        time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
 
 def display_result(ret, data):
