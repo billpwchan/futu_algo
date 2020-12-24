@@ -14,13 +14,13 @@ class Strategies(ABC):
         super().__init__()
 
     @abstractmethod
-    def parse_data(self):
+    def parse_data(self, latest_data: pd.DataFrame):
         pass
 
     @abstractmethod
-    def buy(self, latest_data: pd.DataFrame) -> bool:
+    def buy(self) -> bool:
         pass
 
     @abstractmethod
-    def sell(self, latest_data: pd.DataFrame) -> bool:
+    def sell(self) -> bool:
         pass

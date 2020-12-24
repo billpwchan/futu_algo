@@ -8,6 +8,7 @@ import pandas as pd
 import talib
 
 from strategies.Strategies import Strategies
+from trading_utils import timeit
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -18,8 +19,13 @@ class MACDCross(Strategies):
         self.MACD_SLOW = slow_period
         self.MACD_SIGNAL = signal_period
         super().__init__(input_data)
+        self.parse_data()
 
-    def parse_data(self):
+    def parse_data(self, latest_data: pd.DataFrame = None):
+        # Received New Data => Parse it Now to input_data
+        if latest_data is not None:
+            latest_data = pd.concat([latest_data, pd.DataFrame(columns=['MACD', 'MACD_signal', 'MACD_hist'])])
+            self.input_data = self.input_data.append(latest_data)
         # Need to truncate to a maximum length for low-latency
         self.input_data = self.input_data.iloc[-40:]
         close = [float(x) for x in self.input_data['close']]
@@ -27,10 +33,13 @@ class MACDCross(Strategies):
             np.array(close),
             fastperiod=self.MACD_FAST, slowperiod=self.MACD_SLOW,
             signalperiod=self.MACD_SIGNAL)
-        return self.input_data
+        self.input_data.reset_index(drop=True, inplace=True)
+        return
 
-    def buy(self, latest_data: pd.DataFrame) -> bool:
+    @timeit
+    def buy(self) -> bool:
         return True
 
-    def sell(self, latest_data: pd.DataFrame) -> bool:
+    @timeit
+    def sell(self) -> bool:
         return True

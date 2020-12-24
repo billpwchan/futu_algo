@@ -3,10 +3,7 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 
-import pandas as pd
-
 import trading_utils
-from strategies.MACDCross import MACDCross
 
 
 def daily_update_1M(futu_trade):
@@ -24,14 +21,15 @@ def main():
     # Initialization Connection
     futu_trade = trading_utils.FutuTrade()
     try:
-        input_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-23_1M.csv', index_col=None)
-        macd_cross = MACDCross(input_data)
-        print(macd_cross.parse_data())
+        # input_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-23_1M.csv', index_col=None)
+        # latest_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-24_1M.csv', index_col=None)
+        # macd_cross = MACDCross(input_data)
+        # macd_cross.parse_data(latest_data)
 
-        # handler = trading_utils.StockQuoteHandler()
-        # futu_trade.quote_ctx.set_handler(handler)  # 设置实时报价回调
-        # futu_trade.quote_ctx.subscribe(['HK.00700'], [SubType.QUOTE])  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        # time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
+        futu_trade.stock_price_subscription('HK.00001')
+
+
+
 
     finally:
         ret, data = futu_trade.quote_ctx.query_subscription()

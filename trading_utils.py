@@ -6,6 +6,7 @@
 import configparser
 import datetime
 import glob
+from pathlib import Path
 
 from futu import *
 
@@ -13,12 +14,18 @@ import logger
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
+    def __init__(self):
+        self.default_logger = logger.get_logger('stock_quote')
+        super().__init__()
+
     def on_recv_rsp(self, rsp_str):
         ret_code, data = super(StockQuoteHandler, self).on_recv_rsp(rsp_str)
         if ret_code != RET_OK:
-            print("StockQuoteTest: error, msg: %s" % data)
+            self.default_logger.error("StockQuoteTest: error, msg: %s" % data)
             return RET_ERROR, data
-        print("StockQuoteTest ", data)  # StockQuote自己的处理逻辑
+        # MACD Crossover Logic PoC
+        # macd_cross = MACDCross(input_data)
+        # macd_cross.parse_data(latest_data)
         return RET_OK, data
 
 
@@ -72,6 +79,20 @@ class FutuTrade():
                 continue
             time.sleep(0.5)
 
+    def stock_price_subscription(self, stock_code) -> bool:
+        delta = 0
+        while not Path(
+                f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exdeltasts():
+            delta += 1
+        if delta > 1:
+            self.default_logger.error(
+                "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
+            return False
+        # handler = StockQuoteHandler()
+        # futu_trade.quote_ctx.set_handler(handler)  # 设置实时报价回调
+        # futu_trade.quote_ctx.subscribe(['HK.00700'], [SubType.QUOTE])  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
+        # time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
+
 
 def display_result(ret, data):
     if ret == RET_OK:
@@ -110,3 +131,18 @@ def get_hsi_constituents(input_file):
 def get_customized_stocks(input_file):
     with open(input_file, 'r') as f:
         return json.load(f)
+
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts) * 1000)
+        else:
+            print('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
+        return result
+
+    return timed
