@@ -11,11 +11,17 @@ from pathlib import Path
 from futu import *
 
 import logger
+from strategies.MACDCross import MACDCross
+from strategies.Strategies import Strategies
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
-    def __init__(self):
+    def __init__(self, input_data: dict, strategy: Strategies):
+        self.config = configparser.ConfigParser()
+        self.config.read("config.ini")
         self.default_logger = logger.get_logger('stock_quote')
+        self.input_data = input_data
+        self.strategy = strategy
         super().__init__()
 
     def on_recv_rsp(self, rsp_str):
@@ -24,8 +30,16 @@ class StockQuoteHandler(StockQuoteHandlerBase):
             self.default_logger.error("StockQuoteTest: error, msg: %s" % data)
             return RET_ERROR, data
         # MACD Crossover Logic PoC
-        # macd_cross = MACDCross(input_data)
-        # macd_cross.parse_data(latest_data)
+        self.default_logger.info("Subscribed!")
+        # Column Mapping between Subscribed Data <==> Historical Data
+        data['time_key'] = data['data_date'] + ' ' + data['data_time']
+        data = data[
+            ['code', 'time_key', 'open_price', 'last_price', 'high_price', 'low_price', 'amplitude',
+             'turnover_rate', 'volume', 'turnover', 'amplitude', 'prev_close_price']]
+        data.columns = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+
+        # Update Latest Data to the Strategy before Buy/Sell
+        self.strategy.parse_data(data)
         return RET_OK, data
 
 
@@ -36,8 +50,7 @@ class FutuTrade():
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
         # Initialize Subscription Logic
-        self.handler = StockQuoteHandler()
-        self.quote_ctx.set_handler(handler=self.handler)
+
         self.default_logger = logger.get_logger("futu_trade")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -79,19 +92,30 @@ class FutuTrade():
                 continue
             time.sleep(0.5)
 
-    def stock_price_subscription(self, stock_code) -> bool:
-        delta = 0
-        while not Path(
-                f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exdeltasts():
-            delta += 1
-        if delta > 1:
-            self.default_logger.error(
-                "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
-            return False
-        # handler = StockQuoteHandler()
-        # futu_trade.quote_ctx.set_handler(handler)  # 设置实时报价回调
-        # futu_trade.quote_ctx.subscribe(['HK.00700'], [SubType.QUOTE])  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        # time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
+    def stock_price_subscription(self, stock_list) -> bool:
+        input_data = {}
+        for stock_code in stock_list:
+            delta = 0
+            while not Path(
+                    f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists():
+                delta += 1
+            if delta > 1:
+                self.default_logger.error(
+                    "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
+                return False
+            input_csv = pd.read_csv(
+                f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv',
+                index_col=None)
+            input_data[stock_code] = input_data.get(stock_code, input_csv)
+
+        # Initialize Strategy - MACD as an Example
+        macd_cross = MACDCross(input_data=input_data)
+        handler = StockQuoteHandler(input_data, macd_cross)
+
+        self.quote_ctx.set_handler(handler)  # 设置实时报价回调
+        self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
+                                 subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
+        time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为15秒
 
 
 def display_result(ret, data):
@@ -131,18 +155,3 @@ def get_hsi_constituents(input_file):
 def get_customized_stocks(input_file):
     with open(input_file, 'r') as f:
         return json.load(f)
-
-
-def timeit(method):
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
-        else:
-            print('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
