@@ -6,6 +6,7 @@
 import configparser
 import datetime
 import glob
+from datetime import date
 from pathlib import Path
 
 from futu import *
@@ -62,35 +63,53 @@ class FutuTrade():
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
 
-    def save_historical_data(self, stock_code, start_date, end_date, k_type):
+    def save_historical_data(self, stock_code, start_date: date, end_date: date = None, k_type=None):
         out_dir = f'./data/{stock_code}'
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-        output_path = f'./data/{stock_code}/{stock_code}_{start_date}_1M.csv'
-        # Ensure update current day's 1M data
-        if os.path.exists(output_path) and start_date != str(datetime.today().date()):
+        if k_type == KLType.K_1M:
+            output_path = f'./data/{stock_code}/{stock_code}_{start_date.strftime("%Y-%m-%d")}_1M.csv'
+        elif k_type == KLType.K_DAY:
+            output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
+
+        # Ensure update current day's 1M data & current year's 1D data
+        if os.path.exists(output_path) and ((start_date != datetime.today().date() and k_type == KLType.K_1M) or (
+                start_date.year != datetime.today().date().year and k_type == KLType.K_DAY)):
             return False
+
         # Request Historical K-line Data (Daily)
-        ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
-                                                                       end=end_date,
-                                                                       ktype=k_type, autype=AuType.QFQ,
-                                                                       fields=[KL_FIELD.ALL],
-                                                                       max_count=1000, page_req_key=None,
-                                                                       extended_time=False)
-        if ret == RET_OK:
-            data.to_csv(output_path, index=False)
-            self.default_logger.info(f'Saved: {output_path}')
-        else:
-            self.default_logger.error(f'Historical Data Store Error: {data}')
-        return True
+        start_date = start_date.strftime("%Y-%m-%d")
+        end_date = end_date.strftime("%Y-%m-%d") if end_date is not None else None
+        while True:
+            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
+                                                                           end=end_date,
+                                                                           ktype=k_type, autype=AuType.QFQ,
+                                                                           fields=[KL_FIELD.ALL],
+                                                                           max_count=1000, page_req_key=None,
+                                                                           extended_time=False)
+            if ret == RET_OK:
+                # data.to_csv(output_path, index=False)
+                self.default_logger.info(f'Saved: {output_path}')
+                return True
+            else:
+                time.sleep(1)
+                self.default_logger.error(f'Historical Data Store Error: {data}')
 
     def update_1M_data(self, stock_code, years=2):
         for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
-            if not self.save_historical_data(stock_code, str(day.date()), str(day.date()),
+            if not self.save_historical_data(stock_code, day.date(), day.date(),
                                              KLType.K_1M):
                 continue
-            time.sleep(0.5)
+            time.sleep(0.7)
+
+    def update_1D_data(self, stock_code, years=10):
+        for i in range(0, years + 1):
+            day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
+            if not self.save_historical_data(stock_code=stock_code, start_date=day,
+                                             k_type=KLType.K_DAY):
+                continue
+            time.sleep(0.7)
 
     def stock_price_subscription(self, stock_list) -> bool:
         input_data = {}
