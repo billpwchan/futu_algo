@@ -6,7 +6,7 @@
 import pandas as pd
 
 import trading_utils
-from strategies import MACDCross
+from strategies.MACDCross import MACDCross
 
 
 def daily_update_1M(futu_trade):
@@ -24,8 +24,9 @@ def main():
     # Initialization Connection
     futu_trade = trading_utils.FutuTrade()
     try:
-        input_data = pd.read_csv('./data/HK.00003/HK.00003_2019-09-29_1M.csv')
+        input_data = pd.read_csv('./data/HK.00003/HK.00003_2020-12-23_1M.csv')
         macd_cross = MACDCross(input_data)
+        print(macd_cross.parse_data())
 
         # handler = trading_utils.StockQuoteHandler()
         # futu_trade.quote_ctx.set_handler(handler)  # 设置实时报价回调

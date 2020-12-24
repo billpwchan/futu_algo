@@ -7,11 +7,11 @@ import numpy as np
 import pandas as pd
 import talib
 
-from strategies import Strategies
+from strategies.Strategies import Strategies
 
 
 class MACDCross(Strategies):
-    def __int__(self, input_data: pd.DataFrame):
+    def __init__(self, input_data: pd.DataFrame):
         super().__init__(input_data)
 
     def parse_data(self):
