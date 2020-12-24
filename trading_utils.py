@@ -26,7 +26,8 @@ class FutuTrade():
     def __init__(self):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
-        self.quote_ctx = OpenQuoteContext(host='127.0.0.1', port=11111)
+        self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
+                                          port=self.config['FutuOpenD.Config'].getint('Port'))
         # Initialize Subscription Logic
         self.handler = StockQuoteHandler()
         self.quote_ctx.set_handler(handler=self.handler)
