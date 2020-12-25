@@ -41,9 +41,21 @@ class MACDCross(Strategies):
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
     @timeit
-    def buy(self) -> bool:
-        return True
+    def buy(self, stock_code) -> bool:
+        # Crossover between MACD and Signal (Single Point Determined)
+        current_record = self.input_data[stock_code].iloc[-1]
+        last_record = self.input_data[stock_code].iloc[-2]
+        if float(current_record['MACD']) > float(current_record['MACD_signal']) and float(
+                last_record['MACD'] <= float(last_record['MACD_signal'])):
+            return True
+        return False
 
     @timeit
-    def sell(self) -> bool:
-        return True
+    def sell(self, stock_code) -> bool:
+        # Crossover between Signal and MACD (Single Point Determined)
+        current_record = self.input_data[stock_code].iloc[-1]
+        last_record = self.input_data[stock_code].iloc[-2]
+        if float(current_record['MACD']) < float(current_record['MACD_signal']) and float(
+                last_record['MACD'] >= float(last_record['MACD_signal'])):
+            return True
+        return False

@@ -41,6 +41,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
         # Update Latest Data to the Strategy before Buy/Sell
         self.strategy.parse_data(data)
+
         return RET_OK, data
 
 
@@ -115,18 +116,22 @@ class FutuTrade():
         input_data = {}
         for stock_code in stock_list:
             delta = 0
-            while not Path(
-                    f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists():
+            while \
+                    not Path(
+                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() \
+                            or pd.read_csv(
+                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
                 delta += 1
             if delta > 1:
                 self.default_logger.error(
                     "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
                 return False
-            input_csv = pd.read_csv(
-                f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv',
-                index_col=None)
+            output_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
+            input_csv = pd.read_csv(output_path, index_col=None)
+            self.default_logger.debug(input_csv.empty)
             input_data[stock_code] = input_data.get(stock_code, input_csv)
 
+        self.default_logger.debug(f'Input Data: {input_data}')
         # Initialize Strategy - MACD as an Example
         macd_cross = MACDCross(input_data=input_data)
         handler = StockQuoteHandler(input_data, macd_cross)

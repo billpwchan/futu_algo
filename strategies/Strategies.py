@@ -19,11 +19,11 @@ class Strategies(ABC):
         pass
 
     @abstractmethod
-    def buy(self) -> bool:
+    def buy(self, stock_code) -> bool:
         pass
 
     @abstractmethod
-    def sell(self) -> bool:
+    def sell(self, stock_code) -> bool:
         pass
 
 
