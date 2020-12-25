@@ -64,7 +64,16 @@ class FutuTrade():
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
 
-    def save_historical_data(self, stock_code, start_date: date, end_date: date = None, k_type=None):
+    def save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
+                             k_type: object = KLType) -> None:
+        """
+        Save Historical Data (e.g., 1M, 15M, 1D, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
+        :param stock_code: Stock Code with Format (e.g., HK.00001)
+        :param start_date: Datetime Object that specifies the start date
+        :param end_date: Datetime Object that specifies the end date. If left as None, it will be automatically calculated as 365 days after start_date
+        :param k_type: FuTu KLType Object
+        :return: None
+        """
         out_dir = f'./data/{stock_code}'
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
