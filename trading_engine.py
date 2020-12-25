@@ -88,7 +88,7 @@ class FutuTrade():
                                                                            max_count=1000, page_req_key=None,
                                                                            extended_time=False)
             if ret == RET_OK:
-                # data.to_csv(output_path, index=False)
+                data.to_csv(output_path, index=False)
                 self.default_logger.info(f'Saved: {output_path}')
                 return True
             else:
