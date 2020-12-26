@@ -32,7 +32,7 @@ def main():
     futu_trade = trading_engine.FutuTrade()
     try:
         # daily_update_data(futu_trade=futu_trade)
-        # futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'])
+        futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'])
         print("Hello")
 
 

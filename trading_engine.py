@@ -126,6 +126,7 @@ class FutuTrade():
             time.sleep(0.7)
 
     def stock_price_subscription(self, stock_list) -> bool:
+        # Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         input_data = {}
         for stock_code in stock_list:
             delta = 0
@@ -172,6 +173,7 @@ def update_hsi_constituents(input_path='./data/HSI.Constituents'):
 
 
 def update_customized_stocks(input_path='./data/Customized', input_list=None):
+    # Need to get existing stocks in the JSON and append it
     file_list = glob.glob(f"{input_path}/*.xlsx")
     stock_list = [] if input_list is None else input_list
     for input_file in file_list:
