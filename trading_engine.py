@@ -55,8 +55,6 @@ class FutuTrade():
         self.config.read("config.ini")
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
-        # Initialize Subscription Logic
-
         self.default_logger = logger.get_logger("futu_trade")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -129,7 +127,7 @@ class FutuTrade():
                 continue
             time.sleep(0.7)
 
-    def stock_price_subscription(self, stock_list) -> bool:
+    def stock_price_subscription(self, stock_list: list, timeout: int = 60) -> bool:
         # Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         input_data = {}
         for stock_code in stock_list:
@@ -155,14 +153,13 @@ class FutuTrade():
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(60)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
-
-def display_result(ret, data):
-    if ret == RET_OK:
-        print(data)
-    else:
-        print('error:', data)
+    def display_quota(self):
+        ret, data = self.quote_ctx.query_subscription()
+        self.default_logger.info(f'Query Subscription Quota: {data}')
+        ret, data = self.quote_ctx.get_history_kl_quota(get_detail=True)
+        self.default_logger.info(f'Historical K-line Quota: {data}')
 
 
 def update_hsi_constituents(input_path='./data/HSI.Constituents'):

@@ -30,20 +30,11 @@ def daily_update_stocks():
 def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
-    try:
-        # daily_update_data(futu_trade=futu_trade)
-        futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'])
 
-        print("Hello")
+    # daily_update_data(futu_trade=futu_trade)
+    futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'], timeout=10)
 
-
-
-    finally:
-        ret, data = futu_trade.quote_ctx.query_subscription()
-        trading_engine.display_result(ret, data)
-        ret, data = futu_trade.quote_ctx.get_history_kl_quota(get_detail=True)  # 设置True代表需要返回详细的拉取历史K 线的记录
-        trading_engine.display_result(ret, data)
-        # futu_trade.quote_ctx.close()
+    futu_trade.display_quota()
 
 
 if __name__ == '__main__':
