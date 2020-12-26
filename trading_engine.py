@@ -56,16 +56,18 @@ class FutuTrade():
         self.default_logger = logger.get_logger("futu_trade")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        self.default_logger.info("Exiting Quote_CTX Connection")
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def __del__(self):
+        self.default_logger.info("Deleting Quote_CTX Connection")
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
 
-    def save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
-                             k_type: object = KLType) -> None:
+    def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
+                               k_type: object = KLType) -> bool:
         """
         Save Historical Data (e.g., 1M, 15M, 1D, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
         :param stock_code: Stock Code with Format (e.g., HK.00001)
@@ -81,6 +83,8 @@ class FutuTrade():
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.strftime("%Y-%m-%d")}_1M.csv'
         elif k_type == KLType.K_DAY:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
+        else:
+            self.default_logger.error(f'Unsupported KLType. Please try it later.')
 
         # Ensure update current day's 1M data & current year's 1D data
         if os.path.exists(output_path) and ((start_date != datetime.today().date() and k_type == KLType.K_1M) or (
@@ -108,16 +112,16 @@ class FutuTrade():
     def update_1M_data(self, stock_code, years=2):
         for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
-            if not self.save_historical_data(stock_code, day.date(), day.date(),
-                                             KLType.K_1M):
+            if not self.__save_historical_data(stock_code, day.date(), day.date(),
+                                               KLType.K_1M):
                 continue
             time.sleep(0.7)
 
     def update_1D_data(self, stock_code, years=10):
         for i in range(0, years + 1):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
-            if not self.save_historical_data(stock_code=stock_code, start_date=day,
-                                             k_type=KLType.K_DAY):
+            if not self.__save_historical_data(stock_code=stock_code, start_date=day,
+                                               k_type=KLType.K_DAY):
                 continue
             time.sleep(0.7)
 
@@ -125,22 +129,20 @@ class FutuTrade():
         input_data = {}
         for stock_code in stock_list:
             delta = 0
+            # Check if the file already exists or the dataframe has no data (Non-Trading Day)
             while \
                     not Path(
-                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() \
-                            or pd.read_csv(
+                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() or pd.read_csv(
                         f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
                 delta += 1
-            if delta > 1:
-                self.default_logger.error(
-                    "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
-                return False
+            # if delta > 1:
+            #     self.default_logger.error(
+            #         "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
+            #     return False
             output_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
             input_csv = pd.read_csv(output_path, index_col=None)
-            self.default_logger.debug(input_csv.empty)
             input_data[stock_code] = input_data.get(stock_code, input_csv)
 
-        self.default_logger.debug(f'Input Data: {input_data}')
         # Initialize Strategy - MACD as an Example
         macd_cross = MACDCross(input_data=input_data)
         handler = StockQuoteHandler(input_data, macd_cross)
