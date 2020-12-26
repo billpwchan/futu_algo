@@ -1,5 +1,85 @@
-numpy~=1.19.3
-pandas~=1.1.5
-futu-api
-openpyxl
-ta-lib
+argon2-cffi @ file:///C:/ci/argon2-cffi_1596828585465/work
+async-generator==1.10
+attrs @ file:///tmp/build/80754af9/attrs_1604765588209/work
+backcall==0.2.0
+bleach @ file:///tmp/build/80754af9/bleach_1600439572647/work
+brotlipy==0.7.0
+certifi==2020.12.5
+cffi @ file:///C:/ci/cffi_1606255208697/work
+chardet @ file:///C:/ci/chardet_1607690654534/work
+colorama @ file:///tmp/build/80754af9/colorama_1607707115595/work
+cryptography @ file:///C:/ci/cryptography_1607637849569/work
+cycler==0.10.0
+decorator==4.4.2
+defusedxml==0.6.0
+entrypoints==0.3
+et-xmlfile==1.0.1
+futu-api==3.27.2
+idna @ file:///tmp/build/80754af9/idna_1593446292537/work
+importlib-metadata @ file:///tmp/build/80754af9/importlib-metadata_1602276842396/work
+ipykernel @ file:///C:/ci/ipykernel_1596190155316/work/dist/ipykernel-5.3.4-py3-none-any.whl
+ipython @ file:///C:/ci/ipython_1604083276484/work
+ipython-genutils @ file:///tmp/build/80754af9/ipython_genutils_1606773439826/work
+jdcal==1.4.1
+jedi==0.17.0
+Jinja2==2.11.2
+json5==0.9.5
+jsonschema @ file:///tmp/build/80754af9/jsonschema_1602607155483/work
+jupyter-client @ file:///tmp/build/80754af9/jupyter_client_1601311786391/work
+jupyter-core @ file:///C:/ci/jupyter_core_1606149073702/work
+jupyterlab==2.2.6
+jupyterlab-pygments @ file:///tmp/build/80754af9/jupyterlab_pygments_1601490720602/work
+jupyterlab-server @ file:///tmp/build/80754af9/jupyterlab_server_1594164409481/work
+kiwisolver @ file:///C:/ci/kiwisolver_1604014703538/work
+MarkupSafe==1.1.1
+matplotlib @ file:///C:/ci/matplotlib-base_1603355780617/work
+mistune==0.8.4
+mkl-fft==1.2.0
+mkl-random==1.1.1
+mkl-service==2.3.0
+nbclient @ file:///tmp/build/80754af9/nbclient_1602783176460/work
+nbconvert @ file:///C:/ci/nbconvert_1601914925608/work
+nbformat @ file:///tmp/build/80754af9/nbformat_1602783287752/work
+nest-asyncio @ file:///tmp/build/80754af9/nest-asyncio_1606153767164/work
+notebook @ file:///C:/ci/notebook_1607976481874/work
+numpy==1.19.3
+olefile==0.46
+openpyxl @ file:///tmp/build/80754af9/openpyxl_1598113097404/work
+packaging @ file:///tmp/build/80754af9/packaging_1607971725249/work
+pandas @ file:///C:/ci/pandas_1608068219821/work
+pandocfilters @ file:///C:/ci/pandocfilters_1605102497129/work
+parso @ file:///tmp/build/80754af9/parso_1607623074025/work
+pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
+Pillow @ file:///C:/ci/pillow_1603823068645/work
+prometheus-client @ file:///tmp/build/80754af9/prometheus_client_1606344362066/work
+prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1602688806899/work
+protobuf==3.5.1
+pycparser @ file:///tmp/build/80754af9/pycparser_1594388511720/work
+pycryptodome==3.9.9
+Pygments @ file:///tmp/build/80754af9/pygments_1607368905949/work
+pyOpenSSL @ file:///tmp/build/80754af9/pyopenssl_1608057966937/work
+pyparsing==2.4.7
+pyrsistent @ file:///C:/ci/pyrsistent_1600141795814/work
+PySocks @ file:///C:/ci/pysocks_1605287845585/work
+python-dateutil==2.8.1
+pytz @ file:///tmp/build/80754af9/pytz_1606604771399/work
+pywin32==227
+pywinpty==0.5.7
+pyzmq==20.0.0
+requests @ file:///tmp/build/80754af9/requests_1608241421344/work
+Send2Trash @ file:///tmp/build/80754af9/send2trash_1607525499227/work
+simplejson==3.17.2
+sip==4.19.13
+six @ file:///C:/ci/six_1605187374963/work
+TA-Lib @ file:///C:/Users/billpwchan/Downloads/TA_Lib-0.4.19-cp38-cp38-win_amd64.whl
+terminado==0.9.1
+testpath==0.4.4
+tornado @ file:///C:/ci/tornado_1606942392901/work
+traitlets @ file:///tmp/build/80754af9/traitlets_1602787416690/work
+urllib3 @ file:///tmp/build/80754af9/urllib3_1606938623459/work
+wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
+webencodings==0.5.1
+win-inet-pton @ file:///C:/ci/win_inet_pton_1605306167264/work
+wincertstore==0.2
+xlrd @ file:///tmp/build/80754af9/xlrd_1608072521494/work
+zipp @ file:///tmp/build/80754af9/zipp_1604001098328/work
