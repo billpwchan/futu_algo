@@ -33,6 +33,7 @@ def main():
     try:
         # daily_update_data(futu_trade=futu_trade)
         futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'])
+
         print("Hello")
 
 

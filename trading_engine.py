@@ -42,6 +42,10 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         # Update Latest Data to the Strategy before Buy/Sell
         self.strategy.parse_data(data)
 
+        # Buy/Sell Strategy (Not Implemented)
+        # buy = self.strategy.buy()
+        # sell = self.strategy.sell()
+
         return RET_OK, data
 
 
