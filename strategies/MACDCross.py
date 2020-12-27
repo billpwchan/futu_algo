@@ -14,10 +14,11 @@ pd.options.mode.chained_assignment = None  # default='warn'
 
 
 class MACDCross(Strategies):
-    def __init__(self, input_data: dict, fast_period=12, slow_period=26, signal_period=9):
+    def __init__(self, input_data: dict, fast_period=12, slow_period=26, signal_period=9, observation=100):
         self.MACD_FAST = fast_period
         self.MACD_SLOW = slow_period
         self.MACD_SIGNAL = signal_period
+        self.OBSERVATION = observation
         super().__init__(input_data)
         self.parse_data()
 
@@ -31,7 +32,7 @@ class MACDCross(Strategies):
             stock_list = self.input_data.keys()
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
-            self.input_data[stock_code] = self.input_data[stock_code].iloc[-40:]
+            self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
             close = [float(x) for x in self.input_data[stock_code]['close']]
             self.input_data[stock_code]['MACD'], self.input_data[stock_code]['MACD_signal'], \
             self.input_data[stock_code]['MACD_hist'] = talib.MACD(
