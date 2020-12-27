@@ -192,11 +192,46 @@ class FutuTrade:
     def place_order(self, trd_side):
         self.trd_ctx.unlock_trade(self.password)
 
+    def place_sell_order(self, stock_code, volume, trade_env, order_type=OrderType.NORMAL):
+        """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
+        lot_size = 0  # 每手多少股
+        while True:
+            if lot_size == 0:
+                ret, data = self.quote_ctx.get_market_snapshot(stock_code)
+                lot_size = data.iloc[0]['lot_size'] if ret == RET_OK else 0
+                if ret != RET_OK:
+                    print("can't get lot size, retrying:".format(data))
+                    continue
+                elif lot_size <= 0:
+                    raise Exception('lot size error {}:{}'.format(lot_size, stock_code))
+
+            qty = int(volume / lot_size) * lot_size  # 将数量调整为整手的股数
+            ret, data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
+            if ret != RET_OK:
+                print("can't get orderbook, retrying:{}".format(data))
+                continue
+
+            price = data['Bid'][0][0]  # 取得买一价
+            print('smart_sell bid price is {}'.format(price))
+
+            # 以买一价下单卖出
+            ret, data = self.trd_ctx.place_order(price=price, qty=qty, code=stock_code,
+                                                 trd_side=TrdSide.SELL, trd_env=trade_env, order_type=order_type)
+            if ret != RET_OK:
+                print('smart_sell 下单失败:{}'.format(data))
+                return None
+            else:
+                print('smart_sell 下单成功')
+                print(data)
+                return data
+
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
-        self.default_logger.info(f'Query Subscription Quota: {data}')
+        if ret == RET_OK:
+            self.default_logger.info(f'Query Subscription Quota: {data}')
         ret, data = self.quote_ctx.get_history_kl_quota(get_detail=True)
-        self.default_logger.info(f'Historical K-line Quota: {data}')
+        if ret == RET_OK:
+            self.default_logger.info(f'Historical K-line Quota: {data}')
 
 
 def update_hsi_constituents(input_path='./data/HSI.Constituents'):
