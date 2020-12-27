@@ -51,6 +51,9 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
 class FutuTrade():
     def __init__(self):
+        """
+            Futu Trading Engine Constructor
+        """
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
@@ -59,9 +62,13 @@ class FutuTrade():
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         self.password = self.config['FutuOpenD.Credential'].get('Password')
+        self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
         self.default_logger = logger.get_logger("futu_trade")
 
     def __del__(self):
+        """
+            Default Cleanup Operations for Futu Trade Engine. Disconnect all Quote & Trade Connections
+        """
         self.default_logger.info("Deleting Quote_CTX Connection")
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
         self.default_logger.info("Deleting Trade_CTX Connection")
@@ -78,7 +85,7 @@ class FutuTrade():
         :param start_date: Datetime Object that specifies the start date
         :param end_date: Datetime Object that specifies the end date. If left as None, it will be automatically calculated as 365 days after start_date
         :param k_type: FuTu KLType Object
-        :return: None
+        :return: bool
         """
         out_dir = f'./data/{stock_code}'
         if not os.path.exists(out_dir):
@@ -89,6 +96,7 @@ class FutuTrade():
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
         else:
             self.default_logger.error(f'Unsupported KLType. Please try it later.')
+            return False
 
         # Ensure update current day's 1M data & current year's 1D data
         if os.path.exists(output_path) and ((start_date != datetime.today().date() and k_type == KLType.K_1M) or (
@@ -110,10 +118,11 @@ class FutuTrade():
                 self.default_logger.info(f'Saved: {output_path}')
                 return True
             else:
+                # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
                 time.sleep(1)
                 self.default_logger.error(f'Historical Data Store Error: {data}')
 
-    def update_1M_data(self, stock_code, years=2):
+    def update_1M_data(self, stock_code: str, years: int = 2) -> None:
         for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
             if not self.__save_historical_data(stock_code, day.date(), day.date(),
@@ -121,7 +130,7 @@ class FutuTrade():
                 continue
             time.sleep(0.7)
 
-    def update_1D_data(self, stock_code, years=10):
+    def update_1D_data(self, stock_code: str, years: int = 10) -> None:
         for i in range(0, years + 1):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
