@@ -55,15 +55,17 @@ class FutuTrade():
         self.config.read("config.ini")
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
+        self.trd_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
+                                          port=self.config['FutuOpenD.Config'].getint('Port'))
+        self.username = self.config['FutuOpenD.Credential'].get('Username')
+        self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.default_logger = logger.get_logger("futu_trade")
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.default_logger.info("Exiting Quote_CTX Connection")
-        self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def __del__(self):
         self.default_logger.info("Deleting Quote_CTX Connection")
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+        self.default_logger.info("Deleting Trade_CTX Connection")
+        self.trd_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -154,6 +156,9 @@ class FutuTrade():
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+
+    def place_order(self, trd_side):
+        self.trd_ctx.unlock_trade(self.password)
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
