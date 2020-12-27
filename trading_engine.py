@@ -34,7 +34,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
             self.default_logger.error("StockQuoteTest: error, msg: %s" % data)
             return RET_ERROR, data
         # MACD Crossover Logic PoC
-        self.default_logger.info("Subscribed!")
+        self.default_logger.info(f"{data['code'][0]} Subscribed!")
         # Column Mapping between Subscribed Data <==> Historical Data
         data['time_key'] = data['data_date'] + ' ' + data['data_time']
         data = data[
@@ -175,10 +175,15 @@ class FutuTrade:
         return input_data
 
     def stock_price_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+        """
 
-        # Initialize Strategy - MACD as an Example
+        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
+        :param timeout: Subscription Timeout in secs.
+        """
+        # Stock Quote Handler
         handler = StockQuoteHandler(input_data, strategy=strategy)
-
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
@@ -218,10 +223,10 @@ def update_customized_stocks(input_path='./data/Customized', input_list=None):
 
 
 def get_hsi_constituents(input_file):
-    with open(input_file, 'r') as f:
-        return json.load(f)
+    with open(input_file, 'r') as file_obj:
+        return json.load(file_obj)
 
 
 def get_customized_stocks(input_file):
-    with open(input_file, 'r') as f:
-        return json.load(f)
+    with open(input_file, 'r') as file_obj:
+        return json.load(file_obj)
