@@ -6,6 +6,7 @@
 import glob
 
 import trading_engine
+from strategies.MACDCross import MACDCross
 
 
 def daily_update_data(futu_trade):
@@ -30,9 +31,14 @@ def daily_update_stocks():
 def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
-
+    # Daily Update Data
     # daily_update_data(futu_trade=futu_trade)
-    futu_trade.stock_price_subscription(['HK.00001', 'HK.00003'], timeout=10)
+
+    # Initialize Strategies
+    stock_list = ['HK.00001', 'HK.00003']
+    input_data = futu_trade.get_1M_data(stock_list=stock_list)
+    macd_cross = MACDCross(input_data=input_data)
+    futu_trade.stock_price_subscription(input_data, ['HK.00001', 'HK.00003'], strategy=macd_cross, timeout=10)
 
     futu_trade.display_quota()
 

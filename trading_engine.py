@@ -17,13 +17,16 @@ from strategies.Strategies import Strategies
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
-    def __init__(self, input_data: dict, strategy: Strategies):
+    def __init__(self, input_data: dict = None, strategy: Strategies = MACDCross):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger('stock_quote')
         self.input_data = input_data
         self.strategy = strategy
         super().__init__()
+
+    def set_input_data(self, input_data: dict):
+        self.input_data = input_data.copy()
 
     def on_recv_rsp(self, rsp_str):
         ret_code, data = super(StockQuoteHandler, self).on_recv_rsp(rsp_str)
@@ -49,7 +52,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         return RET_OK, data
 
 
-class FutuTrade():
+class FutuTrade:
     def __init__(self):
         """
             Futu Trading Engine Constructor
@@ -123,6 +126,11 @@ class FutuTrade():
                 self.default_logger.error(f'Historical Data Store Error: {data}')
 
     def update_1M_data(self, stock_code: str, years: int = 2) -> None:
+        """
+            Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
+        :param stock_code: Stock Code with Format (e.g., HK.00001)
+        :param years: 2 years
+        """
         for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
             if not self.__save_historical_data(stock_code, day.date(), day.date(),
@@ -131,6 +139,11 @@ class FutuTrade():
             time.sleep(0.7)
 
     def update_1D_data(self, stock_code: str, years: int = 10) -> None:
+        """
+            Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
+        :param stock_code: Stock Code with Format (e.g., HK.00001)
+        :param years: 10 years
+        """
         for i in range(0, years + 1):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
@@ -138,7 +151,12 @@ class FutuTrade():
                 continue
             time.sleep(0.7)
 
-    def stock_price_subscription(self, stock_list: list, timeout: int = 60) -> bool:
+    def get_1M_data(self, stock_list: list):
+        """
+            Get 1M Data from CSV based on Stock List. Returned in Dict format
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        """
         # Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         input_data = {}
         for stock_code in stock_list:
@@ -149,17 +167,17 @@ class FutuTrade():
                         f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() or pd.read_csv(
                         f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
                 delta += 1
-            # if delta > 1:
-            #     self.default_logger.error(
-            #         "Subscription Failed: Outdated Data. Please use update_{time_period}_data function to update")
-            #     return False
+
             output_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
             input_csv = pd.read_csv(output_path, index_col=None)
+            self.default_logger.info(f'Get {output_path} Success from Stock List Success.')
             input_data[stock_code] = input_data.get(stock_code, input_csv)
+        return input_data
+
+    def stock_price_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
 
         # Initialize Strategy - MACD as an Example
-        macd_cross = MACDCross(input_data=input_data)
-        handler = StockQuoteHandler(input_data, macd_cross)
+        handler = StockQuoteHandler(input_data, strategy=strategy)
 
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
