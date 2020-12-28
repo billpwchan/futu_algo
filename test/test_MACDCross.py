@@ -3,26 +3,46 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 
-import configparser
 import unittest
 
+import numpy as np
+import talib
 from futu import *
+
+from strategies.MACDCross import MACDCross
 
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        self.config = configparser.ConfigParser()
-        self.config.read("./config.ini")
-        self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
-                                          port=self.config['FutuOpenD.Config'].getint('Port'))
+        # self.config = configparser.ConfigParser()
+        # self.config.read("./config.ini")
+        # self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
+        #                                   port=self.config['FutuOpenD.Config'].getint('Port'))
 
-    def tearDown(self) -> None:
-        self.quote_ctx.close()
+        self.stock_code = 'HK.09988'
+        self.complete_data = pd.read_csv('./test/test_data/test_MACDCross_data.csv', index_col=None)
+        self.input_data = self.complete_data.iloc[:100, :]
+        self.test_data = self.complete_data.iloc[100:, :]
+        # print(self.input_data)
+        # print(self.test_data)
+        self.macd_cross = MACDCross({self.stock_code: self.input_data}, observation=100)
 
-    def test_something(self):
-        ret, data = self.quote_ctx.query_subscription()
-        print(data)
-        self.assertEqual(True, False)
+    def test_buy(self):
+        for index, row in self.test_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            self.macd_cross.parse_data(latest_data=latest_data)
+            self.macd_cross.buy(self.stock_code)
+        self.assertEqual(True, True)
+
+    def test_sell(self):
+        close = [float(x) for x in self.complete_data['close']]
+        self.complete_data['MACD'], self.complete_data['MACD_signal'], \
+        self.complete_data['MACD_hist'] = talib.MACD(
+            np.array(close),
+            fastperiod=12, slowperiod=26,
+            signalperiod=9)
+        # print(self.complete_data)
 
 
 if __name__ == '__main__':

@@ -9,7 +9,6 @@ import talib
 
 import logger
 from strategies.Strategies import Strategies
-from strategies.Strategies import timeit
 
 pd.options.mode.chained_assignment = None  # default='warn'
 
@@ -44,22 +43,26 @@ class MACDCross(Strategies):
                 signalperiod=self.MACD_SIGNAL)
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
-    @timeit
+    # @timeit
     def buy(self, stock_code) -> bool:
         # Crossover between MACD and Signal (Single Point Determined)
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         buy_decision = float(current_record['MACD']) > float(current_record['MACD_signal']) and float(
             last_record['MACD']) <= float(last_record['MACD_signal'])
-        self.default_logger.info(f"Buy Decision: {buy_decision} based on \n {current_record}")
+        if buy_decision:
+            self.default_logger.info(
+                f"Buy Decision: {buy_decision} based on \n {last_record.to_frame().transpose()} \n {current_record.to_frame().transpose()} ")
         return buy_decision
 
-    @timeit
+    # @timeit
     def sell(self, stock_code) -> bool:
         # Crossover between Signal and MACD (Single Point Determined)
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         sell_decision = float(current_record['MACD']) < float(current_record['MACD_signal']) and float(
             last_record['MACD']) >= float(last_record['MACD_signal'])
-        self.default_logger.info(f"Sell Decision: {sell_decision} based on \n {current_record}")
+        if sell_decision:
+            self.default_logger.info(
+                f"Sell Decision: {sell_decision} based on \n {last_record.to_frame().transpose()} \n {current_record.to_frame().transpose()}")
         return sell_decision
