@@ -34,14 +34,7 @@ class MACDCross(Strategies):
             # Need to truncate to a maximum length for low-latency
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
 
-            # Archived TA-lib Code
-            # close = [float(x) for x in self.input_data[stock_code]['close']]
-            # self.input_data[stock_code]['MACD'], self.input_data[stock_code]['MACD_signal'], \
-            # self.input_data[stock_code]['MACD_hist'] = talib.MACD(
-            #     np.array(close),
-            #     fastperiod=self.MACD_FAST, slowperiod=self.MACD_SLOW,
-            #     signalperiod=self.MACD_SIGNAL)
-
+            # MACD = EMA-Fast - EMA-Slow. Signal = EMA(MACD, Smooth-period)
             ema_fast = self.input_data[stock_code]['close'].ewm(span=12, adjust=False).mean()
             ema_slow = self.input_data[stock_code]['close'].ewm(span=26, adjust=False).mean()
             self.input_data[stock_code]['MACD'] = ema_fast - ema_slow

@@ -12,17 +12,10 @@ from strategies.MACDCross import MACDCross
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        # self.config = configparser.ConfigParser()
-        # self.config.read("./config.ini")
-        # self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
-        #                                   port=self.config['FutuOpenD.Config'].getint('Port'))
-
         self.stock_code = 'HK.09988'
         self.complete_data = pd.read_csv('./test/test_data/test_MACDCross_data.csv', index_col=None)
         self.input_data = self.complete_data.iloc[:100, :]
         self.test_data = self.complete_data.iloc[100:, :]
-        # print(self.input_data)
-        # print(self.test_data)
         self.macd_cross = MACDCross({self.stock_code: self.input_data}, observation=100)
 
     def test_buy(self):
