@@ -5,8 +5,6 @@
 
 import unittest
 
-import numpy as np
-import talib
 from futu import *
 
 from strategies.MACDCross import MACDCross
@@ -36,13 +34,12 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(True, True)
 
     def test_sell(self):
-        close = [float(x) for x in self.complete_data['close']]
-        self.complete_data['MACD'], self.complete_data['MACD_signal'], \
-        self.complete_data['MACD_hist'] = talib.MACD(
-            np.array(close),
-            fastperiod=12, slowperiod=26,
-            signalperiod=9)
-        # print(self.complete_data)
+        for index, row in self.test_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            self.macd_cross.parse_data(latest_data=latest_data)
+            self.macd_cross.sell(self.stock_code)
+        self.assertEqual(True, True)
 
 
 if __name__ == '__main__':

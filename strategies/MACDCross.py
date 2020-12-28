@@ -62,7 +62,8 @@ class MACDCross(Strategies):
             last_record['MACD']) <= float(last_record['MACD_signal'])
         if buy_decision:
             self.default_logger.info(
-                f"Buy Decision: {buy_decision} based on \n {last_record.to_frame().transpose()} \n {current_record.to_frame().transpose()} ")
+                f"Buy Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
+
         return buy_decision
 
     # @timeit
@@ -74,5 +75,5 @@ class MACDCross(Strategies):
             last_record['MACD']) >= float(last_record['MACD_signal'])
         if sell_decision:
             self.default_logger.info(
-                f"Sell Decision: {sell_decision} based on \n {last_record.to_frame().transpose()} \n {current_record.to_frame().transpose()}")
+                f"Sell Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
         return sell_decision
