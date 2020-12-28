@@ -3,9 +3,7 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2020
 
-import numpy as np
 import pandas as pd
-import talib
 
 import logger
 from strategies.Strategies import Strategies
@@ -35,12 +33,24 @@ class MACDCross(Strategies):
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
-            close = [float(x) for x in self.input_data[stock_code]['close']]
-            self.input_data[stock_code]['MACD'], self.input_data[stock_code]['MACD_signal'], \
-            self.input_data[stock_code]['MACD_hist'] = talib.MACD(
-                np.array(close),
-                fastperiod=self.MACD_FAST, slowperiod=self.MACD_SLOW,
-                signalperiod=self.MACD_SIGNAL)
+
+            # Archived TA-lib Code
+            # close = [float(x) for x in self.input_data[stock_code]['close']]
+            # self.input_data[stock_code]['MACD'], self.input_data[stock_code]['MACD_signal'], \
+            # self.input_data[stock_code]['MACD_hist'] = talib.MACD(
+            #     np.array(close),
+            #     fastperiod=self.MACD_FAST, slowperiod=self.MACD_SLOW,
+            #     signalperiod=self.MACD_SIGNAL)
+
+            ema_fast = self.input_data[stock_code]['close'].ewm(span=12, adjust=False).mean()
+            ema_slow = self.input_data[stock_code]['close'].ewm(span=26, adjust=False).mean()
+            self.input_data[stock_code]['MACD'] = ema_fast - ema_slow
+            self.input_data[stock_code]['MACD_signal'] = self.input_data[stock_code]['MACD'].ewm(span=9,
+                                                                                                 adjust=False).mean()
+            # MACD_hist = (MACD - MACD_signal) * 2
+            self.input_data[stock_code]['MACD_hist'] = (self.input_data[stock_code]['MACD'] -
+                                                        self.input_data[stock_code]['MACD_signal']) * 2
+
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
     # @timeit
