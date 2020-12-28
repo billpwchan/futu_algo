@@ -11,6 +11,7 @@ from pathlib import Path
 
 from futu import *
 
+import data_engine
 import logger
 from strategies.MACDCross import MACDCross
 from strategies.Strategies import Strategies
@@ -104,6 +105,7 @@ class FutuTrade:
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
+        self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         self.default_logger = logger.get_logger("futu_trade")
 
     def __del__(self):
@@ -157,6 +159,10 @@ class FutuTrade:
             if ret == RET_OK:
                 data.to_csv(output_path, index=False)
                 self.default_logger.info(f'Saved: {output_path}')
+                for index, row in data.iterrows():
+                    self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
+                                                  row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
+                                                  row['turnover'], row['change_rate'], row['last_close'], k_type)
                 return True
             else:
                 # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
