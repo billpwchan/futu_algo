@@ -33,13 +33,14 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         if ret_code != RET_OK:
             self.default_logger.error("StockQuoteTest: error, msg: %s" % data)
             return RET_ERROR, data
-        # MACD Crossover Logic PoC
-        self.default_logger.info(f"{data['code'][0]} Subscribed!")
+
         # Column Mapping between Subscribed Data <==> Historical Data
         data['time_key'] = data['data_date'] + ' ' + data['data_time']
         data = data[
             ['code', 'time_key', 'open_price', 'last_price', 'high_price', 'low_price', 'amplitude',
              'turnover_rate', 'volume', 'turnover', 'amplitude', 'prev_close_price']]
+        self.default_logger.info(
+            f"Received: \n {data[['code', 'time_key', 'last_price', 'volume', 'prev_close_price']]}")
         data.columns = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
 
         # Update Latest Data to the Strategy before Buy/Sell
