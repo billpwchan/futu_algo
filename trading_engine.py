@@ -51,8 +51,8 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
         # Buy/Sell Strategy
         buy = self.strategy.buy(data['code'][0])
-        if self.strategy.sell(data['code'][0]):
-            self.place_sell_order(data['code'][0], 1000, )
+        # if self.strategy.sell(data['code'][0]):
+        # self.place_sell_order(data['code'][0], 1000, )
 
         return RET_OK, data
 
@@ -247,8 +247,8 @@ def update_hsi_constituents(input_path='./data/HSI.Constituents'):
         hsi_constituents = pd.read_excel(input_file, index_col=0, engine='openpyxl')
         hsi_constituents = hsi_constituents.iloc[1::2].index.tolist()
         hsi_constituents = ['.'.join(item.split('.')[::-1]) for item in hsi_constituents]
-    with open(f'./data/HSI.Constituents/HSI_constituents_{datetime.today().date()}.json', 'w+') as f:
-        json.dump(list(set(hsi_constituents)), f)
+    with open(f'./data/HSI.Constituents/HSI_constituents_{datetime.today().date()}.json', 'w+') as file_obj:
+        json.dump(list(set(hsi_constituents)), file_obj)
 
 
 def update_customized_stocks(input_path='./data/Customized', input_list=None):
@@ -259,8 +259,8 @@ def update_customized_stocks(input_path='./data/Customized', input_list=None):
         customized_stocks = pd.read_excel(input_file, index_col=0, engine='openpyxl')
         customized_stocks = customized_stocks.iloc[1::2].index.tolist()
         stock_list.extend(['.'.join(item.split('.')[::-1]) for item in customized_stocks])
-    with open(f'./data/Customized/Customized_Stocks_{datetime.today().date()}.json', 'w+') as f:
-        json.dump(list(set(stock_list)), f)
+    with open(f'./data/Customized/Customized_Stocks_{datetime.today().date()}.json', 'w+') as file_obj:
+        json.dump(list(set(stock_list)), file_obj)
 
 
 def get_hsi_constituents(input_file):
