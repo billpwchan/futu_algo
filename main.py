@@ -32,7 +32,10 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    daily_update_data(futu_trade=futu_trade)
+    # daily_update_data(futu_trade=futu_trade)
+
+    # Update ALl Data to Database
+    futu_trade.store_all_data_database()
 
     # Initialize Strategies
     stock_list = ['HK.09988', 'HK.01211']

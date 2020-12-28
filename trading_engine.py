@@ -169,6 +169,25 @@ class FutuTrade:
                 time.sleep(1)
                 self.default_logger.error(f'Historical Data Store Error: {data}')
 
+    def store_all_data_database(self):
+        file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            self.default_logger.info(f'Processing: {input_file}')
+            for index, row in input_csv.iterrows():
+                self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
+                                              row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
+                                              row['turnover'], row['change_rate'], row['last_close'], KLType.K_1M)
+
+        file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            self.default_logger.info(f'Processing: {input_file}')
+            for index, row in input_csv.iterrows():
+                self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
+                                              row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
+                                              row['turnover'], row['change_rate'], row['last_close'], KLType.K_DAY)
+
     def update_1M_data(self, stock_code: str, years: int = 2) -> None:
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
