@@ -17,10 +17,13 @@ from strategies.Strategies import Strategies
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
-    def __init__(self, input_data: dict = None, strategy: Strategies = MACDCross):
+    def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, input_data: dict = None,
+                 strategy: Strategies = MACDCross, ):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger('stock_quote')
+        self.quote_ctx = quote_ctx
+        self.trade_ctx = trade_ctx
         self.input_data = input_data
         self.strategy = strategy
         super().__init__()
@@ -46,11 +49,44 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         # Update Latest Data to the Strategy before Buy/Sell
         self.strategy.parse_data(data)
 
-        # Buy/Sell Strategy (Not Implemented)
-        # buy = self.strategy.buy()
-        # sell = self.strategy.sell()
+        # Buy/Sell Strategy
+        buy = self.strategy.buy(data['code'][0])
+        sell = self.strategy.sell(data['code'][0])
 
         return RET_OK, data
+
+    def place_sell_order(self, stock_code, volume, trade_env, order_type=OrderType.NORMAL):
+        """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
+        lot_size = 0  # 每手多少股
+        while True:
+            if lot_size == 0:
+                ret, data = self.quote_ctx.get_market_snapshot(stock_code)
+                lot_size = data.iloc[0]['lot_size'] if ret == RET_OK else 0
+                if ret != RET_OK:
+                    print("can't get lot size, retrying:".format(data))
+                    continue
+                elif lot_size <= 0:
+                    raise Exception('lot size error {}:{}'.format(lot_size, stock_code))
+
+            qty = int(volume / lot_size) * lot_size  # 将数量调整为整手的股数
+            ret, data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
+            if ret != RET_OK:
+                print("can't get orderbook, retrying:{}".format(data))
+                continue
+
+            price = data['Bid'][0][0]  # 取得买一价
+            print('smart_sell bid price is {}'.format(price))
+
+            # 以买一价下单卖出
+            ret, data = self.trade_ctx.place_order(price=price, qty=qty, code=stock_code,
+                                                   trd_side=TrdSide.SELL, trd_env=trade_env, order_type=order_type)
+            if ret != RET_OK:
+                print('smart_sell 下单失败:{}'.format(data))
+                return None
+            else:
+                print('smart_sell 下单成功')
+                print(data)
+                return data
 
 
 class FutuTrade:
@@ -62,8 +98,8 @@ class FutuTrade:
         self.config.read("config.ini")
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
-        self.trd_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
-                                          port=self.config['FutuOpenD.Config'].getint('Port'))
+        self.trade_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
+                                            port=self.config['FutuOpenD.Config'].getint('Port'))
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
@@ -76,7 +112,7 @@ class FutuTrade:
         self.default_logger.info("Deleting Quote_CTX Connection")
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
         self.default_logger.info("Deleting Trade_CTX Connection")
-        self.trd_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+        self.trade_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -184,47 +220,15 @@ class FutuTrade:
         :param timeout: Subscription Timeout in secs.
         """
         # Stock Quote Handler
-        handler = StockQuoteHandler(input_data, strategy=strategy)
+        handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
+                                    strategy=strategy)
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
     def place_order(self, trd_side):
-        self.trd_ctx.unlock_trade(self.password)
-
-    def place_sell_order(self, stock_code, volume, trade_env, order_type=OrderType.NORMAL):
-        """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
-        lot_size = 0  # 每手多少股
-        while True:
-            if lot_size == 0:
-                ret, data = self.quote_ctx.get_market_snapshot(stock_code)
-                lot_size = data.iloc[0]['lot_size'] if ret == RET_OK else 0
-                if ret != RET_OK:
-                    print("can't get lot size, retrying:".format(data))
-                    continue
-                elif lot_size <= 0:
-                    raise Exception('lot size error {}:{}'.format(lot_size, stock_code))
-
-            qty = int(volume / lot_size) * lot_size  # 将数量调整为整手的股数
-            ret, data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
-            if ret != RET_OK:
-                print("can't get orderbook, retrying:{}".format(data))
-                continue
-
-            price = data['Bid'][0][0]  # 取得买一价
-            print('smart_sell bid price is {}'.format(price))
-
-            # 以买一价下单卖出
-            ret, data = self.trd_ctx.place_order(price=price, qty=qty, code=stock_code,
-                                                 trd_side=TrdSide.SELL, trd_env=trade_env, order_type=order_type)
-            if ret != RET_OK:
-                print('smart_sell 下单失败:{}'.format(data))
-                return None
-            else:
-                print('smart_sell 下单成功')
-                print(data)
-                return data
+        self.trade_ctx.unlock_trade(self.password)
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
