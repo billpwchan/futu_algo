@@ -51,11 +51,12 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
         # Buy/Sell Strategy
         buy = self.strategy.buy(data['code'][0])
-        sell = self.strategy.sell(data['code'][0])
+        if self.strategy.sell(data['code'][0]):
+            self.place_sell_order(data['code'][0], 1000, )
 
         return RET_OK, data
 
-    def place_sell_order(self, stock_code, volume, trade_env, order_type=OrderType.NORMAL):
+    def place_sell_order(self, stock_code, volume: int, trade_env: TrdEnv, order_type=OrderType.NORMAL):
         """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
         lot_size = 0  # 每手多少股
         while True:
