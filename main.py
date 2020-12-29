@@ -40,7 +40,7 @@ def main():
 
     print(futu_trade.trade_ctx.position_list_query(code='HK.09988', pl_ratio_min=None, pl_ratio_max=None,
                                                    trd_env=TrdEnv.SIMULATE, acc_id=0, acc_index=0, refresh_cache=False)[
-              1].empty)
+              1]['can_sell_qty'])
 
     # Initialize Strategies
     # stock_list = ['HK.09988', 'HK.01211']

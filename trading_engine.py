@@ -19,7 +19,7 @@ from strategies.Strategies import Strategies
 
 class StockQuoteHandler(StockQuoteHandlerBase):
     def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, input_data: dict = None,
-                 strategy: Strategies = MACDCross, ):
+                 strategy: Strategies = MACDCross, trd_env: TrdEnv = TrdEnv.SIMULATE):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger('stock_quote')
@@ -27,7 +27,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         self.trade_ctx = trade_ctx
         self.input_data = input_data
         self.strategy = strategy
-        self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
+        self.trd_env = trd_env
         super().__init__()
 
     def set_input_data(self, input_data: dict):
@@ -66,8 +66,26 @@ class StockQuoteHandler(StockQuoteHandlerBase):
             if position_data[1].empty:
                 self.default_logger.info(f"Account does not hold any position for stock {stock_code}")
                 return
-            # pos_info = data.set_index('code')
-        # self.place_sell_order(data['code'][0], 1000, )
+
+            can_sell_qty = int(position_data[1]['qty'])
+            # 进行清仓
+            if cur_pos > 0:
+                ret_code, data = self.quote_ctx.get_market_snapshot([stock_code])
+                if ret_code != 0:
+                    raise Exception('市场快照数据获取异常 {}'.format(data))
+                cur_price = data['last_price'][0]
+                ret_code, ret_data = self.trade_ctx.place_order(
+                    price=cur_price,
+                    qty=cur_pos,
+                    code=self.stock,
+                    trd_side=ft.TrdSide.SELL,
+                    order_type=ft.OrderType.NORMAL,
+                    trd_env=self.trade_env)
+                if ret_code == ft.RET_OK:
+                    print('stop_loss MAKE SELL ORDER\n\tcode = {} price = {} quantity = {}'
+                          .format(self.stock, cur_price, cur_pos))
+                else:
+                    print('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
 
     def place_sell_order(self, stock_code, volume: int, trade_env: TrdEnv, order_type=OrderType.NORMAL):
         """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
@@ -117,13 +135,9 @@ class FutuTrade:
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
-        ret, data = self.trade_ctx.unlock_trade(self.password)
-        if ret == RET_OK:
-            self.default_logger.info("Account Unlock Success.")
-        else:
-            raise Exception("Account Unlock Unsuccessful: {}".format(data))
         self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         self.default_logger = logger.get_logger("futu_trade")
+        self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
 
     def __del__(self):
         """
@@ -264,9 +278,18 @@ class FutuTrade:
         :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
         :param timeout: Subscription Timeout in secs.
         """
+
+        # Unlock Trading Account if TrdEnv.REAL
+        if self.trd_env == TrdEnv.REAL:
+            ret, data = self.trade_ctx.unlock_trade(self.password)
+            if ret == RET_OK:
+                self.default_logger.info("Account Unlock Success.")
+            else:
+                raise Exception("Account Unlock Unsuccessful: {}".format(data))
+
         # Stock Quote Handler
         handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
-                                    strategy=strategy)
+                                    strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
