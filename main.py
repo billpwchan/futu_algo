@@ -38,9 +38,11 @@ def main():
     # Update ALl Data to Database
     # futu_trade.store_all_data_database()
 
-    print(futu_trade.trade_ctx.position_list_query(code='HK.09988', pl_ratio_min=None, pl_ratio_max=None,
-                                                   trd_env=TrdEnv.SIMULATE, acc_id=0, acc_index=0, refresh_cache=False)[
-              1]['can_sell_qty'])
+    data = futu_trade.trade_ctx.position_list_query(code='HK.09988', pl_ratio_min=None, pl_ratio_max=None,
+                                                    trd_env=TrdEnv.REAL, acc_id=0, acc_index=0, refresh_cache=False)[
+        1]
+    pos_info = data.set_index('code')
+    print(pos_info['can_sell_qty']['HK.09988'])
 
     # Initialize Strategies
     # stock_list = ['HK.09988', 'HK.01211']

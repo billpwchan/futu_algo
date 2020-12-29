@@ -53,8 +53,6 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
         # Buy/Sell Strategy
         stock_code = data['code'][0]
-        buy = self.strategy.buy(stock_code=stock_code)
-        sell = self.strategy.sell(stock_code=stock_code)
 
         if self.strategy.sell(data['code'][0]):
             ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
@@ -63,17 +61,21 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                                                                          refresh_cache=False)
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire account position {data}")
+                raise Exception('账户信息获取失败: {}'.format(data))
             if position_data[1].empty:
                 self.default_logger.info(f"Account does not hold any position for stock {stock_code}")
                 return
 
-            can_sell_qty = int(position_data[1]['qty'])
+            position_data = position_data[1].set_index('code')
+            can_sell_qty = int(position_data['can_sell_qty'][stock_code])
+
             # 进行清仓
-            if cur_pos > 0:
-                ret_code, data = self.quote_ctx.get_market_snapshot([stock_code])
-                if ret_code != 0:
-                    raise Exception('市场快照数据获取异常 {}'.format(data))
-                cur_price = data['last_price'][0]
+            if can_sell_qty > 0:
+                ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
+                if ret_code != RET_OK:
+                    self.default_logger.error(f"Cannot acquire market snapshot {data}")
+                    raise Exception('市场快照数据获取异常 {}'.format(market_data))
+                cur_price = market_data['last_price'][0]
                 ret_code, ret_data = self.trade_ctx.place_order(
                     price=cur_price,
                     qty=cur_pos,
