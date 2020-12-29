@@ -178,6 +178,7 @@ class FutuTrade:
                 self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
                                               row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
                                               row['turnover'], row['change_rate'], row['last_close'], KLType.K_1M)
+            self.futu_data.commit()
 
         file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
         for input_file in file_list:
@@ -187,6 +188,7 @@ class FutuTrade:
                 self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
                                               row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
                                               row['turnover'], row['change_rate'], row['last_close'], KLType.K_DAY)
+            self.futu_data.commit()
 
     def update_1M_data(self, stock_code: str, years: int = 2) -> None:
         """

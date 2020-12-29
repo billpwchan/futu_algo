@@ -142,3 +142,4 @@ cython_debug/
 /.idea
 /data/
 /config.ini
+/database
