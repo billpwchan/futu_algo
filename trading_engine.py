@@ -27,6 +27,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         self.trade_ctx = trade_ctx
         self.input_data = input_data
         self.strategy = strategy
+        self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
         super().__init__()
 
     def set_input_data(self, input_data: dict):
@@ -51,11 +52,22 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         self.strategy.parse_data(data)
 
         # Buy/Sell Strategy
-        buy = self.strategy.buy(data['code'][0])
-        # if self.strategy.sell(data['code'][0]):
-        # self.place_sell_order(data['code'][0], 1000, )
+        stock_code = data['code'][0]
+        buy = self.strategy.buy(stock_code=stock_code)
+        sell = self.strategy.sell(stock_code=stock_code)
 
-        return RET_OK, data
+        if self.strategy.sell(data['code'][0]):
+            ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
+                                                                         pl_ratio_max=None,
+                                                                         trd_env=self.trd_env, acc_id=0, acc_index=0,
+                                                                         refresh_cache=False)
+            if ret_code != RET_OK:
+                self.default_logger.error(f"Cannot acquire account position {data}")
+            if position_data[1].empty:
+                self.default_logger.info(f"Account does not hold any position for stock {stock_code}")
+                return
+            # pos_info = data.set_index('code')
+        # self.place_sell_order(data['code'][0], 1000, )
 
     def place_sell_order(self, stock_code, volume: int, trade_env: TrdEnv, order_type=OrderType.NORMAL):
         """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
@@ -105,6 +117,11 @@ class FutuTrade:
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
+        ret, data = self.trade_ctx.unlock_trade(self.password)
+        if ret == RET_OK:
+            self.default_logger.info("Account Unlock Success.")
+        else:
+            raise Exception("Account Unlock Unsuccessful: {}".format(data))
         self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         self.default_logger = logger.get_logger("futu_trade")
 
@@ -254,9 +271,6 @@ class FutuTrade:
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
-
-    def place_order(self, trd_side):
-        self.trade_ctx.unlock_trade(self.password)
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
