@@ -75,19 +75,31 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                 if ret_code != RET_OK:
                     self.default_logger.error(f"Cannot acquire market snapshot {data}")
                     raise Exception('市场快照数据获取异常 {}'.format(market_data))
-                cur_price = market_data['last_price'][0]
+                cur_price = market_data.iloc[0]['last_price']
+                lot_size = market_data.iloc[0]['lot_size']
+                if can_sell_qty > lot_size:
+                    can_sell_qty = lot_size
+                    self.default_logger.error(f"Can Sell Quantity is larger than Lot Size for stock {stock_code}")
+
+                ret_code, order_data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
+                if ret_code != RET_OK:
+                    self.default_logger.error("can't get orderbook, retrying:{}".format(order_data))
+
+                bid1_price = order_data['Bid'][0][0]  # 取得买一价
+
                 ret_code, ret_data = self.trade_ctx.place_order(
-                    price=cur_price,
-                    qty=cur_pos,
-                    code=self.stock,
-                    trd_side=ft.TrdSide.SELL,
-                    order_type=ft.OrderType.NORMAL,
-                    trd_env=self.trade_env)
-                if ret_code == ft.RET_OK:
-                    print('stop_loss MAKE SELL ORDER\n\tcode = {} price = {} quantity = {}'
-                          .format(self.stock, cur_price, cur_pos))
+                    price=bid1_price,
+                    qty=can_sell_qty,
+                    code=stock_code,
+                    trd_side=TrdSide.SELL,
+                    order_type=OrderType.NORMAL,
+                    trd_env=self.trd_env)
+                if ret_code == RET_OK:
+                    self.default_logger.info(
+                        'stop_loss MAKE SELL ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, bid1_price,
+                                                                                                 can_sell_qty))
                 else:
-                    print('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+                    self.default_logger.error('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
 
     def place_sell_order(self, stock_code, volume: int, trade_env: TrdEnv, order_type=OrderType.NORMAL):
         """智能卖出函数。取到股票每手的股数，以及摆盘数据后，就以买一价下单卖出"""
@@ -97,7 +109,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                 ret, data = self.quote_ctx.get_market_snapshot(stock_code)
                 lot_size = data.iloc[0]['lot_size'] if ret == RET_OK else 0
                 if ret != RET_OK:
-                    print("can't get lot size, retrying:".format(data))
+                    self.default_logger.error("can't get lot size, retrying:".format(data))
                     continue
                 elif lot_size <= 0:
                     raise Exception('lot size error {}:{}'.format(lot_size, stock_code))
