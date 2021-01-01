@@ -1,7 +1,7 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
-#   Written by Bill Chan <billpwchan@hotmail.com>, 2020
+#   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import configparser
 import datetime
@@ -62,11 +62,11 @@ class StockQuoteHandler(StockQuoteHandlerBase):
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire account position {data}")
                 raise Exception('账户信息获取失败: {}'.format(data))
-            if position_data[1].empty:
+            if position_data.empty:
                 self.default_logger.info(f"Account does not hold any position for stock {stock_code}")
                 return
 
-            position_data = position_data[1].set_index('code')
+            position_data = position_data.set_index('code')
             can_sell_qty = int(position_data['can_sell_qty'][stock_code])
 
             # 进行清仓

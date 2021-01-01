@@ -1,13 +1,12 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
-#   Written by Bill Chan <billpwchan@hotmail.com>, 2020
+#   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import glob
 
-from futu import *
-
 import trading_engine
+from strategies.MACDCross import MACDCross
 
 
 def daily_update_data(futu_trade):
@@ -38,17 +37,11 @@ def main():
     # Update ALl Data to Database
     # futu_trade.store_all_data_database()
 
-    data = futu_trade.trade_ctx.position_list_query(code='HK.09988', pl_ratio_min=None, pl_ratio_max=None,
-                                                    trd_env=TrdEnv.REAL, acc_id=0, acc_index=0, refresh_cache=False)[
-        1]
-    pos_info = data.set_index('code')
-    print(pos_info['can_sell_qty']['HK.09988'])
-
     # Initialize Strategies
-    # stock_list = ['HK.09988', 'HK.01211']
-    # input_data = futu_trade.get_1M_data(stock_list=stock_list)
-    # macd_cross = MACDCross(input_data=input_data)
-    # futu_trade.stock_price_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=60)
+    stock_list = ['HK.09988', 'HK.01211']
+    input_data = futu_trade.get_1M_data(stock_list=stock_list)
+    macd_cross = MACDCross(input_data=input_data)
+    futu_trade.stock_price_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=60)
 
     futu_trade.display_quota()
 
