@@ -32,7 +32,9 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    daily_update_data(futu_trade=futu_trade)
+    # daily_update_data(futu_trade=futu_trade)
+    futu_trade.update_1M_data('HK.09988')
+    futu_trade.update_1M_data('HK.01211')
 
     # Update ALl Data to Database
     # futu_trade.store_all_data_database()
@@ -41,7 +43,7 @@ def main():
     stock_list = ['HK.09988', 'HK.01211']
     input_data = futu_trade.get_1M_data(stock_list=stock_list)
     macd_cross = MACDCross(input_data=input_data)
-    futu_trade.stock_price_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=60)
+    futu_trade.stock_price_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=100000)
 
     futu_trade.display_quota()
 
