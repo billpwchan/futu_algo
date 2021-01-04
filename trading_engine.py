@@ -55,6 +55,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         stock_code = data['code'][0]
 
         if self.strategy.sell(stock_code=stock_code):
+            self.default_logger.info(f"SELL DECISION for {stock_code} is triggered.")
             ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
                                                                          pl_ratio_max=None,
                                                                          trd_env=self.trd_env, acc_id=0, acc_index=0,
@@ -102,6 +103,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                     self.default_logger.error('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
 
         if self.strategy.buy(stock_code=stock_code):
+            self.default_logger.info(f"BUY DECISION for {stock_code} is triggered")
             ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
                                                                          pl_ratio_max=None,
                                                                          trd_env=self.trd_env, acc_id=0, acc_index=0,
@@ -131,8 +133,8 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                 bid1_price = order_data['Bid'][0][0]  # 取得买一价
 
                 ret_code, ret_data = self.trade_ctx.place_order(
-                    price=bid1_price,
-                    qty=can_sell_qty,
+                    price=cur_price,
+                    qty=lot_size,
                     code=stock_code,
                     trd_side=TrdSide.SELL,
                     order_type=OrderType.NORMAL,
@@ -507,7 +509,7 @@ class FutuTrade:
         handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
                                     strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
-        self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA], is_first_push=True,
+        self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
