@@ -1,7 +1,7 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
-#   Written by Bill Chan <billpwchan@hotmail.com>, 2020
+#   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import pandas as pd
 
@@ -52,7 +52,8 @@ class MACDCross(Strategies):
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         buy_decision = float(current_record['MACD']) > float(current_record['MACD_signal']) and float(
-            last_record['MACD']) <= float(last_record['MACD_signal'])
+            last_record['MACD']) <= float(last_record['MACD_signal']) and float(current_record['MACD']) > 0 and float(
+            current_record['MACD_signal']) > 0
         if buy_decision:
             self.default_logger.info(
                 f"Buy Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
@@ -65,7 +66,8 @@ class MACDCross(Strategies):
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         sell_decision = float(current_record['MACD']) < float(current_record['MACD_signal']) and float(
-            last_record['MACD']) >= float(last_record['MACD_signal'])
+            last_record['MACD']) >= float(last_record['MACD_signal']) and float(current_record['MACD']) < 0 and float(
+            current_record['MACD_signal']) < 0
         if sell_decision:
             self.default_logger.info(
                 f"Sell Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")

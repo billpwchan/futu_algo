@@ -97,10 +97,10 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                     trd_env=self.trd_env)
                 if ret_code == RET_OK:
                     self.default_logger.info(
-                        'stop_loss MAKE SELL ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price,
-                                                                                                 can_sell_qty))
+                        'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
+                                                                                    can_sell_qty))
                 else:
-                    self.default_logger.error('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+                    self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
 
         if self.strategy.buy(stock_code=stock_code):
             self.default_logger.info(f"BUY DECISION for {stock_code} is triggered")
@@ -137,10 +137,9 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                 trd_env=self.trd_env)
             if ret_code == RET_OK:
                 self.default_logger.info(
-                    'stop_loss MAKE SELL ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price,
-                                                                                             lot_size))
+                    'MAKE BUY ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price, lot_size))
             else:
-                self.default_logger.error('stop_loss: MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+                self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
 
 
 class FutuTrade:
