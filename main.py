@@ -6,7 +6,7 @@
 import glob
 
 import trading_engine
-from strategies.MACD_Cross import MACDCross
+from strategies.KDJ_Cross import KDJCross
 
 
 def daily_update_data(futu_trade, force_update: bool = False):
@@ -32,10 +32,10 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    # daily_update_data(futu_trade=futu_trade, force_update=False)
+    daily_update_data(futu_trade=futu_trade, force_update=False)
 
     # Update ALl Data to Database
-    futu_trade.store_all_data_database()
+    # futu_trade.store_all_data_database()
 
     # Initialize Strategies
     stock_list = ["HK.00001", "HK.00002", "HK.00003", "HK.00005", "HK.00006", "HK.00011", "HK.00012", "HK.00016",
@@ -46,8 +46,8 @@ def main():
                   "HK.02020", "HK.02269", "HK.02313", "HK.02318", "HK.02319", "HK.02382", "HK.02388", "HK.02628",
                   "HK.03328", "HK.03690", "HK.03988", "HK.09988"]
     input_data = futu_trade.get_1M_data(stock_list=stock_list)
-    macd_cross = MACDCross(input_data=input_data)
-    # futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=100000)
+    kdj_cross = KDJCross(input_data=input_data)
+    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=kdj_cross, timeout=3600 * 12)
 
     futu_trade.display_quota()
 
