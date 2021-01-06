@@ -35,10 +35,10 @@ class MACDCross(Strategies):
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
 
             # MACD = EMA-Fast - EMA-Slow. Signal = EMA(MACD, Smooth-period)
-            ema_fast = self.input_data[stock_code]['close'].ewm(span=12, adjust=False).mean()
-            ema_slow = self.input_data[stock_code]['close'].ewm(span=26, adjust=False).mean()
+            ema_fast = self.input_data[stock_code]['close'].ewm(span=self.MACD_FAST, adjust=False).mean()
+            ema_slow = self.input_data[stock_code]['close'].ewm(span=self.MACD_SLOW, adjust=False).mean()
             self.input_data[stock_code]['MACD'] = ema_fast - ema_slow
-            self.input_data[stock_code]['MACD_signal'] = self.input_data[stock_code]['MACD'].ewm(span=9,
+            self.input_data[stock_code]['MACD_signal'] = self.input_data[stock_code]['MACD'].ewm(span=self.MACD_SIGNAL,
                                                                                                  adjust=False).mean()
             # MACD_hist = (MACD - MACD_signal) * 2
             self.input_data[stock_code]['MACD_hist'] = (self.input_data[stock_code]['MACD'] -

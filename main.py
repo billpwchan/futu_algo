@@ -9,18 +9,18 @@ import trading_engine
 from strategies.MACDCross import MACDCross
 
 
-def daily_update_data(futu_trade):
+def daily_update_data(futu_trade, force_update: bool = False):
     # Daily Update HSI Constituents & Customized Stocks
     file_list = glob.glob(f"./data/HSI.Constituents/HSI_constituents_*.json")
     hsi_constituents = trading_engine.get_hsi_constituents(file_list[0])
     file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
     customized_stocks = trading_engine.get_customized_stocks(file_list[0])
     for stock_code in hsi_constituents:
-        futu_trade.update_1D_data(stock_code)
-        futu_trade.update_1M_data(stock_code)
+        futu_trade.update_1D_data(stock_code, force_update=force_update)
+        futu_trade.update_1M_data(stock_code, force_update=force_update)
     for stock_code in customized_stocks:
-        futu_trade.update_1D_data(stock_code)
-        futu_trade.update_1M_data(stock_code)
+        futu_trade.update_1D_data(stock_code, force_update=force_update)
+        futu_trade.update_1M_data(stock_code, force_update=force_update)
 
 
 def daily_update_stocks():
@@ -49,7 +49,7 @@ def main():
                   "HK.03328", "HK.03690", "HK.03988", "HK.09988"]
     input_data = futu_trade.get_1M_data(stock_list=stock_list)
     macd_cross = MACDCross(input_data=input_data)
-    futu_trade.stock_price_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=100000)
+    # futu_trade.stock_quote_subscription(input_data, stock_list=stock_list, strategy=macd_cross, timeout=100000)
 
     futu_trade.display_quota()
 

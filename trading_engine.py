@@ -48,7 +48,7 @@ class FutuTrade:
         return self.quote_ctx.get_global_state()
 
     def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
-                               k_type: object = KLType) -> bool:
+                               k_type: object = KLType, force_update: bool = False) -> bool:
         """
         Save Historical Data (e.g., 1M, 15M, 1D, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
         :param stock_code: Stock Code with Format (e.g., HK.00001)
@@ -69,8 +69,10 @@ class FutuTrade:
             return False
 
         # Ensure update current day's 1M data & current year's 1D data
-        if os.path.exists(output_path) and ((start_date != datetime.today().date() and k_type == KLType.K_1M) or (
-                start_date.year != datetime.today().date().year and k_type == KLType.K_DAY)):
+        if os.path.exists(output_path) and not force_update and (
+                (start_date != datetime.today().date() and k_type == KLType.K_1M) or (
+                start_date.year != datetime.today().date().year and k_type == KLType.K_DAY)
+        ):
             return False
 
         # Request Historical K-line Data (Daily)
@@ -117,29 +119,31 @@ class FutuTrade:
                                               row['turnover'], row['change_rate'], row['last_close'], KLType.K_DAY)
             self.futu_data.commit()
 
-    def update_1M_data(self, stock_code: str, years: int = 2) -> None:
+    def update_1M_data(self, stock_code: str, years: int = 2, force_update: bool = False) -> None:
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
+        :param force_update:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 2 years
         """
         for i in range(365 * years):
             day = datetime.today() - timedelta(days=i)
-            if not self.__save_historical_data(stock_code, day.date(), day.date(),
-                                               KLType.K_1M):
+            if not self.__save_historical_data(stock_code=stock_code, start_date=day.date(), end_date=day.date(),
+                                               k_type=KLType.K_1M, force_update=force_update):
                 continue
             time.sleep(0.7)
 
-    def update_1D_data(self, stock_code: str, years: int = 10) -> None:
+    def update_1D_data(self, stock_code: str, years: int = 10, force_update: bool = False) -> None:
         """
             Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
+        :param force_update:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 10 years
         """
         for i in range(0, years + 1):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
-                                               k_type=KLType.K_DAY):
+                                               k_type=KLType.K_DAY, force_update=force_update):
                 continue
             time.sleep(0.7)
 
@@ -166,7 +170,7 @@ class FutuTrade:
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
-    def stock_price_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+    def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
 
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
@@ -190,6 +194,8 @@ class FutuTrade:
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+
+    # def rt_data_subscription(self, ):
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
