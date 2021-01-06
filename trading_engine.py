@@ -196,7 +196,7 @@ class FutuTrade:
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
         self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+        time.sleep(timeout)
 
     def rt_data_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
@@ -214,7 +214,7 @@ class FutuTrade:
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
         self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA], is_first_push=True,
                                  subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+        time.sleep(timeout)
 
     def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
@@ -231,8 +231,8 @@ class FutuTrade:
                                   strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
         self.quote_ctx.subscribe(stock_list, [SubType.K_1M], is_first_push=True,
-                                 subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+                                 subscribe_push=True)  # 订阅K线数据类型，FutuOpenD开始持续收到服务器的推送
+        time.sleep(timeout)
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()

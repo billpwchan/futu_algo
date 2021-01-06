@@ -57,6 +57,7 @@ class EMARibbon(Strategies):
         # Crossover of EMA Fast with other two EMAs
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
+        # Buy Decision based on EMA-Fast exceeds both other two EMAs (e.g., 5-bar > 8-bar and 13-bar)
         buy_decision = (
                                float(current_record['EMA_fast']) > float(current_record['EMA_slow']) and
                                float(current_record['EMA_fast']) > float(current_record['EMA_supp'])
@@ -76,11 +77,12 @@ def sell(self, stock_code) -> bool:
     # Crossover of EMA Fast with other two EMAs
     current_record = self.input_data[stock_code].iloc[-1]
     last_record = self.input_data[stock_code].iloc[-2]
+    # Sell Decision based on EMA-Fast drops below either of the two other EMAs(e.g., 5-bar < 8-bar or 13-bar)
     sell_decision = (
-                            float(current_record['EMA_fast']) < float(current_record['EMA_slow']) and
+                            float(current_record['EMA_fast']) < float(current_record['EMA_slow']) or
                             float(current_record['EMA_fast']) < float(current_record['EMA_supp'])
                     ) and (
-                            float(current_record['EMA_fast']) >= float(current_record['EMA_slow']) or
+                            float(current_record['EMA_fast']) >= float(current_record['EMA_slow']) and
                             float(current_record['EMA_fast']) >= float(current_record['EMA_supp'])
                     )
     if sell_decision:
