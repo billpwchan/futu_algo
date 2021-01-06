@@ -32,7 +32,7 @@ class RSIThreshold(Strategies):
         self.LOWER_RSI = lower_rsi
         self.UPPER_RSI = upper_rsi
         self.OBSERVATION = observation
-        self.default_logger = logger.get_logger("kdj_cross")
+        self.default_logger = logger.get_logger("rsi_threshold")
 
         super().__init__(input_data)
         self.parse_data()

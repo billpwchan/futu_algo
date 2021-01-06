@@ -16,11 +16,11 @@ def daily_update_data(futu_trade, force_update: bool = False):
     file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
     customized_stocks = trading_engine.get_customized_stocks(file_list[0])
     for stock_code in hsi_constituents:
-        futu_trade.update_1D_data(stock_code, force_update=force_update, years=0.1)
-        futu_trade.update_1M_data(stock_code, force_update=force_update, years=0.1)
+        futu_trade.update_1D_data(stock_code, force_update=force_update)
+        futu_trade.update_1M_data(stock_code, force_update=force_update)
     for stock_code in customized_stocks:
-        futu_trade.update_1D_data(stock_code, force_update=force_update, years=0.1)
-        futu_trade.update_1M_data(stock_code, force_update=force_update, years=0.1)
+        futu_trade.update_1D_data(stock_code, force_update=force_update)
+        futu_trade.update_1M_data(stock_code, force_update=force_update)
 
 
 def daily_update_stocks():
@@ -32,10 +32,10 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    daily_update_data(futu_trade=futu_trade, force_update=True)
+    # daily_update_data(futu_trade=futu_trade, force_update=False)
 
     # Update ALl Data to Database
-    # futu_trade.store_all_data_database()
+    futu_trade.store_all_data_database()
 
     # Initialize Strategies
     stock_list = ["HK.00001", "HK.00002", "HK.00003", "HK.00005", "HK.00006", "HK.00011", "HK.00012", "HK.00016",
