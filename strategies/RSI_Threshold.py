@@ -3,27 +3,24 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-import numpy as np
 import pandas as pd
-import talib as talib
 
 import logger
 from strategies.Strategies import Strategies
 
 pd.options.mode.chained_assignment = None  # default='warn'
-talib.set_compatibility(1)
 
 
 class RSIThreshold(Strategies):
-    def __init__(self, input_data: dict, rsi_1=6, rsi_2=12, rsi_3=24, lower_rsi=20, upper_rsi=80, observation=100):
+    def __init__(self, input_data: dict, rsi_1=6, rsi_2=12, rsi_3=24, lower_rsi=30, upper_rsi=70, observation=100):
         """
         Initialize RSI-Threshold Strategy Instance
         :param input_data:
         :param rsi_1: RSI Period 1 (Default = 6)
         :param rsi_2: RSI Period 2 (Default = 12)
         :param rsi_3: RSI Period 3 (Default = 24)
-        :param lower_rsi: Lower RSI Threshold (Default = 20)
-        :param upper_rsi: Upper RSI Threshold (Default = 80)
+        :param lower_rsi: Lower RSI Threshold (Default = 30)
+        :param upper_rsi: Upper RSI Threshold (Default = 70)
         :param observation: Observation Period in Dataframe (Default = 100)
         """
         self.RSI_1 = rsi_1
@@ -36,6 +33,30 @@ class RSIThreshold(Strategies):
 
         super().__init__(input_data)
         self.parse_data()
+
+    def __compute_RSI(self, stock_code, time_window):
+        diff = self.input_data[stock_code]['close'].diff(1).dropna()  # diff in one field(one day)
+
+        # this preservers dimensions off diff values
+        up_chg = 0 * diff
+        down_chg = 0 * diff
+
+        # up change is equal to the positive difference, otherwise equal to zero
+        up_chg[diff > 0] = diff[diff > 0]
+
+        # down change is equal to negative deifference, otherwise equal to zero
+        down_chg[diff < 0] = diff[diff < 0]
+
+        # check pandas documentation for ewm
+        # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.ewm.html
+        # values are related to exponential decay
+        # we set com=time_window-1 so we get decay alpha=1/time_window
+        up_chg_avg = up_chg.ewm(com=time_window - 1, min_periods=time_window).mean()
+        down_chg_avg = down_chg.ewm(com=time_window - 1, min_periods=time_window).mean()
+
+        rs = abs(up_chg_avg / down_chg_avg)
+        rsi = 100 - 100 / (1 + rs)
+        return rsi
 
     def parse_data(self, latest_data: pd.DataFrame = None):
         # Received New Data => Parse it Now to input_data
@@ -61,10 +82,9 @@ class RSIThreshold(Strategies):
             self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
                 ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 
-            close = [float(x) for x in self.input_data[stock_code]['close']]
-            self.input_data[stock_code]['rsi_1'] = talib.RSI(np.array(close), timeperiod=self.RSI_1)
-            self.input_data[stock_code]['rsi_2'] = talib.RSI(np.array(close), timeperiod=self.RSI_2)
-            self.input_data[stock_code]['rsi_3'] = talib.RSI(np.array(close), timeperiod=self.RSI_3)
+            self.input_data[stock_code]['rsi_1'] = self.__compute_RSI(stock_code=stock_code, time_window=self.RSI_1)
+            self.input_data[stock_code]['rsi_2'] = self.__compute_RSI(stock_code=stock_code, time_window=self.RSI_2)
+            self.input_data[stock_code]['rsi_3'] = self.__compute_RSI(stock_code=stock_code, time_window=self.RSI_3)
 
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 

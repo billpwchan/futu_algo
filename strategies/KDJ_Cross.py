@@ -92,7 +92,7 @@ class KDJCross(Strategies):
         # Sell Decision based on 当D > 超买线, K线和D线同时下降，且K线从上向下穿过D线时，卖出
         sell_decision = self.OVER_BUY < current_record['%d'] < last_record['%d'] < last_record['%k'] and \
                         current_record['%k'] < last_record['%k'] and \
-                        current_record['%k'] < current_record['d']
+                        current_record['%k'] < current_record['%d']
 
         if sell_decision:
             self.default_logger.info(
