@@ -46,8 +46,16 @@ class FutuTrade:
         self.default_logger.info("Deleting Trade_CTX Connection")
         self.trade_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
 
-    def get_market_state(self):
-        return self.quote_ctx.get_global_state()
+    def __unlock_trade(self):
+        """
+        Unlock Trading Account if TrdEnv.REAL
+        """
+        if self.trd_env == TrdEnv.REAL:
+            ret, data = self.trade_ctx.unlock_trade(self.password)
+            if ret == RET_OK:
+                self.default_logger.info("Account Unlock Success.")
+            else:
+                raise Exception("Account Unlock Unsuccessful: {}".format(data))
 
     def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
                                k_type: object = KLType, force_update: bool = False) -> bool:
@@ -103,48 +111,8 @@ class FutuTrade:
                                           row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
                                           row['turnover'], row['change_rate'], row['last_close'], k_type)
 
-    def store_all_data_database(self):
-        file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Processing: {input_file}')
-            self.__store_data_database(input_csv, k_type=KLType.K_1M)
-            self.futu_data.commit()
-
-        file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Processing: {input_file}')
-            self.__store_data_database(input_csv, k_type=KLType.K_DAY)
-            self.futu_data.commit()
-
-    def update_1M_data(self, stock_code: str, years: int = 2, force_update: bool = False) -> None:
-        """
-            Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
-        :param force_update:
-        :param stock_code: Stock Code with Format (e.g., HK.00001)
-        :param years: 2 years
-        """
-        for i in range(365 * years):
-            day = datetime.today() - timedelta(days=i)
-            if not self.__save_historical_data(stock_code=stock_code, start_date=day.date(), end_date=day.date(),
-                                               k_type=KLType.K_1M, force_update=force_update):
-                continue
-            time.sleep(0.7)
-
-    def update_1D_data(self, stock_code: str, years: int = 10, force_update: bool = False) -> None:
-        """
-            Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
-        :param force_update:
-        :param stock_code: Stock Code with Format (e.g., HK.00001)
-        :param years: 10 years
-        """
-        for i in range(0, years + 1):
-            day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
-            if not self.__save_historical_data(stock_code=stock_code, start_date=day,
-                                               k_type=KLType.K_DAY, force_update=force_update):
-                continue
-            time.sleep(0.7)
+    def get_market_state(self):
+        return self.quote_ctx.get_global_state()
 
     def get_1M_data(self, stock_list: list):
         """
@@ -169,16 +137,48 @@ class FutuTrade:
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
-    def __unlock_trade(self):
+    def update_1M_data(self, stock_code: str, years=2, force_update: bool = False) -> None:
         """
-        Unlock Trading Account if TrdEnv.REAL
+            Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
+        :param force_update:
+        :param stock_code: Stock Code with Format (e.g., HK.00001)
+        :param years: 2 years
         """
-        if self.trd_env == TrdEnv.REAL:
-            ret, data = self.trade_ctx.unlock_trade(self.password)
-            if ret == RET_OK:
-                self.default_logger.info("Account Unlock Success.")
-            else:
-                raise Exception("Account Unlock Unsuccessful: {}".format(data))
+        for i in range(round(365 * years)):
+            day = datetime.today() - timedelta(days=i)
+            if not self.__save_historical_data(stock_code=stock_code, start_date=day.date(), end_date=day.date(),
+                                               k_type=KLType.K_1M, force_update=force_update):
+                continue
+            time.sleep(0.7)
+
+    def update_1D_data(self, stock_code: str, years=10, force_update: bool = False) -> None:
+        """
+            Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
+        :param force_update:
+        :param stock_code: Stock Code with Format (e.g., HK.00001)
+        :param years: 10 years
+        """
+        for i in range(0, round(years + 1)):
+            day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
+            if not self.__save_historical_data(stock_code=stock_code, start_date=day,
+                                               k_type=KLType.K_DAY, force_update=force_update):
+                continue
+            time.sleep(0.7)
+
+    def store_all_data_database(self):
+        file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            self.default_logger.info(f'Processing: {input_file}')
+            self.__store_data_database(input_csv, k_type=KLType.K_1M)
+            self.futu_data.commit()
+
+        file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            self.default_logger.info(f'Processing: {input_file}')
+            self.__store_data_database(input_csv, k_type=KLType.K_DAY)
+            self.futu_data.commit()
 
     def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """

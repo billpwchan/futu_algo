@@ -10,7 +10,7 @@ from futu import RTDataHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv
 
 import logger
 from handler.trading_util import TradingUtil
-from strategies.MACDCross import MACDCross
+from strategies.MACD_Cross import MACDCross
 from strategies.Strategies import Strategies
 
 

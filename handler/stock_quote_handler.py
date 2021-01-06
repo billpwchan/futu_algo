@@ -10,7 +10,7 @@ from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, Tr
 
 import logger
 from handler.trading_util import TradingUtil
-from strategies.MACDCross import MACDCross
+from strategies.MACD_Cross import MACDCross
 from strategies.Strategies import Strategies
 
 
