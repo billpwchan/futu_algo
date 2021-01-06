@@ -19,7 +19,7 @@ class RSITestCase(unittest.TestCase):
         self.rsi_threshold = RSIThreshold({self.stock_code: self.input_data}, observation=100)
 
     def test_buy(self):
-        # Success. K = 71.86 D = 71.021 J = 73.539 at Dec 23 2020 11:10 AM
+        # Success.
         for index, row in self.test_data.iterrows():
             latest_data = row.to_frame().transpose()
             latest_data.reset_index(drop=True, inplace=True)

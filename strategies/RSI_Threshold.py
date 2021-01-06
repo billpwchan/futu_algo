@@ -44,7 +44,7 @@ class RSIThreshold(Strategies):
         # up change is equal to the positive difference, otherwise equal to zero
         up_chg[diff > 0] = diff[diff > 0]
 
-        # down change is equal to negative deifference, otherwise equal to zero
+        # down change is equal to negative difference, otherwise equal to zero
         down_chg[diff < 0] = diff[diff < 0]
 
         # check pandas documentation for ewm
