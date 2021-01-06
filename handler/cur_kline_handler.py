@@ -5,8 +5,9 @@
 
 import configparser
 
-from futu import CurKlineHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, logger, RET_OK, RET_ERROR
+from futu import CurKlineHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
 
+import logger
 from handler.trading_util import TradingUtil
 from strategies.MACDCross import MACDCross
 from strategies.Strategies import Strategies
@@ -35,7 +36,7 @@ class CurKlineHandler(CurKlineHandlerBase):
             self.default_logger.error("CurKlineTest: error, msg: %s" % data)
             return RET_ERROR, data
 
-        print(data)
+        self.default_logger.info(f'Received {data}')
 
         # Column Mapping between Subscribed Data <==> Historical Data
         # code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover, change_rate, last_close
@@ -44,8 +45,6 @@ class CurKlineHandler(CurKlineHandlerBase):
         data.insert(6, 'pe_ratio', 0)
         data.insert(7, 'turnover_rate', 0)
         data.insert(10, 'change_rate', 0)
-
-        print(data)
 
         # Update Latest Data to the Strategy before Buy/Sell
         self.strategy.parse_data(data)

@@ -6,8 +6,9 @@
 import configparser
 import json
 
-from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, logger, RET_OK, RET_ERROR
+from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
 
+import logger
 from handler.trading_util import TradingUtil
 from strategies.MACDCross import MACDCross
 from strategies.Strategies import Strategies

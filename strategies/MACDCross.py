@@ -29,11 +29,10 @@ class MACDCross(Strategies):
             stock_list = [latest_data['code'][0]]
 
             # Remove records with duplicate time_key. Always use the latest data to override
-            time_key = [latest_data['time_key'][0]]
+            time_key = latest_data['time_key'][0]
             self.input_data[stock_list[0]].drop(
                 self.input_data[stock_list[0]][self.input_data[stock_list[0]].time_key == time_key].index,
                 inplace=True)
-
             # Append empty columns and concat at the bottom
             latest_data = pd.concat([latest_data, pd.DataFrame(columns=['MACD', 'MACD_signal', 'MACD_hist'])])
             self.input_data[stock_list[0]] = self.input_data[stock_list[0]].append(latest_data)

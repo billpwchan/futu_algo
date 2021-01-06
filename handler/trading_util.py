@@ -3,7 +3,9 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, logger, RET_OK, TrdSide, OrderType
+from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType
+
+import logger
 
 
 class TradingUtil():
