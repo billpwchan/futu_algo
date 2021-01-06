@@ -2,6 +2,7 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
+import time
 
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType
 
@@ -42,18 +43,21 @@ class TradingUtil():
         # bid1_price = order_data['Bid'][0][0]  # 取得买一价
 
         # Place Buy Order with Current Price & 1 lot_size
-        ret_code, ret_data = self.trade_ctx.place_order(
-            price=cur_price,
-            qty=lot_size,
-            code=stock_code,
-            trd_side=TrdSide.BUY,
-            order_type=OrderType.NORMAL,
-            trd_env=self.trd_env)
-        if ret_code == RET_OK:
-            self.default_logger.info(
-                'MAKE BUY ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price, lot_size))
-        else:
-            self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
+        while True:
+            ret_code, ret_data = self.trade_ctx.place_order(
+                price=cur_price,
+                qty=lot_size,
+                code=stock_code,
+                trd_side=TrdSide.BUY,
+                order_type=OrderType.NORMAL,
+                trd_env=self.trd_env)
+            if ret_code == RET_OK:
+                self.default_logger.info(
+                    'MAKE BUY ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price, lot_size))
+                continue
+            else:
+                self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
+                time.sleep(1)
 
     def place_sell_order(self, stock_code):
         self.default_logger.info(f"SELL DECISION for {stock_code} is triggered.")
@@ -89,17 +93,26 @@ class TradingUtil():
             #
             # bid1_price = order_data['Bid'][0][0]  # 取得买一价
 
+            # Check if an order has already been made but not filled_completely
+            ret_code, order_list_data = self.trade_ctx.order_list_query()
+            if ret_code != RET_OK:
+                self.default_logger.error(f"Cannot acquire order list {order_list_data}")
+                raise Exception('今日订单列表获取异常 {}'.format(market_data))
+
             # Place Sell Order with current price and 1 lot size
-            ret_code, ret_data = self.trade_ctx.place_order(
-                price=cur_price,
-                qty=can_sell_qty,
-                code=stock_code,
-                trd_side=TrdSide.SELL,
-                order_type=OrderType.NORMAL,
-                trd_env=self.trd_env)
-            if ret_code == RET_OK:
-                self.default_logger.info(
-                    'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
-                                                                                can_sell_qty))
-            else:
-                self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+            while True:
+                ret_code, ret_data = self.trade_ctx.place_order(
+                    price=cur_price,
+                    qty=can_sell_qty,
+                    code=stock_code,
+                    trd_side=TrdSide.SELL,
+                    order_type=OrderType.NORMAL,
+                    trd_env=self.trd_env)
+                if ret_code == RET_OK:
+                    self.default_logger.info(
+                        'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
+                                                                                    can_sell_qty))
+                    continue
+                else:
+                    self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+                    time.sleep(1)

@@ -1,7 +1,7 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
-#   Written by Bill Chan <billpwchan@hotmail.com>, 2020
+#   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import datetime
 import logging
@@ -10,6 +10,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
 LOG_FILE = f"./log/futu_algo_{str(datetime.date.today())}.log"
+
 
 def get_console_handler():
     console_handler = logging.StreamHandler(sys.stdout)
