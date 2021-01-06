@@ -18,7 +18,7 @@ class KDJCross(Strategies):
         self.SLOW_K = slow_k
         self.SLOW_D = slow_d
         self.OBSERVATION = observation
-        self.default_logger = logger.get_logger("ema_ribbon")
+        self.default_logger = logger.get_logger("kdj_cross")
 
         super().__init__(input_data)
         self.parse_data()
@@ -44,38 +44,29 @@ class KDJCross(Strategies):
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
+            self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
+                ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 
-            high = [float(x) for x in self.input_data[stock_code]['high']]
-            low = [float(x) for x in self.input_data[stock_code]['low']]
-            close = [float(x) for x in self.input_data[stock_code]['close']]
-            self.input_data[stock_code]['%k'], self.input_data[stock_code]['%d'] = talib.STOCH(
-                high,
-                low,
-                close,
-                fastk_period=self.FAST_K,
-                slowk_period=self.SLOW_K,
-                slowk_matype=0,
-                slowd_period=self.SLOW_D,
-                slowd_matype=0)
-            # Calculate J,，J = (3*K)-(2*D)
-            self.input_data[stock_code]['%j'] = list(
-                map(lambda x, y: 3 * x - 2 * y, self.input_data[stock_code]['%k'], self.input_data[stock_code]['%d']))
+            low = self.input_data[stock_code]['low'].rolling(9, min_periods=9).min()
+            low.fillna(value=self.input_data[stock_code]['low'].expanding().min(), inplace=True)
+            high = self.input_data[stock_code]['high'].rolling(9, min_periods=9).max()
+            high.fillna(value=self.input_data[stock_code]['high'].expanding().max(), inplace=True)
+            rsv = (self.input_data[stock_code]['close'] - low) / (high - low) * 100
+
+            self.input_data[stock_code]['%k'] = pd.DataFrame(rsv).ewm(com=2).mean()
+            self.input_data[stock_code]['%d'] = self.input_data[stock_code]['%k'].ewm(com=2).mean()
+            self.input_data[stock_code]['%j'] = 3 * self.input_data[stock_code]['%k'] - \
+                                                2 * self.input_data[stock_code]['%d']
 
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
-            print(self.input_data)
+            self.default_logger.info(self.input_data[stock_code])
 
     def buy(self, stock_code) -> bool:
         # Crossover of EMA Fast with other two EMAs
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         # Buy Decision based on EMA-Fast exceeds both other two EMAs (e.g., 5-bar > 8-bar and 13-bar)
-        buy_decision = (
-                               float(current_record['EMA_fast']) > float(current_record['EMA_slow']) and
-                               float(current_record['EMA_fast']) > float(current_record['EMA_supp'])
-                       ) and (
-                               float(current_record['EMA_fast']) <= float(current_record['EMA_slow']) or
-                               float(current_record['EMA_fast']) <= float(current_record['EMA_supp'])
-                       )
+        buy_decision = True
 
         if buy_decision:
             self.default_logger.info(
@@ -88,13 +79,7 @@ class KDJCross(Strategies):
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         # Sell Decision based on EMA-Fast drops below either of the two other EMAs(e.g., 5-bar < 8-bar or 13-bar)
-        sell_decision = (
-                                float(current_record['EMA_fast']) < float(current_record['EMA_slow']) or
-                                float(current_record['EMA_fast']) < float(current_record['EMA_supp'])
-                        ) and (
-                                float(current_record['EMA_fast']) >= float(current_record['EMA_slow']) and
-                                float(current_record['EMA_fast']) >= float(current_record['EMA_supp'])
-                        )
+        sell_decision = True
         if sell_decision:
             self.default_logger.info(
                 f"Sell Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
