@@ -104,6 +104,9 @@ class TradingUtil:
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire order list {order_list_data}")
                 raise Exception('今日订单列表获取异常 {}'.format(market_data))
+            if not order_list_data.empty:
+                self.default_logger.info(
+                    f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
 
             # Place Sell Order with current price and 1 lot size
             while True:
