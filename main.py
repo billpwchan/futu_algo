@@ -16,11 +16,11 @@ def daily_update_data(futu_trade, force_update: bool = False):
     file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
     customized_stocks = trading_engine.get_customized_stocks(file_list[0])
     for stock_code in hsi_constituents:
-        futu_trade.update_1D_data(stock_code, force_update=force_update)
-        futu_trade.update_1M_data(stock_code, force_update=force_update)
+        futu_trade.update_1D_data(stock_code, force_update=force_update, years=1)
+        futu_trade.update_1M_data(stock_code, force_update=force_update, years=1)
     for stock_code in customized_stocks:
-        futu_trade.update_1D_data(stock_code, force_update=force_update)
-        futu_trade.update_1M_data(stock_code, force_update=force_update)
+        futu_trade.update_1D_data(stock_code, force_update=force_update, years=1)
+        futu_trade.update_1M_data(stock_code, force_update=force_update, years=1)
 
 
 def daily_update_stocks():
@@ -32,9 +32,9 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    # daily_update_data(futu_trade=futu_trade)
-    futu_trade.update_1M_data('HK.09988')
-    futu_trade.update_1M_data('HK.01211')
+    daily_update_data(futu_trade=futu_trade, force_update=False)
+    # futu_trade.update_1M_data('HK.09988')
+    # futu_trade.update_1M_data('HK.01211')
 
     # Update ALl Data to Database
     # futu_trade.store_all_data_database()

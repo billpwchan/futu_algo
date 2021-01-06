@@ -13,6 +13,7 @@ from futu import *
 
 import data_engine
 import logger
+from rt_data_handler import RTDataHandler
 from stock_quote_handler import StockQuoteHandler
 from strategies.Strategies import Strategies
 
@@ -170,22 +171,26 @@ class FutuTrade:
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
-    def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+    def __unlock_trade(self):
         """
-
-        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
-        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
-        :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
-        :param timeout: Subscription Timeout in secs.
+        Unlock Trading Account if TrdEnv.REAL
         """
-
-        # Unlock Trading Account if TrdEnv.REAL
         if self.trd_env == TrdEnv.REAL:
             ret, data = self.trade_ctx.unlock_trade(self.password)
             if ret == RET_OK:
                 self.default_logger.info("Account Unlock Success.")
             else:
                 raise Exception("Account Unlock Unsuccessful: {}".format(data))
+
+    def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+        """
+        实时报价回调，异步处理已订阅股票的实时报价推送。
+        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
+        :param timeout: Subscription Timeout in secs.
+        """
+        self.__unlock_trade()
 
         # Stock Quote Handler
         handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
@@ -195,7 +200,23 @@ class FutuTrade:
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
-    # def rt_data_subscription(self, ):
+    def rt_data_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+        """
+        实时分时回调，异步处理已订阅股票的实时分时推送。
+        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
+        :param timeout: Subscription Timeout in secs.
+        """
+        self.__unlock_trade()
+
+        # RT Data Handler
+        handler = RTDataHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
+                                strategy=strategy, trd_env=self.trd_env)
+        self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
+        self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA], is_first_push=True,
+                                 subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
+        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
