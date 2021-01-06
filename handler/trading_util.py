@@ -44,6 +44,20 @@ class TradingUtil:
         #
         # bid1_price = order_data['Bid'][0][0]  # 取得买一价
 
+        # Check if an order has already been made but not filled_completely
+        ret_code, order_list_data = self.trade_ctx.order_list_query(order_id="",
+                                                                    status_filter_list=self.status_filter_list,
+                                                                    code=stock_code, start='', end='',
+                                                                    trd_env=self.trd_env,
+                                                                    acc_id=0, acc_index=0, refresh_cache=False)
+        if ret_code != RET_OK:
+            self.default_logger.error(f"Cannot acquire order list {order_list_data}")
+            raise Exception('今日订单列表获取异常 {}'.format(market_data))
+        if not order_list_data.empty:
+            self.default_logger.info(
+                f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
+            return
+
         # Place Buy Order with Current Price & 1 lot_size
         while True:
             ret_code, ret_data = self.trade_ctx.place_order(
@@ -107,6 +121,7 @@ class TradingUtil:
             if not order_list_data.empty:
                 self.default_logger.info(
                     f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
+                return
 
             # Place Sell Order with current price and 1 lot size
             while True:
