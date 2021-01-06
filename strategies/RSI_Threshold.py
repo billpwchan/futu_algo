@@ -2,31 +2,35 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
+
+import numpy as np
 import pandas as pd
+import talib as talib
 
 import logger
 from strategies.Strategies import Strategies
 
 pd.options.mode.chained_assignment = None  # default='warn'
+talib.set_compatibility(1)
 
 
-class KDJCross(Strategies):
-    def __init__(self, input_data: dict, fast_k=9, slow_k=3, slow_d=3, over_buy=80, over_sell=20, observation=100):
+class RSIThreshold(Strategies):
+    def __init__(self, input_data: dict, rsi_1=6, rsi_2=12, rsi_3=24, lower_rsi=20, upper_rsi=80, observation=100):
         """
-        Initialize KDJ-Cross Strategy Instance
+        Initialize RSI-Threshold Strategy Instance
         :param input_data:
-        :param fast_k: Fast K-Period (Default = 9)
-        :param slow_k: Slow K-Period (Default = 3)
-        :param slow_d: Slow D-Period (Default = 3)
-        :param over_buy: Over-buy Threshold (Default = 80)
-        :param over_sell: Over-sell Threshold (Default = 20)
+        :param rsi_1: RSI Period 1 (Default = 6)
+        :param rsi_2: RSI Period 2 (Default = 12)
+        :param rsi_3: RSI Period 3 (Default = 24)
+        :param lower_rsi: Lower RSI Threshold (Default = 20)
+        :param upper_rsi: Upper RSI Threshold (Default = 80)
         :param observation: Observation Period in Dataframe (Default = 100)
         """
-        self.FAST_K = fast_k
-        self.SLOW_K = slow_k
-        self.SLOW_D = slow_d
-        self.OVER_BUY = over_buy
-        self.OVER_SELL = over_sell
+        self.RSI_1 = rsi_1
+        self.RSI_2 = rsi_2
+        self.RSI_3 = rsi_3
+        self.LOWER_RSI = lower_rsi
+        self.UPPER_RSI = upper_rsi
         self.OBSERVATION = observation
         self.default_logger = logger.get_logger("kdj_cross")
 
@@ -45,7 +49,7 @@ class KDJCross(Strategies):
                 self.input_data[stock_list[0]][self.input_data[stock_list[0]].time_key == time_key].index,
                 inplace=True)
             # Append empty columns and concat at the bottom
-            latest_data = pd.concat([latest_data, pd.DataFrame(columns=['%k', '%d', '%j'])])
+            latest_data = pd.concat([latest_data, pd.DataFrame(columns=['rsi_1', 'rsi_2', 'rsi_3'])])
             self.input_data[stock_list[0]] = self.input_data[stock_list[0]].append(latest_data)
         else:
             stock_list = self.input_data.keys()
@@ -57,27 +61,18 @@ class KDJCross(Strategies):
             self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
                 ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 
-            low = self.input_data[stock_code]['low'].rolling(9, min_periods=9).min()
-            low.fillna(value=self.input_data[stock_code]['low'].expanding().min(), inplace=True)
-            high = self.input_data[stock_code]['high'].rolling(9, min_periods=9).max()
-            high.fillna(value=self.input_data[stock_code]['high'].expanding().max(), inplace=True)
-            rsv = (self.input_data[stock_code]['close'] - low) / (high - low) * 100
-
-            self.input_data[stock_code]['%k'] = pd.DataFrame(rsv).ewm(com=2).mean()
-            self.input_data[stock_code]['%d'] = self.input_data[stock_code]['%k'].ewm(com=2).mean()
-            self.input_data[stock_code]['%j'] = 3 * self.input_data[stock_code]['%k'] - \
-                                                2 * self.input_data[stock_code]['%d']
+            close = [float(x) for x in self.input_data[stock_code]['close']]
+            self.input_data[stock_code]['rsi_1'] = talib.RSI(np.array(close), timeperiod=self.RSI_1)
+            self.input_data[stock_code]['rsi_2'] = talib.RSI(np.array(close), timeperiod=self.RSI_2)
+            self.input_data[stock_code]['rsi_3'] = talib.RSI(np.array(close), timeperiod=self.RSI_3)
 
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
     def buy(self, stock_code) -> bool:
-
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
-        # Buy Decision based on 当D < 超卖线, K线和D线同时上升，且K线从下向上穿过D线时，买入
-        buy_decision = self.OVER_SELL > current_record['%d'] > last_record['%d'] > last_record['%k'] and \
-                       current_record['%k'] > last_record['%k'] and \
-                       current_record['%k'] > current_record['%d']
+        # Buy Decision based on RSI值超过了超卖线
+        buy_decision = current_record['rsi_1'] < self.LOWER_RSI < last_record['rsi_1']
 
         if buy_decision:
             self.default_logger.info(
@@ -89,10 +84,8 @@ class KDJCross(Strategies):
 
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
-        # Sell Decision based on 当D > 超买线, K线和D线同时下降，且K线从上向下穿过D线时，卖出
-        sell_decision = self.OVER_BUY < current_record['%d'] < last_record['%d'] < last_record['%k'] and \
-                        current_record['%k'] < last_record['%k'] and \
-                        current_record['%k'] < current_record['d']
+        # Sell Decision based on RSI值超过了超买线
+        sell_decision = current_record['rsi_1'] > self.UPPER_RSI > last_record['rsi_1']
 
         if sell_decision:
             self.default_logger.info(
