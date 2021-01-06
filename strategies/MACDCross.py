@@ -25,11 +25,22 @@ class MACDCross(Strategies):
     def parse_data(self, latest_data: pd.DataFrame = None):
         # Received New Data => Parse it Now to input_data
         if latest_data is not None:
+            # Only need to update MACD for the stock_code with new data
             stock_list = [latest_data['code'][0]]
+
+            # Remove records with duplicate time_key. Always use the latest data to override
+            time_key = [latest_data['time_key'][0]]
+            self.input_data[stock_list[0]].drop(
+                self.input_data[stock_list[0]][self.input_data[stock_list[0]].time_key == time_key].index,
+                inplace=True)
+
+            # Append empty columns and concat at the bottom
             latest_data = pd.concat([latest_data, pd.DataFrame(columns=['MACD', 'MACD_signal', 'MACD_hist'])])
             self.input_data[stock_list[0]] = self.input_data[stock_list[0]].append(latest_data)
         else:
             stock_list = self.input_data.keys()
+
+        # Calculate MACD for the stock_list
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
@@ -52,8 +63,7 @@ class MACDCross(Strategies):
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         buy_decision = float(current_record['MACD']) > float(current_record['MACD_signal']) and float(
-            last_record['MACD']) <= float(last_record['MACD_signal']) and float(current_record['MACD']) > 0 and float(
-            current_record['MACD_signal']) > 0
+            last_record['MACD']) <= float(last_record['MACD_signal'])
         if buy_decision:
             self.default_logger.info(
                 f"Buy Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
@@ -66,8 +76,7 @@ class MACDCross(Strategies):
         current_record = self.input_data[stock_code].iloc[-1]
         last_record = self.input_data[stock_code].iloc[-2]
         sell_decision = float(current_record['MACD']) < float(current_record['MACD_signal']) and float(
-            last_record['MACD']) >= float(last_record['MACD_signal']) and float(current_record['MACD']) < 0 and float(
-            current_record['MACD_signal']) < 0
+            last_record['MACD']) >= float(last_record['MACD_signal'])
         if sell_decision:
             self.default_logger.info(
                 f"Sell Decision: {current_record['time_key']} based on \n {pd.concat([last_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")

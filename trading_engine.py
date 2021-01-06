@@ -13,8 +13,9 @@ from futu import *
 
 import data_engine
 import logger
-from rt_data_handler import RTDataHandler
-from stock_quote_handler import StockQuoteHandler
+from handler.cur_kline_handler import CurKlineHandler
+from handler.rt_data_handler import RTDataHandler
+from handler.stock_quote_handler import StockQuoteHandler
 from strategies.Strategies import Strategies
 
 
@@ -215,6 +216,24 @@ class FutuTrade:
                                 strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
         self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA], is_first_push=True,
+                                 subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
+        time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
+
+    def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+        """
+        实时 K 线回调，异步处理已订阅股票的实时 K 线推送。
+        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
+        :param timeout: Subscription Timeout in secs.
+        """
+        self.__unlock_trade()
+
+        # cur Kline Handler
+        handler = CurKlineHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
+                                  strategy=strategy, trd_env=self.trd_env)
+        self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
+        self.quote_ctx.subscribe(stock_list, [SubType.K_1M], is_first_push=True,
                                  subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)  # 设置脚本接收FutuOpenD的推送持续时间为60秒
 
