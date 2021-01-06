@@ -10,7 +10,7 @@ import pandas as pd
 from strategies.MACD_Cross import MACDCross
 
 
-class MyTestCase(unittest.TestCase):
+class MACDTestCase(unittest.TestCase):
     def setUp(self):
         self.stock_code = 'HK.09988'
         self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)

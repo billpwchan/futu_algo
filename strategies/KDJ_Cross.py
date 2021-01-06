@@ -71,7 +71,6 @@ class KDJCross(Strategies):
                                                 2 * self.input_data[stock_code]['%d']
 
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
-            self.default_logger.info(self.input_data[stock_code])
 
     def buy(self, stock_code) -> bool:
 
