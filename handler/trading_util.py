@@ -4,17 +4,19 @@
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import time
 
-from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType
+from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus
 
 import logger
 
 
-class TradingUtil():
+class TradingUtil:
     def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, trd_env: TrdEnv = TrdEnv.SIMULATE):
         self.default_logger = logger.get_logger('trading_util')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx
         self.trd_env = trd_env
+        self.status_filter_list = [OrderStatus.WAITING_SUBMIT,
+                                   OrderStatus.SUBMITTING, OrderStatus.SUBMITTED, OrderStatus.FILLED_PART]
 
     def place_buy_order(self, stock_code):
         self.default_logger.info(f"BUY DECISION for {stock_code} is triggered")
@@ -94,7 +96,11 @@ class TradingUtil():
             # bid1_price = order_data['Bid'][0][0]  # 取得买一价
 
             # Check if an order has already been made but not filled_completely
-            ret_code, order_list_data = self.trade_ctx.order_list_query()
+            ret_code, order_list_data = self.trade_ctx.order_list_query(order_id="",
+                                                                        status_filter_list=self.status_filter_list,
+                                                                        code=stock_code, start='', end='',
+                                                                        trd_env=self.trd_env,
+                                                                        acc_id=0, acc_index=0, refresh_cache=False)
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire order list {order_list_data}")
                 raise Exception('今日订单列表获取异常 {}'.format(market_data))

@@ -90,35 +90,32 @@ class FutuTrade:
             if ret == RET_OK:
                 data.to_csv(output_path, index=False)
                 self.default_logger.info(f'Saved: {output_path}')
-                for index, row in data.iterrows():
-                    self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
-                                                  row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
-                                                  row['turnover'], row['change_rate'], row['last_close'], k_type)
+                self.__store_data_database(data, k_type=k_type)
                 return True
             else:
                 # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
                 time.sleep(1)
                 self.default_logger.error(f'Historical Data Store Error: {data}')
 
+    def __store_data_database(self, data, k_type):
+        for index, row in data.iterrows():
+            self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
+                                          row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
+                                          row['turnover'], row['change_rate'], row['last_close'], k_type)
+
     def store_all_data_database(self):
         file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)
             self.default_logger.info(f'Processing: {input_file}')
-            for index, row in input_csv.iterrows():
-                self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
-                                              row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
-                                              row['turnover'], row['change_rate'], row['last_close'], KLType.K_1M)
+            self.__store_data_database(input_csv, k_type=KLType.K_1M)
             self.futu_data.commit()
 
         file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)
             self.default_logger.info(f'Processing: {input_file}')
-            for index, row in input_csv.iterrows():
-                self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
-                                              row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
-                                              row['turnover'], row['change_rate'], row['last_close'], KLType.K_DAY)
+            self.__store_data_database(input_csv, k_type=KLType.K_DAY)
             self.futu_data.commit()
 
     def update_1M_data(self, stock_code: str, years: int = 2, force_update: bool = False) -> None:
