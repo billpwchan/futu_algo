@@ -8,6 +8,7 @@ import json
 
 from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, logger, RET_OK, RET_ERROR
 
+from handler.trading_util import TradingUtil
 from strategies.MACDCross import MACDCross
 from strategies.Strategies import Strategies
 
@@ -23,6 +24,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         self.input_data = input_data
         self.strategy = strategy
         self.trd_env = trd_env
+        self.trading_util = TradingUtil(self.quote_ctx, self.trade_ctx, self.trd_env)
         super().__init__()
 
     def set_input_data(self, input_data: dict):
@@ -48,3 +50,9 @@ class StockQuoteHandler(StockQuoteHandlerBase):
 
         # Buy/Sell Strategy
         stock_code = data['code'][0]
+
+        if self.strategy.sell(stock_code=stock_code):
+            self.trading_util.place_sell_order(stock_code)
+
+        if self.strategy.buy(stock_code=stock_code):
+            self.trading_util.place_buy_order(stock_code)
