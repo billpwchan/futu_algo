@@ -43,6 +43,8 @@ class MACDCross(Strategies):
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
             self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
+            self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
+                ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 
             # MACD = EMA-Fast - EMA-Slow. Signal = EMA(MACD, Smooth-period)
             ema_fast = self.input_data[stock_code]['close'].ewm(span=self.MACD_FAST, adjust=False).mean()
