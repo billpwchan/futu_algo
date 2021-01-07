@@ -96,7 +96,7 @@ class KDJMACDClose(Strategies):
 
         current_record = self.input_data[stock_code].iloc[-2]
         last_record = self.input_data[stock_code].iloc[-3]
-        # Buy Decision based on 当D < 超卖线, K线和D线同时上升，且K线从下向上穿过D线时，买入
+        # Buy Decision based on K crossover D, MACD > 0 and Close > Previous 6 High
         buy_decision_macd = current_record['MACD'] > 0
         buy_decision_kdj = current_record['%k'] > current_record['%d'] and \
                            last_record['%k'] <= last_record['%d']
@@ -112,7 +112,7 @@ class KDJMACDClose(Strategies):
     def sell(self, stock_code) -> bool:
         current_record = self.input_data[stock_code].iloc[-2]
         last_record = self.input_data[stock_code].iloc[-3]
-        # Sell Decision based on 当D > 超买线, K线和D线同时下降，且K线从上向下穿过D线时，卖出
+        # Sell Decision based on Close < 21-period MA 1% below
         sell_decision = current_record['close'] < current_record['MA'] * 0.99 and \
                         last_record['close'] >= last_record['MA'] * 0.99
 

@@ -28,14 +28,20 @@ def daily_update_stocks():
     trading_engine.update_customized_stocks()
 
 
+def init_day_trading(futu_trade, stock_list):
+    input_data = futu_trade.get_data_realtime(stock_list, kline_num=100)
+    kdj_macd_close = KDJMACDClose(input_data=input_data)
+    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=kdj_macd_close, timeout=3600 * 12)
+
+
 def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     # Daily Update Data
-    # daily_update_data(futu_trade=futu_trade, force_update=False)
+    daily_update_data(futu_trade=futu_trade, force_update=False)
 
     # Update ALl Data to Database
-    # futu_trade.store_all_data_database()
+    futu_trade.store_all_data_database()
 
     # Initialize Strategies
     stock_list = ["HK.00001", "HK.00002", "HK.00003", "HK.00005", "HK.00006", "HK.00011", "HK.00012", "HK.00016",
@@ -45,12 +51,7 @@ def main():
                   "HK.01299", "HK.01398", "HK.01810", "HK.01876", "HK.01928", "HK.01997", "HK.02007", "HK.02018",
                   "HK.02020", "HK.02269", "HK.02313", "HK.02318", "HK.02319", "HK.02382", "HK.02388", "HK.02628",
                   "HK.03328", "HK.03690", "HK.03988", "HK.09988"]
-
-    # input_data = futu_trade.get_1M_data(stock_list=stock_list)
-    input_data = futu_trade.get_data_realtime(stock_list, kline_num=100)
-    kdj_macd_close = KDJMACDClose(input_data=input_data)
-    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=kdj_macd_close, timeout=3600 * 12)
-
+    # init_day_trading(futu_trade, stock_list)
     futu_trade.display_quota()
 
 
