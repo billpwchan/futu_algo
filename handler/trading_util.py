@@ -53,13 +53,13 @@ class TradingUtil:
         if ret_code != RET_OK:
             self.default_logger.error(f"Cannot acquire order list {order_list_data}")
             raise Exception('今日订单列表获取异常 {}'.format(market_data))
-        if not order_list_data.empty:
+        if not order_list_data.empty and order_list_data['trd_side'] == TrdSide.BUY:
             self.default_logger.info(
                 f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
             return
 
         # Place Buy Order with Current Price & 1 lot_size
-        while True:
+        for i in range(3):
             ret_code, ret_data = self.trade_ctx.place_order(
                 price=cur_price,
                 qty=lot_size,
@@ -70,7 +70,7 @@ class TradingUtil:
             if ret_code == RET_OK:
                 self.default_logger.info(
                     'MAKE BUY ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price, lot_size))
-                continue
+                break
             else:
                 self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
                 time.sleep(1)
@@ -118,13 +118,13 @@ class TradingUtil:
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire order list {order_list_data}")
                 raise Exception('今日订单列表获取异常 {}'.format(market_data))
-            if not order_list_data.empty:
+            if not order_list_data.empty and order_list_data['trd_side'] == TrdSide.SELL:
                 self.default_logger.info(
                     f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
                 return
 
             # Place Sell Order with current price and 1 lot size
-            while True:
+            for i in range(3):
                 ret_code, ret_data = self.trade_ctx.place_order(
                     price=cur_price,
                     qty=can_sell_qty,
@@ -136,7 +136,7 @@ class TradingUtil:
                     self.default_logger.info(
                         'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
                                                                                     can_sell_qty))
-                    continue
+                    break
                 else:
                     self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
                     time.sleep(1)
