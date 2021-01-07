@@ -23,18 +23,7 @@
 
 ## Releases
 
-**Important:** all the 2.x releases are deployed to npm and can be used via jsdeliver:
-
-- particular release,
-  e.g. `v2.0.0-alpha.15`: https://cdn.jsdelivr.net/npm/redoc@2.0.0-alpha.17/bundles/redoc.standalone.js
-- `next` release: https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js
-
-Additionally, all the 1.x releases are hosted on our GitHub Pages-based CDN **(deprecated)**:
-
-- particular release, e.g. `v1.2.0`: https://rebilly.github.io/ReDoc/releases/v1.2.0/redoc.min.js
-- `v1.x.x` release: https://rebilly.github.io/ReDoc/releases/v1.x.x/redoc.min.js
-- `latest` release: https://rebilly.github.io/ReDoc/releases/latest/redoc.min.js - it will point to latest 1.x.x release
-  since 2.x releases are not hosted on this CDN but on unpkg.
+**Important:** Program still in Alpha Phase now.
 
 ## Version Guidance
 
