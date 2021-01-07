@@ -4,9 +4,12 @@
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import time
 
+import pandas as pd
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus
 
 import logger
+
+pd.set_option('display.max_colwidth', -1)
 
 
 class TradingUtil:
@@ -19,7 +22,6 @@ class TradingUtil:
                                    OrderStatus.SUBMITTING, OrderStatus.SUBMITTED, OrderStatus.FILLED_PART]
 
     def place_buy_order(self, stock_code):
-        self.default_logger.info(f"BUY DECISION for {stock_code} is triggered")
         ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
                                                                      pl_ratio_max=None,
                                                                      trd_env=self.trd_env, acc_id=0, acc_index=0,
@@ -28,7 +30,7 @@ class TradingUtil:
             self.default_logger.error(f"Cannot acquire account position {position_data}")
             raise Exception('账户信息获取失败: {}'.format(position_data))
         if not position_data.empty:
-            self.default_logger.info(f"Account holds any position for stock {stock_code}")
+            self.default_logger.warn(f"Account holds any position for stock {stock_code}")
             return
 
         ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
@@ -76,7 +78,6 @@ class TradingUtil:
                 time.sleep(1)
 
     def place_sell_order(self, stock_code):
-        self.default_logger.info(f"SELL DECISION for {stock_code} is triggered.")
         ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
                                                                      pl_ratio_max=None,
                                                                      trd_env=self.trd_env, acc_id=0, acc_index=0,
@@ -85,7 +86,7 @@ class TradingUtil:
             self.default_logger.error(f"Cannot acquire account position {position_data}")
             raise Exception('账户信息获取失败: {}'.format(position_data))
         if position_data.empty:
-            self.default_logger.info(f"Account does not hold any position for stock {stock_code}")
+            self.default_logger.warn(f"Account does not hold any position for stock {stock_code}")
             return
 
         position_data = position_data.set_index('code')

@@ -36,7 +36,7 @@ class CurKlineHandler(CurKlineHandlerBase):
             self.default_logger.error("CurKlineTest: error, msg: %s" % data)
             return RET_ERROR, data
 
-        self.default_logger.info(f'Received\n {data}')
+        # self.default_logger.info(f'Received\n {data}')
 
         # Column Mapping between Subscribed Data <==> Historical Data
         # code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover, change_rate, last_close
