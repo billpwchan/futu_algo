@@ -137,6 +137,18 @@ class FutuTrade:
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
+    def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000):
+        input_data = {}
+        ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type], subscribe_push=False)
+        for stock_code in stock_list:
+            if ret_sub == RET_OK:  # 订阅成功
+                ret, data = self.quote_ctx.get_cur_kline(stock_code, kline_num, sub_type, AuType.QFQ)
+                if ret == RET_OK:
+                    input_data[stock_code] = input_data.get(stock_code, data)
+                else:
+                    self.default_logger.error(f'Cannot get Real-time K-line data: {data}')
+        return input_data
+
     def update_1M_data(self, stock_code: str, years=2, force_update: bool = False) -> None:
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
