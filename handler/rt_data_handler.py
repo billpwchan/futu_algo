@@ -19,7 +19,7 @@ class RTDataHandler(RTDataHandlerBase):
                  strategy: Strategies = MACDCross, trd_env: TrdEnv = TrdEnv.SIMULATE):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
-        self.default_logger = logger.get_logger('stock_quote')
+        self.default_logger = logger.get_logger('rt_data')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx
         self.input_data = input_data
