@@ -31,7 +31,7 @@ class FutuTrade:
         self.trade_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                             port=self.config['FutuOpenD.Config'].getint('Port'))
         self.username = self.config['FutuOpenD.Credential'].get('Username')
-        self.password = self.config['FutuOpenD.Credential'].get('Password')
+        # self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
         self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         self.default_logger = logger.get_logger("futu_trade")
@@ -51,7 +51,7 @@ class FutuTrade:
         Unlock Trading Account if TrdEnv.REAL
         """
         if self.trd_env == TrdEnv.REAL:
-            ret, data = self.trade_ctx.unlock_trade(self.password)
+            ret, data = self.trade_ctx.unlock_trade(password_md5=self.password_md5)
             if ret == RET_OK:
                 self.default_logger.info("Account Unlock Success.")
             else:
