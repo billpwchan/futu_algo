@@ -57,6 +57,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--update", help="Daily Update Data (Execute Before Market Starts)",
                         action="store_true")
+    parser.add_argument("-fu", "--force_update",
+                        help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
     parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
 
     # Retrieve file names for all strategies as the argument option
@@ -71,9 +73,10 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
 
+    print(args.force_update)
     if args.update:
         # Daily Update Data
-        daily_update_data(futu_trade=futu_trade, force_update=False)
+        daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
     if args.database:
         # Update ALl Data to Database
         futu_trade.store_all_data_database()

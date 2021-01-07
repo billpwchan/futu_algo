@@ -249,10 +249,10 @@ class FutuTrade:
     def display_quota(self):
         ret, data = self.quote_ctx.query_subscription()
         if ret == RET_OK:
-            self.default_logger.info(f'Query Subscription Quota: {data}')
+            self.default_logger.info(f'Query Subscription Quota: \n{data}')
         ret, data = self.quote_ctx.get_history_kl_quota(get_detail=True)
         if ret == RET_OK:
-            self.default_logger.info(f'Historical K-line Quota: {data}')
+            self.default_logger.info(f'Historical K-line Quota: \n{data}')
 
 
 def update_hsi_constituents(input_path='./data/HSI.Constituents'):
