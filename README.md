@@ -1,33 +1,123 @@
-Hi, I'm Bill 😉, a FinTech Engineer 👨🏻‍💻 from Hong Kong. I'm an open-source profession and always develop in Python
-🐍. Currently, I'm working on Algorithmic Trading.
+<div align="center">
+  <img alt="Billerikay Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/docs/img/author-logo.png" width="400px" />
 
-### How to reach me:
+**billpwchan/futu-algo API Reference Documentation**
 
-<a href="mailto: billpwchan@hotmail.com">
-<img src="https://img.shields.io/badge/-billpwchan%40hotmail.com-7B83EB?&style=for-the-badge&logo=Microsoft-outlook&logoColor=white" ></a>  <a  href="https://www.instagram.com/billpwchan/">   <img src="https://img.shields.io/badge/@billpwchan_-%23E4405F.svg?&style=for-the-badge&logo=instagram&logoColor=white"></a>  <a href="https://www.linkedin.com/in/billpwchan1998/"><img src="https://img.shields.io/badge/billpwchan-%230077B5.svg?&style=for-the-badge&logo=linkedin&logoColor=white" ></a>  <a  href="https://www.billpwchan.com/"><img src="https://img.shields.io/badge/billpwchan.com-%2312100E.svg?&style=for-the-badge&logo=safari&logoColor=white"></a>
+[![Issues](https://img.shields.io/github/issues/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/issues)
+[![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/billpwchan/futu_algo/total?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
+[![CommitActivity](https://img.shields.io/github/commit-activity/m/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/commits/master)
+[![RepoSize](https://img.shields.io/github/repo-size/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
+[![Languages](https://img.shields.io/github/languages/top/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
 
-### Current Status Quo:
+</div>
 
-- 💼 I’m pursuing a <strong>MSc Computing degree in Management and Finance</strong>.
-- 🔭 I’m currently working on <strong>FinTech (Blockchain & Privacy Engineering)</strong> and <strong>Algorithmic
-  Trading</strong>
-- 🌱 I’m currently learning <strong>TensorFlow</strong> and <strong>Python</strong>
-- 🤔 My research interests are with <strong>Blockchain Systems, Natural Language Processing</strong>, etc.
-- 🔍 I’m looking to collaborate on <strong>Machine Learning Projects</strong>
-- 💬 Ask me about <strong>Image Classification, Fully Homomorphic Encryption, Blockchain in Trade Finance, VCS and
-  Personal Branding</strong>
-- 👀 See my [Personal Portfolio](https://www.billpwchan.com) to get more info.
+## Features
 
-### Tools I work upon : 🛠
+- Developed based on FutoOpenD and FutuOpenAPI
+- Low-latency Trading Support (up to 1M level)
 
-<img src="https://img.shields.io/badge/Java%20-%23E00033.svg?&style=for-the-badge&logo=java&logoColor=white">   <img src="https://img.shields.io/badge/python%20-%2314354C.svg?&style=for-the-badge&logo=python&logoColor=white">   <img src="https://img.shields.io/badge/c++%20-%2300599C.svg?&style=for-the-badge&logo=c%2B%2B&logoColor=white">   <img src="https://img.shields.io/badge/javascript%20-%23323330.svg?&style=for-the-badge&logo=javascript&logoColor=%23F7DF1E">   <img src="https://img.shields.io/badge/PHP%20-%23777BB4.svg?&style=for-the-badge&logo=php&logoColor=white">   <img src="https://img.shields.io/badge/Angular%20-%23DD0031.svg?&style=for-the-badge&logo=angular&logoColor=white">   
-<img src="https://img.shields.io/badge/tableau%20-%230D597F.svg?&style=for-the-badge&logo=tableau&logoColor=white">   <img src="https://img.shields.io/badge/tensorflow%20-%23FF6F00.svg?&style=for-the-badge&logo=tensorflow&logoColor=white">   <img src="https://img.shields.io/badge/neo4j%20-%23008CC1.svg?&style=for-the-badge&logo=neo4j&logoColor=white">   <img src="https://img.shields.io/badge/mongodb%20-%2347A248svg?&style=for-the-badge&logo=mongodb&logoColor=white">   <img src="https://img.shields.io/badge/git%20-%23F05032.svg?&style=for-the-badge&logo=git&logoColor=white"/>   <img src="http://img.shields.io/badge/-VS%20Code-000000?style=for-the-badge&logo=Visual-studio-code&logoColor=blue"> 
+## Issues
 
-### GitHub Highlights:
+- [x] ~~[ADX & RSI Trading Strategy Support](https://github.com/billpwchan/futu_algo/issues/1)~~
 
-<a href="">
-  <img align="center" src="https://github-readme-stats.vercel.app/api?username=billpwchan&show_icons=true&count_private=true&hide=stars&include_all_commits=true&theme=material-palenight" />
-</a>
-<a href="">
-  <img align="center" src="https://github-readme-stats.vercel.app/api/top-langs/?username=billpwchan&langs_count=6&layout=compact&theme=material-palenight" />
-</a>
+## Releases
+
+**Important:** all the 2.x releases are deployed to npm and can be used via jsdeliver:
+
+- particular release,
+  e.g. `v2.0.0-alpha.15`: https://cdn.jsdelivr.net/npm/redoc@2.0.0-alpha.17/bundles/redoc.standalone.js
+- `next` release: https://cdn.jsdelivr.net/npm/redoc@next/bundles/redoc.standalone.js
+
+Additionally, all the 1.x releases are hosted on our GitHub Pages-based CDN **(deprecated)**:
+
+- particular release, e.g. `v1.2.0`: https://rebilly.github.io/ReDoc/releases/v1.2.0/redoc.min.js
+- `v1.x.x` release: https://rebilly.github.io/ReDoc/releases/v1.x.x/redoc.min.js
+- `latest` release: https://rebilly.github.io/ReDoc/releases/latest/redoc.min.js - it will point to latest 1.x.x release
+  since 2.x releases are not hosted on this CDN but on unpkg.
+
+## Version Guidance
+
+| ReDoc Release | Futu OpenAPI Specification |
+|:--------------|:---------------------------|
+| 0.0.1-alpha.x | 4.0                  |
+
+## Deployment
+
+### Pre-Requisite: Configuration File (Config.ini)
+
+```ini
+[FutuOpenD.Config]
+Host = <OpenD Host>
+Port = <OpenD Port>
+WebSocketPort = <OpenD WebSocketPort>
+WebSocketKey = <OpenD WebSocketKey>
+TrdEnv : <SIMULATE or REAL>
+
+[FutuOpenD.Credential]
+Username : <Futu Login Username>
+Password_md5 : <Futu Login Password Md5 Value>
+
+[FutuOpenD.DataFormat]
+HistoryDataFormat : ["code","time_key","open","close","high","low","pe_ratio","turnover_rate","volume","turnover","change_rate","last_close"]
+SubscribedDataFormat : None
+
+[Database]
+Database_path : <Your SQLite Database File Path>
+```
+
+**IMPORTANT NOTE:** The format may be changed in later commits. Please refer to this README if exception is raised.
+
+### 1. Install Dependencies
+
+Install using [pip](https://pypi.org/project/pip/):
+
+    pip install -r requirements.txt
+
+or using [conda](https://docs.conda.io/en/latest/):
+
+    conda install --file requirements. txt
+
+### 2. Install FutuOpenD
+
+For **Windows/MacOS/CentOS/Ubuntu**:
+
+https://www.futunn.com/download/OpenAPI
+
+### 3. Download Data (e.g. 1M Data for max. 2 Years)
+
+For **Windows**:
+
+    python main.py -u
+
+For **MacOS/Linux**:
+
+    python3 main.py -u
+
+### 4. Enjoy :smile:
+
+## Common Examples
+
+Update all `K_1M` and `K_DAY` interval historical K-line data
+
+    python main.py -u   /   python main.py --update
+
+**IMPORTANT NOTE:** This will not override existing historical data if the file exists.
+
+If you want to refresh all data, use the following command instead (WITH CAUTION!)
+
+    python main.py -fu  /   python main.py --force_update
+
+Store all data from CSV to SQLite Database
+
+    python main.py -d   /   python main.py --database
+
+Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
+
+    python main.py -s MACD_Cross    /   python main.py --strategy MACD_Cross
+
+-----------
+
+## Contributor
+
+[Bill Chan -- Main Developer](https://github.com/billpwchan/)
