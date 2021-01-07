@@ -4,12 +4,9 @@
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import time
 
-import pandas as pd
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus
 
 import logger
-
-pd.set_option('display.max_colwidth', -1)
 
 
 class TradingUtil:

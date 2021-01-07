@@ -3,10 +3,16 @@
 #   Proprietary and confidential
 #   Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
+import argparse
 import glob
 
 import trading_engine
+from strategies.EMA_Ribbon import EMARibbon
+from strategies.KDJ_Cross import KDJCross
 from strategies.KDJ_MACD_Close import KDJMACDClose
+from strategies.MACD_Cross import MACDCross
+from strategies.RSI_Threshold import RSIThreshold
+from strategies.Strategies import Strategies
 
 
 def daily_update_data(futu_trade, force_update: bool = False):
@@ -28,20 +34,45 @@ def daily_update_stocks():
     trading_engine.update_customized_stocks()
 
 
-def init_day_trading(futu_trade, stock_list):
+def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
+    switcher = {
+        'EMA_Ribbon': EMARibbon(input_data=input_data),
+        'KDJ_Cross': KDJCross(input_data=input_data),
+        'KDJ_MACD_Close': KDJMACDClose(input_data=input_data),
+        'MACD_Cross': MACDCross(input_data=input_data),
+        'RSI_Threshold': RSIThreshold(input_data=input_data)
+    }
+    # Default return simplest MACD Cross Strategy
+    return switcher.get(strategy_name, MACDCross(input_data=input_data))
+
+
+def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
     input_data = futu_trade.get_data_realtime(stock_list, kline_num=100)
-    kdj_macd_close = KDJMACDClose(input_data=input_data)
-    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=kdj_macd_close, timeout=3600 * 12)
+    strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
+    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12)
 
 
 def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
-    # Daily Update Data
-    daily_update_data(futu_trade=futu_trade, force_update=False)
 
-    # Update ALl Data to Database
-    futu_trade.store_all_data_database()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-u", "--update", help="Daily Update Data (Execute Before Market Starts)",
+                        action="store_true")
+    parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
+
+    # Retrieve file names for all strategies as the argument option
+    strategy_list = [file_name.split("\\")[1][:-3] for file_name in glob.glob(f"./strategies/*.py") if
+                     "__init__" not in file_name and "Strategies" not in file_name]
+    parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
+                        help="Execute HFT using Pre-defined Strategy")
+    args = parser.parse_args()
+    if args.update:
+        # Daily Update Data
+        daily_update_data(futu_trade=futu_trade, force_update=False)
+    if args.database:
+        # Update ALl Data to Database
+        futu_trade.store_all_data_database()
 
     # Initialize Strategies
     stock_list = ["HK.00001", "HK.00002", "HK.00003", "HK.00005", "HK.00006", "HK.00011", "HK.00012", "HK.00016",
