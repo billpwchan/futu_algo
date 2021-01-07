@@ -85,7 +85,7 @@ For **MacOS/Linux**:
 
 ### 4. Enjoy :smile:
 
-## Common Examples
+## Usages
 
 Update all `K_1M` and `K_DAY` interval historical K-line data
 
