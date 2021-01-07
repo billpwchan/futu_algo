@@ -89,8 +89,8 @@ class RSIThreshold(Strategies):
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
     def buy(self, stock_code) -> bool:
-        current_record = self.input_data[stock_code].iloc[-1]
-        last_record = self.input_data[stock_code].iloc[-2]
+        current_record = self.input_data[stock_code].iloc[-2]
+        last_record = self.input_data[stock_code].iloc[-3]
         # Buy Decision based on RSI值超过了超卖线
         buy_decision = current_record['rsi_1'] < self.LOWER_RSI < last_record['rsi_1']
 
@@ -101,9 +101,8 @@ class RSIThreshold(Strategies):
         return buy_decision
 
     def sell(self, stock_code) -> bool:
-
-        current_record = self.input_data[stock_code].iloc[-1]
-        last_record = self.input_data[stock_code].iloc[-2]
+        current_record = self.input_data[stock_code].iloc[-2]
+        last_record = self.input_data[stock_code].iloc[-3]
         # Sell Decision based on RSI值超过了超买线
         sell_decision = current_record['rsi_1'] > self.UPPER_RSI > last_record['rsi_1']
 

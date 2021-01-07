@@ -93,7 +93,6 @@ class KDJMACDClose(Strategies):
             self.input_data[stock_code].reset_index(drop=True, inplace=True)
 
     def buy(self, stock_code) -> bool:
-
         current_record = self.input_data[stock_code].iloc[-2]
         last_record = self.input_data[stock_code].iloc[-3]
         # Buy Decision based on K crossover D, MACD > 0 and Close > Previous 6 High

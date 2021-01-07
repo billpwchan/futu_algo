@@ -181,14 +181,14 @@ class FutuTrade:
         file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Processing: {input_file}')
+            self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_1M)
             self.futu_data.commit()
 
         file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Processing: {input_file}')
+            self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_DAY)
             self.futu_data.commit()
 
