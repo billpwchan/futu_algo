@@ -85,7 +85,7 @@ class FutuTrade:
         if os.path.exists(output_path) and not force_update and (
                 (start_date != datetime.today().date() and k_type == KLType.K_1M) or
                 (start_date.year != datetime.today().date().year and (
-                        k_type == KLType.K_DAY or K_type == KLType.K_WEEK))
+                        k_type == KLType.K_DAY or k_type == KLType.K_WEEK))
         ):
             return False
 
@@ -114,6 +114,7 @@ class FutuTrade:
             self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
                                           row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
                                           row['turnover'], row['change_rate'], row['last_close'], k_type)
+        self.futu_data.commit()
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -165,7 +166,7 @@ class FutuTrade:
             if not self.__save_historical_data(stock_code=stock_code, start_date=day.date(), end_date=day.date(),
                                                k_type=KLType.K_1M, force_update=force_update):
                 continue
-            time.sleep(0.7)
+            time.sleep(0.6)
 
     def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
                        k_type: KLType = KLType.K_DAY) -> None:
@@ -174,14 +175,14 @@ class FutuTrade:
         :param force_update:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 10 years
-        :param k_type: Futu K Line Type (KLTYPE)
+        :param k_type: Futu K-Line Type
         """
         for i in range(0, round(years + 1)):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
                                                k_type=k_type, force_update=force_update):
                 continue
-            time.sleep(0.7)
+            time.sleep(0.6)
 
     def store_all_data_database(self):
         file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
@@ -189,14 +190,12 @@ class FutuTrade:
             input_csv = pd.read_csv(input_file, index_col=None)
             self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_1M)
-            self.futu_data.commit()
 
         file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)
             self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_DAY)
-            self.futu_data.commit()
 
     def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """

@@ -37,18 +37,18 @@ def daily_update_stocks():
 
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
     switcher = {
-        'EMA_Ribbon': EMARibbon(input_data=input_data),
-        'KDJ_Cross': KDJCross(input_data=input_data),
-        'KDJ_MACD_Close': KDJMACDClose(input_data=input_data),
-        'MACD_Cross': MACDCross(input_data=input_data),
-        'RSI_Threshold': RSIThreshold(input_data=input_data)
+        'EMA_Ribbon': EMARibbon(input_data=input_data.copy()),
+        'KDJ_Cross': KDJCross(input_data=input_data.copy()),
+        'KDJ_MACD_Close': KDJMACDClose(input_data=input_data.copy()),
+        'MACD_Cross': MACDCross(input_data=input_data.copy()),
+        'RSI_Threshold': RSIThreshold(input_data=input_data.copy())
     }
     # Default return simplest MACD Cross Strategy
     return switcher.get(strategy_name, MACDCross(input_data=input_data))
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
-    input_data = futu_trade.get_data_realtime(stock_list, kline_num=100)
+    input_data = futu_trade.get_data_realtime(stock_list, sub_type=KLType.K_1M, kline_num=100)
     strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
     futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12)
 
