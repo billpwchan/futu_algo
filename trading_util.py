@@ -3,7 +3,6 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-import time
 
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus
 
@@ -26,7 +25,8 @@ class TradingUtil:
                                                                      refresh_cache=False)
         if ret_code != RET_OK:
             self.default_logger.error(f"Cannot acquire account position {position_data}")
-            raise Exception('账户信息获取失败: {}'.format(position_data))
+            return
+            # raise Exception('账户信息获取失败: {}'.format(position_data))
         if not position_data.empty:
             self.default_logger.warn(f"Account holds any position for stock {stock_code}")
             return
@@ -34,7 +34,8 @@ class TradingUtil:
         ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
         if ret_code != RET_OK:
             self.default_logger.error(f"Cannot acquire market snapshot {market_data}")
-            raise Exception('市场快照数据获取异常 {}'.format(market_data))
+            return
+            # raise Exception('市场快照数据获取异常 {}'.format(market_data))
         cur_price = market_data.iloc[0]['last_price']
         lot_size = market_data.iloc[0]['lot_size']
 
@@ -52,14 +53,15 @@ class TradingUtil:
                                                                     acc_id=0, acc_index=0, refresh_cache=False)
         if ret_code != RET_OK:
             self.default_logger.error(f"Cannot acquire order list {order_list_data}")
-            raise Exception('今日订单列表获取异常 {}'.format(market_data))
+            return
+            # raise Exception('今日订单列表获取异常 {}'.format(market_data))
         if not order_list_data.empty and all(record == TrdSide.BUY for record in order_list_data['trd_side'].tolist()):
             self.default_logger.info(
                 f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
             return
 
         # Place Buy Order with Current Price & 1 lot_size
-        for i in range(3):
+        for i in range(2):
             ret_code, ret_data = self.trade_ctx.place_order(
                 price=cur_price,
                 qty=lot_size,
@@ -73,7 +75,6 @@ class TradingUtil:
                 break
             else:
                 self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
-                time.sleep(1)
 
     def place_sell_order(self, stock_code):
         ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
@@ -82,7 +83,8 @@ class TradingUtil:
                                                                      refresh_cache=False)
         if ret_code != RET_OK:
             self.default_logger.error(f"Cannot acquire account position {position_data}")
-            raise Exception('账户信息获取失败: {}'.format(position_data))
+            return
+            # raise Exception('账户信息获取失败: {}'.format(position_data))
         if position_data.empty:
             self.default_logger.warn(f"Account does not hold any position for stock {stock_code}")
             return
@@ -95,7 +97,8 @@ class TradingUtil:
             ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire market snapshot {market_data}")
-                raise Exception('市场快照数据获取异常 {}'.format(market_data))
+                return
+                # raise Exception('市场快照数据获取异常 {}'.format(market_data))
             cur_price = market_data.iloc[0]['last_price']
             lot_size = market_data.iloc[0]['lot_size']
             if can_sell_qty > lot_size:
@@ -116,7 +119,8 @@ class TradingUtil:
                                                                         acc_id=0, acc_index=0, refresh_cache=False)
             if ret_code != RET_OK:
                 self.default_logger.error(f"Cannot acquire order list {order_list_data}")
-                raise Exception('今日订单列表获取异常 {}'.format(market_data))
+                return
+                # raise Exception('今日订单列表获取异常 {}'.format(market_data))
             if not order_list_data.empty and all(
                     record == TrdSide.SELL for record in order_list_data['trd_side'].tolist()):
                 self.default_logger.info(
@@ -124,7 +128,7 @@ class TradingUtil:
                 return
 
             # Place Sell Order with current price and 1 lot size
-            for i in range(3):
+            for i in range(2):
                 ret_code, ret_data = self.trade_ctx.place_order(
                     price=cur_price,
                     qty=can_sell_qty,
@@ -139,4 +143,3 @@ class TradingUtil:
                     break
                 else:
                     self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
-                    time.sleep(1)
