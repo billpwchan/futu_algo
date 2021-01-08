@@ -75,14 +75,17 @@ class FutuTrade:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.strftime("%Y-%m-%d")}_1M.csv'
         elif k_type == KLType.K_DAY:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
+        elif k_type == KLType.K_WEEK:
+            output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1W.csv'
         else:
             self.default_logger.error(f'Unsupported KLType. Please try it later.')
             return False
 
         # Ensure update current day's 1M data & current year's 1D data
         if os.path.exists(output_path) and not force_update and (
-                (start_date != datetime.today().date() and k_type == KLType.K_1M) or (
-                start_date.year != datetime.today().date().year and k_type == KLType.K_DAY)
+                (start_date != datetime.today().date() and k_type == KLType.K_1M) or
+                (start_date.year != datetime.today().date().year and (
+                        k_type == KLType.K_DAY or K_type == KLType.K_WEEK))
         ):
             return False
 
@@ -164,17 +167,19 @@ class FutuTrade:
                 continue
             time.sleep(0.7)
 
-    def update_1D_data(self, stock_code: str, years=10, force_update: bool = False) -> None:
+    def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
+                       k_type: KLType = KLType.K_DAY) -> None:
         """
             Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
         :param force_update:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 10 years
+        :param k_type: Futu K Line Type (KLTYPE)
         """
         for i in range(0, round(years + 1)):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
-                                               k_type=KLType.K_DAY, force_update=force_update):
+                                               k_type=k_type, force_update=force_update):
                 continue
             time.sleep(0.7)
 

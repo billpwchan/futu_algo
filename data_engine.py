@@ -20,20 +20,20 @@ class DatabaseInterface:
     def commit(self):
         self.conn.commit()
 
-    def check_stock_data_exist(self, code, time_key, kl_type):
-        self.cur.execute('SELECT * FROM stock_data WHERE (code=? AND time_key=? AND kl_type=?)',
-                         (code, time_key, kl_type))
+    def check_stock_data_exist(self, code, time_key, k_type):
+        self.cur.execute('SELECT * FROM stock_data WHERE (code=? AND time_key=? AND k_type=?)',
+                         (code, time_key, k_type))
         entry = self.cur.fetchone()
         return entry is None
 
     def add_stock_data(self, code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover,
-                       change_rate, last_close, kl_type):
-        # if self.check_stock_data_exist(code, time_key, kl_type):
+                       change_rate, last_close, k_type):
+        # if self.check_stock_data_exist(code, time_key, k_type):
         return self.execute(
             "INSERT OR IGNORE INTO stock_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (None, code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover, change_rate,
              last_close,
-             kl_type)
+             k_type)
         )
 
     def add_stock_data_bulk(self, to_db):

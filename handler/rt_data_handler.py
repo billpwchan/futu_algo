@@ -10,9 +10,9 @@ import json
 from futu import RTDataHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
 
 import logger
-from handler.trading_util import TradingUtil
 from strategies.MACD_Cross import MACDCross
 from strategies.Strategies import Strategies
+from trading_util import TradingUtil
 
 
 class RTDataHandler(RTDataHandlerBase):

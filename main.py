@@ -7,6 +7,8 @@
 import argparse
 import glob
 
+from futu import KLType
+
 import trading_engine
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
@@ -22,11 +24,9 @@ def daily_update_data(futu_trade, force_update: bool = False):
     hsi_constituents = trading_engine.get_hsi_constituents(file_list[0])
     file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
     customized_stocks = trading_engine.get_customized_stocks(file_list[0])
-    for stock_code in hsi_constituents:
-        futu_trade.update_1D_data(stock_code, force_update=force_update)
-        futu_trade.update_1M_data(stock_code, force_update=force_update)
-    for stock_code in customized_stocks:
-        futu_trade.update_1D_data(stock_code, force_update=force_update)
+    for stock_code in list(set(hsi_constituents + customized_stocks)):
+        futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
+        futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update)
 
 
