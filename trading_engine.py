@@ -197,6 +197,12 @@ class FutuTrade:
             self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_DAY)
 
+        file_list = glob.glob(f"./data/*/*_1W.csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            self.default_logger.info(f'Saving to Database: {input_file}')
+            self.__store_data_database(input_csv, k_type=KLType.K_WEEK)
+
     def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
         实时报价回调，异步处理已订阅股票的实时报价推送。
@@ -211,7 +217,7 @@ class FutuTrade:
         handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
                                     strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时报价回调
-        self.quote_ctx.subscribe(stock_list, [SubType.QUOTE], is_first_push=True,
+        self.quote_ctx.subscribe(stock_list, [SubType.QUOTE, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
                                  subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)
 
@@ -229,7 +235,7 @@ class FutuTrade:
         handler = RTDataHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
                                 strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
-        self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA], is_first_push=True,
+        self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
                                  subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)
 
@@ -247,7 +253,7 @@ class FutuTrade:
         handler = CurKlineHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
                                   strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
-        self.quote_ctx.subscribe(stock_list, [SubType.K_1M], is_first_push=True,
+        self.quote_ctx.subscribe(stock_list, [SubType.K_1M, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
                                  subscribe_push=True)  # 订阅K线数据类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)
 

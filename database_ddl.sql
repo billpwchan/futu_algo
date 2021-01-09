@@ -6,14 +6,13 @@
  * Written by Bill Chan <billpwchan@hotmail.com>, 2021
  */
 
--- we don't know how to generate root <with-no-name> (class Root) :(
 create table stock_data
 (
     id               integer not null
-		constraint stock_data_pk
-			primary key autoincrement,
-    code             text not null,
-    time_key         text not null,
+        constraint stock_data_pk
+            primary key autoincrement,
+    code             text    not null,
+    time_key         text    not null,
     open_price       real,
     close_price      real,
     high_price       real,
