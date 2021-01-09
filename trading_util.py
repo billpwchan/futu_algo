@@ -39,11 +39,11 @@ class TradingUtil:
         cur_price = market_data.iloc[0]['last_price']
         lot_size = market_data.iloc[0]['lot_size']
 
-        ret_code, order_data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
-        if ret_code != RET_OK:
-            self.default_logger.error("can't get orderbook, retrying:{}".format(order_data))
-
-        cur_price = order_data['Bid'][0][0]  # 取得买一价
+        # ret_code, order_data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
+        # if ret_code != RET_OK:
+        #     self.default_logger.error("can't get orderbook, retrying:{}".format(order_data))
+        #
+        # cur_price = order_data['Bid'][0][0]  # 取得买一价
 
         # Check if an order has already been made but not filled_completely
         ret_code, order_list_data = self.trade_ctx.order_list_query(order_id="",

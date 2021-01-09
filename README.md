@@ -41,18 +41,18 @@ Host = <OpenD Host>
 Port = <OpenD Port>
 WebSocketPort = <OpenD WebSocketPort>
 WebSocketKey = <OpenD WebSocketKey>
-TrdEnv : <SIMULATE or REAL>
+TrdEnv = <SIMULATE or REAL>
 
 [FutuOpenD.Credential]
-Username : <Futu Login Username>
-Password_md5 : <Futu Login Password Md5 Value>
+Username = <Futu Login Username>
+Password_md5 = <Futu Login Password Md5 Value>
 
 [FutuOpenD.DataFormat]
-HistoryDataFormat : ["code","time_key","open","close","high","low","pe_ratio","turnover_rate","volume","turnover","change_rate","last_close"]
-SubscribedDataFormat : None
+HistoryDataFormat = ["code","time_key","open","close","high","low","pe_ratio","turnover_rate","volume","turnover","change_rate","last_close"]
+SubscribedDataFormat = None
 
 [Database]
-Database_path : <Your SQLite Database File Path>
+Database_path = <Your SQLite Database File Path>
 ```
 
 **IMPORTANT NOTE:** The format may be changed in later commits. Please refer to this README if exception is raised.
