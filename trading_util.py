@@ -3,6 +3,7 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
+import time
 
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus, ModifyOrderOp
 
@@ -174,3 +175,41 @@ class TradingUtil:
                     break
                 else:
                     self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+
+    def close_all_positions(self):
+        ret_code, position_data = self.trade_ctx.position_list_query(code='', pl_ratio_min=None,
+                                                                     pl_ratio_max=None,
+                                                                     trd_env=self.trd_env, acc_id=0, acc_index=0,
+                                                                     refresh_cache=False)
+        if ret_code != RET_OK:
+            self.default_logger.error(f"Cannot acquire account position {position_data}")
+            return
+
+        for index, row in position_data.iterrows():
+            can_sell_qty = int(row['can_sell_qty'])
+            if can_sell_qty == 0:
+                continue
+            stock_code = row['code']
+
+            # Get Current Market Price
+            ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
+            if ret_code != RET_OK:
+                self.default_logger.error(f"Cannot acquire market snapshot {market_data}")
+                return
+                # raise Exception('市场快照数据获取异常 {}'.format(market_data))
+            cur_price = market_data.iloc[0]['last_price']
+
+            ret_code, ret_data = self.trade_ctx.place_order(
+                price=cur_price,
+                qty=can_sell_qty,
+                code=stock_code,
+                trd_side=TrdSide.SELL,
+                order_type=OrderType.NORMAL,
+                trd_env=self.trd_env)
+            if ret_code == RET_OK:
+                self.default_logger.info(
+                    'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
+                                                                                can_sell_qty))
+            else:
+                self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
+            time.sleep(2)

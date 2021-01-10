@@ -16,6 +16,7 @@ from strategies.KDJ_MACD_Close import KDJMACDClose
 from strategies.MACD_Cross import MACDCross
 from strategies.RSI_Threshold import RSIThreshold
 from strategies.Strategies import Strategies
+from trading_util import TradingUtil
 
 
 def daily_update_data(futu_trade, force_update: bool = False):
@@ -89,6 +90,9 @@ def main():
         # stock_list = list(set(hsi_constituents + customized_stocks))
         stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
+
+    trd = TradingUtil(futu_trade.quote_ctx, futu_trade.trade_ctx, futu_trade.trd_env)
+    trd.close_all_positions()
 
     futu_trade.display_quota()
 
