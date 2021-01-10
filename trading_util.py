@@ -4,7 +4,7 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus
+from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus, ModifyOrderOp
 
 import logger
 
@@ -28,7 +28,7 @@ class TradingUtil:
             return
             # raise Exception('账户信息获取失败: {}'.format(position_data))
         if not position_data.empty:
-            self.default_logger.warn(f"Account holds any position for stock {stock_code}")
+            self.default_logger.warn(f"Account holds position for stock {stock_code}")
             return
 
         ret_code, market_data = self.quote_ctx.get_market_snapshot([stock_code])
@@ -39,11 +39,13 @@ class TradingUtil:
         cur_price = market_data.iloc[0]['last_price']
         lot_size = market_data.iloc[0]['lot_size']
 
-        # ret_code, order_data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
-        # if ret_code != RET_OK:
-        #     self.default_logger.error("can't get orderbook, retrying:{}".format(order_data))
-        #
-        # cur_price = order_data['Bid'][0][0]  # 取得买一价
+        ret_code, order_data = self.quote_ctx.get_order_book(stock_code)  # 获取摆盘
+        if ret_code != RET_OK:
+            self.default_logger.error("can't get orderbook, retrying:{}".format(order_data))
+            return
+            # raise Exception('摆盘数据获取异常 {}'.format(order_data))
+
+        cur_price = order_data['Bid'][0][0]  # 取得买一价
 
         # Check if an order has already been made but not filled_completely
         ret_code, order_list_data = self.trade_ctx.order_list_query(order_id="",
@@ -55,10 +57,16 @@ class TradingUtil:
             self.default_logger.error(f"Cannot acquire order list {order_list_data}")
             return
             # raise Exception('今日订单列表获取异常 {}'.format(market_data))
-        if not order_list_data.empty and all(record == TrdSide.BUY for record in order_list_data['trd_side'].tolist()):
+        if not order_list_data.empty and any(record == TrdSide.BUY for record in order_list_data['trd_side'].tolist()):
             self.default_logger.info(
                 f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
             return
+        if not order_list_data.empty and any(record == TrdSide.SELL for record in order_list_data['trd_side'].tolist()):
+            self.default_logger.info(
+                f"Detected unfilled sell order for {stock_code}, withdrawal based on new Buy Decision")
+            # Iterate all unfilled Sell order
+            for index, row in order_list_data['order_id'].iterrows():
+                self.trade_ctx.modify_order(ModifyOrderOp.CANCEL, row['order_id'], 0, 0)
 
         # Place Buy Order with Current Price & 1 lot_size
         for i in range(2):
