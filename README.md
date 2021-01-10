@@ -27,9 +27,9 @@
 
 ## Version Guidance
 
-| ReDoc Release | Futu OpenAPI Specification |
-|:--------------|:---------------------------|
-| 0.0.1-alpha.x | 4.0                  |
+| FutuAlgo Release | Futu OpenAPI Specification |
+|:-----------------|:---------------------------|
+| 0.0.1-alpha.x    | 4.0                        |
 
 ## Deployment
 

@@ -86,7 +86,8 @@ def main():
         hsi_constituents = trading_engine.get_hsi_constituents(file_list[0])
         file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
         customized_stocks = trading_engine.get_customized_stocks(file_list[0])
-        stock_list = list(set(hsi_constituents + customized_stocks))
+        # stock_list = list(set(hsi_constituents + customized_stocks))
+        stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
 
     futu_trade.display_quota()
