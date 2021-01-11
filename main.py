@@ -92,6 +92,7 @@ def main():
         init_day_trading(futu_trade, stock_list, args.strategy)
 
     trd = TradingUtil(futu_trade.quote_ctx, futu_trade.trade_ctx, futu_trade.trd_env)
+    # trd.cancel_all_unfilled_orders()
     trd.close_all_positions()
 
     futu_trade.display_quota()
