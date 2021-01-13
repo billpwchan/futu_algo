@@ -154,6 +154,9 @@ class FutuTrade:
         for stock_code in stock_list:
             input_path = f'./data/{stock_code}/{stock_code}_{str(target_date)}_1M.csv'
             input_csv = pd.read_csv(input_path, index_col=None)
+            # Non-Trading Day -> Skip
+            if input_csv.empty:
+                continue
             # Define Function List
             agg_list = {
                 "code": "first",
@@ -169,17 +172,21 @@ class FutuTrade:
             # Group from 09:31:00 with Freq = 5 Min
             minute_df = input_csv.groupby(pd.Grouper(freq=f'{custom_interval}Min', closed='left', offset='1min')).agg(
                 agg_list)[1:]
-            minute_df.index = minute_df.index + pd.Timedelta(minutes=4)
+            # For 1min -> 5min, need to add Timedelta of 4min
+            minute_df.index = minute_df.index + pd.Timedelta(minutes={custom_interval - 1})
+            # Drop Lunch Time
             minute_df.dropna(inplace=True)
 
-            # Update First Row (Special Cases)
-            minute_df.iloc[0] = input_csv.iloc[:6].groupby(pd.Grouper(freq='6Min', closed='left')).agg(agg_list).iloc[0]
+            # Update First Row (Special Cases) e.g. For 1min -> 5min, need to use the first 6min Rows of data
+            minute_df.iloc[0] = \
+                input_csv.iloc[:6].groupby(pd.Grouper(freq=f'{custom_interval + 1}Min', closed='left')).agg(
+                    agg_list).iloc[0]
 
             # Update Last Close Price
             minute_df['change_rate'] = 0
-            minute_df['last_close'] = data['last_close'][0]
+            minute_df['last_close'] = input_csv['last_close'][0]
 
-            # Chagne Rate = (Close Price - Last Close Price) / Last Close Price * 100
+            # Change Rate = (Close Price - Last Close Price) / Last Close Price * 100
             # Last Close = Previous Close Price
             last_index = minute_df.index[0]
             for index, row in minute_df[1:].iterrows():
@@ -191,10 +198,10 @@ class FutuTrade:
 
             minute_df.reset_index(inplace=True)
 
-            column_names = ["code", "time_key", "open", "close", "high", "low", "pe_ratio", "turnover_rate", "volume",
-                            "turnover", "change_rate", "last_close"]
-
+            column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
             minute_df = minute_df.reindex(columns=column_names)
+            input_data[stock_code] = input_data.get(stock_code, minute_df)
+        return input_data
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000):
         input_data = {}

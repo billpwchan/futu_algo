@@ -90,6 +90,8 @@ def main():
         stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
 
+    futu_trade.get_custom_interval_data()
+
     futu_trade.display_quota()
 
 
