@@ -46,7 +46,7 @@ class TradingUtil:
             # raise Exception('今日订单列表获取异常 {}'.format(market_data))
 
         # If Unfilled BUY ORDER is detected, no need to issue another BUY ORDER
-        if not order_list_data.empty and any(
+        if not order_list_data.empty and all(
                 record == TrdSide.BUY for record in order_list_data['trd_side'].tolist()):
             self.default_logger.info(
                 f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")
@@ -122,7 +122,7 @@ class TradingUtil:
             # raise Exception('今日订单列表获取异常 {}'.format(market_data))
 
         # If Unfilled SELL ORDER is detected, no need to issue another SELL ORDER
-        if not order_list_data.empty and any(
+        if not order_list_data.empty and all(
                 record == TrdSide.SELL for record in order_list_data['trd_side'].tolist()):
             self.default_logger.info(
                 f"Order already sent but not filled yet for {stock_code} with details \n {order_list_data}")

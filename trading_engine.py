@@ -119,7 +119,7 @@ class FutuTrade:
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
 
-    def get_1M_data(self, stock_list: list):
+    def get_1M_data(self, stock_list: list) -> dict:
         """
             Get 1M Data from CSV based on Stock List. Returned in Dict format
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
@@ -141,6 +141,13 @@ class FutuTrade:
             self.default_logger.info(f'Get {output_path} Success from Stock List Success.')
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
+
+    def get_custom_interval_data(self, stock_list: list) -> dict:
+        """
+            Get 5M/15M/Other Customized-Interval Data from CSV based on Stock List. Returned in Dict format
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        """
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000):
         input_data = {}
