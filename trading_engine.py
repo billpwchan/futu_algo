@@ -182,16 +182,17 @@ class FutuTrade:
 
             # Update First Row (Special Cases) e.g. For 1min -> 5min, need to use the first 6min Rows of data
             minute_df.iloc[0] = \
-                input_csv.iloc[:6].groupby(pd.Grouper(freq=f'{custom_interval + 1}Min', closed='left')).agg(
-                    agg_list).iloc[0]
+                input_csv.iloc[:(custom_interval + 1)].groupby('code').agg(agg_list).iloc[0]
 
             # Update Last Close Price
+            last_index = minute_df.index[0]
             minute_df['change_rate'] = 0
             minute_df['last_close'] = input_csv['last_close'][0]
+            minute_df.loc[last_index, 'change_rate'] = 100 * (float(minute_df.loc[last_index, 'close']) - float(
+                minute_df.loc[last_index, 'last_close'])) / float(minute_df.loc[last_index, 'last_close'])
 
             # Change Rate = (Close Price - Last Close Price) / Last Close Price * 100
             # Last Close = Previous Close Price
-            last_index = minute_df.index[0]
             for index, row in minute_df[1:].iterrows():
                 minute_df.loc[index, 'last_close'] = minute_df.loc[last_index, 'close']
                 minute_df.loc[index, 'change_rate'] = 100 * (

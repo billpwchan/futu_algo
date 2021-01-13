@@ -6,7 +6,6 @@
 
 import argparse
 import glob
-from datetime import date
 
 from futu import KLType
 
@@ -91,9 +90,9 @@ def main():
         stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    data = futu_trade.get_custom_interval_data(target_date=date(2019, 10, 15), custom_interval=5,
-                                               stock_list=['HK.00001'])
-    print(data)
+    # data = futu_trade.get_custom_interval_data(target_date=date(2019, 10, 15), custom_interval=15,
+    #                                            stock_list=['HK.00001'])
+
     futu_trade.display_quota()
 
 
