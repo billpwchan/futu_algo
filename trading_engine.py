@@ -136,18 +136,65 @@ class FutuTrade:
                         f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
                 delta += 1
 
-            output_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
-            input_csv = pd.read_csv(output_path, index_col=None)
-            self.default_logger.info(f'Get {output_path} Success from Stock List Success.')
+            input_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
+            input_csv = pd.read_csv(input_path, index_col=None)
+            self.default_logger.info(f'Get {input_path} Success from Stock List Success.')
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
-    def get_custom_interval_data(self, stock_list: list) -> dict:
+    def get_custom_interval_data(self, target_date: datetime, custom_interval: int, stock_list: list) -> dict:
         """
             Get 5M/15M/Other Customized-Interval Data from CSV based on Stock List. Returned in Dict format
+        :param target_date: Date in DateTime Format (YYYY-MM-DD)
+        :param custom_interval: Customized-Interval in unit of "Minutes"
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         """
+        input_data = {}
+        for stock_code in stock_list:
+            input_path = f'./data/{stock_code}/{stock_code}_{str(target_date)}_1M.csv'
+            input_csv = pd.read_csv(input_path, index_col=None)
+            # Define Function List
+            agg_list = {
+                "code": "first",
+                "open": "first",
+                "close": "last",
+                "high": "max",
+                "low": "min",
+                "pe_ratio": "last",
+                "turnover_rate": "sum",
+                "volume": "sum",
+                "turnover": "sum",
+            }
+            # Group from 09:31:00 with Freq = 5 Min
+            minute_df = input_csv.groupby(pd.Grouper(freq=f'{custom_interval}Min', closed='left', offset='1min')).agg(
+                agg_list)[1:]
+            minute_df.index = minute_df.index + pd.Timedelta(minutes=4)
+            minute_df.dropna(inplace=True)
+
+            # Update First Row (Special Cases)
+            minute_df.iloc[0] = input_csv.iloc[:6].groupby(pd.Grouper(freq='6Min', closed='left')).agg(agg_list).iloc[0]
+
+            # Update Last Close Price
+            minute_df['change_rate'] = 0
+            minute_df['last_close'] = data['last_close'][0]
+
+            # Chagne Rate = (Close Price - Last Close Price) / Last Close Price * 100
+            # Last Close = Previous Close Price
+            last_index = minute_df.index[0]
+            for index, row in minute_df[1:].iterrows():
+                minute_df.loc[index, 'last_close'] = minute_df.loc[last_index, 'close']
+                minute_df.loc[index, 'change_rate'] = 100 * (
+                        float(row['close']) - float(minute_df.loc[last_index, 'close'])) / float(
+                    minute_df.loc[last_index, 'close'])
+                last_index = index
+
+            minute_df.reset_index(inplace=True)
+
+            column_names = ["code", "time_key", "open", "close", "high", "low", "pe_ratio", "turnover_rate", "volume",
+                            "turnover", "change_rate", "last_close"]
+
+            minute_df = minute_df.reindex(columns=column_names)
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000):
         input_data = {}
