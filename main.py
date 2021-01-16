@@ -9,6 +9,7 @@ import glob
 
 from futu import KLType
 
+import data_engine
 import trading_engine
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
@@ -20,19 +21,12 @@ from strategies.Strategies import Strategies
 
 def daily_update_data(futu_trade, force_update: bool = False):
     # Daily Update HSI Constituents & Customized Stocks
-    file_list = glob.glob(f"./data/HSI.Constituents/HSI_constituents_*.json")
-    hsi_constituents = trading_engine.get_hsi_constituents(file_list[0])
-    file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
-    customized_stocks = trading_engine.get_customized_stocks(file_list[0])
-    for stock_code in list(set(hsi_constituents + customized_stocks)):
+    stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
+    print(stock_list)
+    for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update)
-
-
-def daily_update_stocks():
-    trading_engine.update_hsi_constituents()
-    trading_engine.update_customized_stocks()
 
 
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
@@ -90,8 +84,7 @@ def main():
         stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    # data = futu_trade.get_custom_interval_data(target_date=date(2019, 10, 15), custom_interval=15,
-    #                                            stock_list=['HK.00001'])
+    data_engine.HKEXInterface.get_security_list_full()
 
     futu_trade.display_quota()
 

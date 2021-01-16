@@ -4,9 +4,12 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
+import csv
 import sqlite3
 
+import openpyxl
 import pandas as pd
+import requests
 import yfinance as yf
 
 
@@ -29,6 +32,10 @@ class DatabaseInterface:
         entry = self.cur.fetchone()
         return entry is None
 
+    def get_stock_list(self) -> list:
+        self.cur.execute('SELECT DISTINCT code FROM stock_data')
+        return [item[0] for item in self.cur.fetchall()]
+
     def add_stock_data(self, code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover,
                        change_rate, last_close, k_type):
         # if self.check_stock_data_exist(code, time_key, k_type):
@@ -39,17 +46,17 @@ class DatabaseInterface:
              k_type)
         )
 
-    def add_stock_data_bulk(self, to_db):
-        self.cur.executemany("INSERT OR IGNORE INTO stock_data VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                             to_db)
-        self.conn.commit()
-
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
         self.conn.close()
 
 
 class YahooFinanceInterface:
+    @staticmethod
+    def get_top_30_hsi_constituents() -> list:
+        payload = pd.read_html('https://finance.yahoo.com/quote/%5EHSI/components/')[0]
+        return payload['Symbol'].tolist()
+
     @staticmethod
     def futu_code_to_yfinance_code(futu_code: str) -> str:
         """
@@ -80,7 +87,7 @@ class YahooFinanceInterface:
                 for stock_code in stock_list]
 
     @staticmethod
-    def update_stocks_info(stock_list: list) -> dict:
+    def get_stocks_info(stock_list: list) -> dict:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         return {stock_code: yf.Ticker(stock_code).info for stock_code in stock_list}
 
@@ -88,3 +95,31 @@ class YahooFinanceInterface:
     def get_stocks_history(stock_list: list) -> pd.DataFrame:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         return yf.download(stock_list, period="max", group_by="ticker", auto_adjust=True, actions=True)
+
+
+class HKEXInterface:
+
+    @staticmethod
+    def get_security_list_full() -> pd.DataFrame:
+        """
+            Get Full Security List from HKEX. Can Daily Update (Override)
+            URL: https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx
+        """
+        full_stock_list = "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx"
+        resp = requests.get(full_stock_list)
+        with open('./data/Stock_Pool/ListOfSecurities.xlsx', 'wb') as fp:
+            fp.write(resp.content)
+
+        wb = openpyxl.load_workbook('./data/Stock_Pool/ListOfSecurities.xlsx')
+        sh = wb.active
+        with open('./data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
+            c = csv.writer(f)
+            for r in sh.rows:
+                c.writerow([cell.value for cell in r])
+
+        input_csv = pd.read_csv('./data/Stock_Pool/ListOfSecurities.csv', index_col=None, skiprows=2,
+                                dtype={'Stock Code': str})
+        input_csv.dropna(subset=['Stock Code'], inplace=True)
+        input_csv.drop(input_csv.columns[-1], axis=1, inplace=True)
+        input_csv.set_index('Stock Code')
+        return input_csv

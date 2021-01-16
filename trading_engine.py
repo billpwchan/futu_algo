@@ -331,36 +331,3 @@ class FutuTrade:
         ret, data = self.quote_ctx.get_history_kl_quota(get_detail=True)
         if ret == RET_OK:
             self.default_logger.info(f'Historical K-line Quota: \n{data}')
-
-
-def update_hsi_constituents(input_path='./data/HSI.Constituents'):
-    file_list = glob.glob(f"{input_path}/*.xlsx")
-    hsi_constituents = []
-    for input_file in file_list:
-        hsi_constituents = pd.read_excel(input_file, index_col=0, engine='openpyxl')
-        hsi_constituents = hsi_constituents.iloc[1::2].index.tolist()
-        hsi_constituents = ['.'.join(item.split('.')[::-1]) for item in hsi_constituents]
-    with open(f'./data/HSI.Constituents/HSI_constituents_{datetime.today().date()}.json', 'w+') as file_obj:
-        json.dump(list(set(hsi_constituents)), file_obj)
-
-
-def update_customized_stocks(input_path='./data/Customized', input_list=None):
-    # Need to get existing stocks in the JSON and append it
-    file_list = glob.glob(f"{input_path}/*.xlsx")
-    stock_list = [] if input_list is None else input_list
-    for input_file in file_list:
-        customized_stocks = pd.read_excel(input_file, index_col=0, engine='openpyxl')
-        customized_stocks = customized_stocks.iloc[1::2].index.tolist()
-        stock_list.extend(['.'.join(item.split('.')[::-1]) for item in customized_stocks])
-    with open(f'./data/Customized/Customized_Stocks_{datetime.today().date()}.json', 'w+') as file_obj:
-        json.dump(list(set(stock_list)), file_obj)
-
-
-def get_hsi_constituents(input_file):
-    with open(input_file, 'r') as file_obj:
-        return json.load(file_obj)
-
-
-def get_customized_stocks(input_file):
-    with open(input_file, 'r') as file_obj:
-        return json.load(file_obj)
