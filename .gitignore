@@ -140,6 +140,6 @@ dmypy.json
 cython_debug/
 
 /.idea
-/data/
+/data
 /config.ini
 /database

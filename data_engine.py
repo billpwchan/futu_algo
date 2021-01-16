@@ -44,3 +44,37 @@ class DatabaseInterface:
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
         self.conn.close()
+
+
+class YahooFinanceInterface:
+    @staticmethod
+    def futu_code_to_yfinance_code(futu_code: str) -> str:
+        """
+            Convert Futu Stock Code to Yahoo Finance Stock Code format
+            E.g., HK.09988 -> 9988.HK
+        :param futu_code: Stock code used in Futu (e.g., HK.09988)
+        """
+        return '.'.join(reversed(futu_code.split('.')))[1:]
+
+    @staticmethod
+    def yfinance_code_to_futu_code(yfinance_code: str) -> str:
+        """
+            Convert Yahoo Finance Stock Code to Futu Stock Code format
+            E.g., 9988.HK -> HK.09988
+        :param yfinance_code: Stock code used in Yahoo Finance (e.g., 9988.HK)
+        """
+        return '.'.join(reversed(('0' + yfinance_code).split('.')))
+
+    @staticmethod
+    def __validate_stock_code(stock_code: str) -> str:
+        """
+            Check stock code format, and always return Yahoo Finance Stock Code format
+            Use Internally
+        :param stock_code: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
+        :return: Stock code in Yahoo Finance format
+        """
+        return YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
+
+    @staticmethod
+    def update_stock_info(stock_code: str):
+        stock_code = YahooFinanceInterface.__validate_stock_code(stock_code)
