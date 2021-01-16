@@ -6,6 +6,9 @@
 
 import sqlite3
 
+import pandas as pd
+import yfinance as yf
+
 
 class DatabaseInterface:
     def __init__(self, database_path):
@@ -66,15 +69,22 @@ class YahooFinanceInterface:
         return '.'.join(reversed(('0' + yfinance_code).split('.')))
 
     @staticmethod
-    def __validate_stock_code(stock_code: str) -> str:
+    def __validate_stock_code(stock_list: list) -> list:
         """
             Check stock code format, and always return Yahoo Finance Stock Code format
             Use Internally
-        :param stock_code: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
-        :return: Stock code in Yahoo Finance format
+        :param stock_list: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
+        :return: Stock code list in Yahoo Finance format
         """
-        return YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
+        return [YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
+                for stock_code in stock_list]
 
     @staticmethod
-    def update_stock_info(stock_code: str):
-        stock_code = YahooFinanceInterface.__validate_stock_code(stock_code)
+    def update_stocks_info(stock_list: list) -> dict:
+        stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
+        return {stock_code: yf.Ticker(stock_code).info for stock_code in stock_list}
+
+    @staticmethod
+    def get_stocks_history(stock_list: list) -> pd.DataFrame:
+        stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
+        return yf.download(stock_list, period="max", group_by="ticker", auto_adjust=True, actions=True)
