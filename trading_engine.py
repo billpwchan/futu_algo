@@ -269,7 +269,7 @@ class FutuTrade:
 
     def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
-        实时报价回调，异步处理已订阅股票的实时报价推送。
+            实时报价回调，异步处理已订阅股票的实时报价推送。
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
@@ -287,7 +287,7 @@ class FutuTrade:
 
     def rt_data_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
-        实时分时回调，异步处理已订阅股票的实时分时推送。
+            实时分时回调，异步处理已订阅股票的实时分时推送。
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
@@ -305,7 +305,7 @@ class FutuTrade:
 
     def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
         """
-        实时 K 线回调，异步处理已订阅股票的实时 K 线推送。
+            实时 K 线回调，异步处理已订阅股票的实时 K 线推送。
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
@@ -322,6 +322,9 @@ class FutuTrade:
         time.sleep(timeout)
 
     def display_quota(self):
+        """
+            Display Stock Subscription & Historical K-Line Quota
+        """
         ret, data = self.quote_ctx.query_subscription()
         if ret == RET_OK:
             self.default_logger.info(f'Query Subscription Quota: \n{data}')

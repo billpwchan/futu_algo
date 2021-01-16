@@ -143,3 +143,5 @@ cython_debug/
 /data
 /config.ini
 /database
+/strategies
+/filters
