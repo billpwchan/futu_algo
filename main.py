@@ -11,6 +11,8 @@ from futu import KLType
 
 import data_engine
 import trading_engine
+from filters.MA_Simple import MASimple
+from stock_filter import StockFilter
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
 from strategies.KDJ_MACD_Close import KDJMACDClose
@@ -22,7 +24,6 @@ from strategies.Strategies import Strategies
 def daily_update_data(futu_trade, force_update: bool = False):
     # Daily Update HSI Constituents & Customized Stocks
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
-    print(stock_list)
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -76,15 +77,11 @@ def main():
         futu_trade.store_all_data_database()
     if args.strategy:
         # Initialize Strategies
-        file_list = glob.glob(f"./data/HSI.Constituents/HSI_constituents_*.json")
-        hsi_constituents = trading_engine.get_hsi_constituents(file_list[0])
-        file_list = glob.glob(f"./data/Customized/Customized_Stocks_*.json")
-        customized_stocks = trading_engine.get_customized_stocks(file_list[0])
-        # stock_list = list(set(hsi_constituents + customized_stocks))
-        stock_list = hsi_constituents
+        stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    data_engine.HKEXInterface.get_security_df_full()
+    stock_filter = StockFilter(stock_filter=MASimple())
+    print(stock_filter.get_filtered_equity_pools())
 
     futu_trade.display_quota()
 
