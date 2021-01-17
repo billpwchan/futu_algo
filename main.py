@@ -80,7 +80,7 @@ def main():
         stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    stock_filter = StockFilter(stock_filter=MASimple())
+    stock_filter = StockFilter(stock_filters=[MASimple()])
     print(stock_filter.get_filtered_equity_pools())
 
     futu_trade.display_quota()
