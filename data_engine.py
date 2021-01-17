@@ -100,7 +100,7 @@ class YahooFinanceInterface:
 class HKEXInterface:
 
     @staticmethod
-    def get_security_list_full() -> pd.DataFrame:
+    def update_security_list_full() -> None:
         """
             Get Full Security List from HKEX. Can Daily Update (Override)
             URL: https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx
@@ -117,9 +117,20 @@ class HKEXInterface:
             for r in sh.rows:
                 c.writerow([cell.value for cell in r])
 
+    @staticmethod
+    def get_security_df_full() -> pd.DataFrame:
         input_csv = pd.read_csv('./data/Stock_Pool/ListOfSecurities.csv', index_col=None, skiprows=2,
                                 dtype={'Stock Code': str})
         input_csv.dropna(subset=['Stock Code'], inplace=True)
         input_csv.drop(input_csv.columns[-1], axis=1, inplace=True)
         input_csv.set_index('Stock Code')
         return input_csv
+
+    @staticmethod
+    def get_equity_list_full() -> list:
+        """
+            Return Full List of Equity in FuTu Stock Code Format E.g. HK.00001
+        :return:
+        """
+        input_csv = HKEXInterface.get_security_df_full()
+        return [('HK.' + item) for item in input_csv[input_csv['Category'] == 'Equity']['Stock Code'].tolist()]

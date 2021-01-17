@@ -84,7 +84,7 @@ def main():
         stock_list = hsi_constituents
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    data_engine.HKEXInterface.get_security_list_full()
+    data_engine.HKEXInterface.get_security_df_full()
 
     futu_trade.display_quota()
 
