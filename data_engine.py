@@ -93,8 +93,11 @@ class YahooFinanceInterface:
 
     @staticmethod
     def get_stock_info(stock_code: str) -> dict:
-        stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
-        return yf.Ticker(stock_code).info
+        try:
+            stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
+            return yf.Ticker(stock_code).info
+        except KeyError:
+            return {}
 
     @staticmethod
     def get_stocks_history(stock_list: list) -> pd.DataFrame:
