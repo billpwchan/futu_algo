@@ -92,6 +92,11 @@ class YahooFinanceInterface:
         return {stock_code: yf.Ticker(stock_code).info for stock_code in stock_list}
 
     @staticmethod
+    def get_stock_info(stock_code: str) -> dict:
+        stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
+        return yf.Ticker(stock_code).info
+
+    @staticmethod
     def get_stocks_history(stock_list: list) -> pd.DataFrame:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         return yf.download(stock_list, period="max", group_by="ticker", auto_adjust=True, actions=True, progress=False)

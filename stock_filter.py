@@ -22,10 +22,12 @@ class StockFilter:
         """
         # stock_history = YahooFinanceInterface.get_stocks_history(self.full_equity_list)
         filtered_stock_list = []
+
         for equity in self.full_equity_list:
-            yf_data = YahooFinanceInterface.get_stock_history(equity)
-            yf_data.columns = [item.lower().strip() for item in yf_data]
-            if all([stock_filter.validate(yf_data) for stock_filter in self.stock_filters]):
+            quant_data = YahooFinanceInterface.get_stock_history(equity)
+            quant_data.columns = [item.lower().strip() for item in quant_data]
+            info_data = YahooFinanceInterface.get_stock_info(equity)
+            if all([stock_filter.validate(quant_data, info_data) for stock_filter in self.stock_filters]):
                 filtered_stock_list.append(equity)
                 self.default_logger.info(
                     f"{equity} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")

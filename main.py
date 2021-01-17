@@ -12,6 +12,7 @@ from futu import KLType
 import data_engine
 import trading_engine
 from filters.MA_Simple import MASimple
+from filters.price_threshold import PriceThreshold
 from stock_filter import StockFilter
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
@@ -80,7 +81,7 @@ def main():
         stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
 
-    stock_filter = StockFilter(stock_filters=[MASimple()])
+    stock_filter = StockFilter(stock_filters=[MASimple(), PriceThreshold()])
     print(stock_filter.get_filtered_equity_pools())
 
     futu_trade.display_quota()
