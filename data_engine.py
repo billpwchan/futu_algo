@@ -93,10 +93,11 @@ class YahooFinanceInterface:
 
     @staticmethod
     def get_stock_info(stock_code: str) -> dict:
+        return {}
         try:
             stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
             return yf.Ticker(stock_code).info
-        except KeyError:
+        except:
             return {}
 
     @staticmethod
