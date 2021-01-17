@@ -11,6 +11,8 @@ from futu import KLType
 
 import data_engine
 import trading_engine
+from filters.DZX_1B import DZX1B
+from filters.Filters import Filters
 from filters.MA_Simple import MASimple
 from filters.Price_Threshold import PriceThreshold
 from filters.Volume_Threshold import VolumeThreshold
@@ -44,10 +46,27 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
     return switcher.get(strategy_name, MACDCross(input_data=input_data))
 
 
+def __init_filter(filter_name: str) -> Filters:
+    switcher = {
+        'DZX_1B': DZX1B(),
+        'MA_Simple': MASimple(),
+        'Price_Threshold': PriceThreshold(price_threshold=1),
+        'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7)
+    }
+    # Default return simplest MA Stock Filter
+    return switcher.get(filter_name, MASimple())
+
+
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
     input_data = futu_trade.get_data_realtime(stock_list, sub_type=KLType.K_1M, kline_num=100)
     strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
     futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12)
+
+
+def init_stock_filter(filter_list: list) -> list:
+    filters = [__init_filter(input_filter) for input_filter in filter_list]
+    stock_filter = StockFilter(stock_filters=filters)
+    return stock_filter.get_filtered_equity_pools()
 
 
 def main():
@@ -65,6 +84,12 @@ def main():
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute HFT using Pre-defined Strategy")
 
+    # Retrieve file names for all strategies as the argument option
+    filter_list = [file_name.split("\\")[1][:-3] for file_name in glob.glob(f"./filters/*.py") if
+                   "__init__" not in file_name and "Filters" not in file_name]
+    parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
+                        help="Filter Stock List based on Pre-defined Filters")
+
     # Evaluate Arguments
     args = parser.parse_args()
 
@@ -77,13 +102,13 @@ def main():
     if args.database:
         # Update ALl Data to Database
         futu_trade.store_all_data_database()
+    if args.filter:
+        filtered_stock_list = init_stock_filter(args.filter)
+        print(filtered_stock_list)
     if args.strategy:
         # Initialize Strategies
         stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
-
-    stock_filter = StockFilter(stock_filters=[MASimple(), PriceThreshold(), VolumeThreshold()])
-    print(stock_filter.get_filtered_equity_pools())
 
     futu_trade.display_quota()
 

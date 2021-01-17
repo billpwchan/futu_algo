@@ -16,7 +16,7 @@ class StockFilter:
         self.stock_filters = stock_filters
         self.default_logger = logger.get_logger("stock_filter")
 
-    def __validate_stock(self, equity_code):
+    def validate_stock(self, equity_code):
         quant_data = YahooFinanceInterface.get_stock_history(equity_code)
         quant_data.columns = [item.lower().strip() for item in quant_data]
         info_data = YahooFinanceInterface.get_stock_info(equity_code)
@@ -24,6 +24,7 @@ class StockFilter:
             self.default_logger.info(
                 f"{equity_code} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")
             return equity_code
+        return None
 
     def get_filtered_equity_pools(self) -> list:
         """
@@ -32,6 +33,6 @@ class StockFilter:
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
         pool = Pool(cpu_count())
-        filtered_stock_list = pool.map(self.__validate_stock, self.full_equity_list)
+        filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
 
         return [item for item in filtered_stock_list if item is not None]
