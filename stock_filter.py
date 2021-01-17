@@ -4,6 +4,8 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
+from multiprocessing import Pool, cpu_count
+
 import logger
 from data_engine import HKEXInterface, YahooFinanceInterface
 
@@ -14,21 +16,22 @@ class StockFilter:
         self.stock_filters = stock_filters
         self.default_logger = logger.get_logger("stock_filter")
 
+    def __validate_stock(self, equity_code):
+        quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+        quant_data.columns = [item.lower().strip() for item in quant_data]
+        info_data = YahooFinanceInterface.get_stock_info(equity_code)
+        if all([stock_filter.validate(quant_data, info_data) for stock_filter in self.stock_filters]):
+            self.default_logger.info(
+                f"{equity_code} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")
+            return equity_code
+
     def get_filtered_equity_pools(self) -> list:
         """
             Use User-Defined Filters to filter bad equities away.
             Based on history data extracted from Yahoo Finance
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
-        # stock_history = YahooFinanceInterface.get_stocks_history(self.full_equity_list)
-        filtered_stock_list = []
+        pool = Pool(cpu_count())
+        filtered_stock_list = pool.map(self.__validate_stock, self.full_equity_list)
 
-        for equity in self.full_equity_list:
-            quant_data = YahooFinanceInterface.get_stock_history(equity)
-            quant_data.columns = [item.lower().strip() for item in quant_data]
-            info_data = YahooFinanceInterface.get_stock_info(equity)
-            if all([stock_filter.validate(quant_data, info_data) for stock_filter in self.stock_filters]):
-                filtered_stock_list.append(equity)
-                self.default_logger.info(
-                    f"{equity} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")
-        return filtered_stock_list
+        return [item for item in filtered_stock_list if item is not None]
