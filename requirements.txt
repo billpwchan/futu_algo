@@ -134,3 +134,10 @@ zeromq=4.3.3=ha925a31_3
 zipp=3.4.0=pyhd3eb1b0_0
 zlib=1.2.11=h62dcd97_4
 zstd=1.4.5=h04227a9_0
+
+pandas~=1.2.0
+openpyxl~=3.0.5
+requests~=2.25.1
+yfinance~=0.1.55
+win10toast~=0.9
+numpy~=1.19.3

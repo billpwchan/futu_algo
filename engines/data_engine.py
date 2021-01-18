@@ -26,12 +26,6 @@ class DatabaseInterface:
     def commit(self):
         self.conn.commit()
 
-    def check_stock_data_exist(self, code, time_key, k_type):
-        self.cur.execute('SELECT * FROM stock_data WHERE (code=? AND time_key=? AND k_type=?)',
-                         (code, time_key, k_type))
-        entry = self.cur.fetchone()
-        return entry is None
-
     def get_stock_list(self) -> list:
         self.cur.execute('SELECT DISTINCT code FROM stock_data')
         return [item[0] for item in self.cur.fetchall()]
@@ -45,6 +39,9 @@ class DatabaseInterface:
              last_close,
              k_type)
         )
+
+    def add_stock_pool(self, date, filter, code):
+        return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?)", (None, date, filter, code))
 
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
@@ -126,7 +123,7 @@ class HKEXInterface:
 
         wb = openpyxl.load_workbook('./data/Stock_Pool/ListOfSecurities.xlsx')
         sh = wb.active
-        with open('../data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
+        with open('./data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
             c = csv.writer(f)
             for r in sh.rows:
                 c.writerow([cell.value for cell in r])

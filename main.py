@@ -29,12 +29,14 @@ from strategies.Strategies import Strategies
 
 
 def daily_update_data(futu_trade, force_update: bool = False):
+    # Daily Update Filtered Security
+    filters = list(__init_filter(filter_name='all'))
+    stock_filter = StockFilter(stock_filters=filters)
+    stock_filter.update_filtered_equity_pools()
+
     # Daily Update HKEX Security List & Subscribed Data
     data_engine.HKEXInterface.update_security_list_full()
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
-    stock_list.extend(
-        ['HK.00728', 'HK.00799', 'HK.00941', 'HK.01119', 'HK.01224', 'HK.01238', 'HK.01347', 'HK.01800', 'HK.01958',
-         'HK.02196', 'HK.03613', 'HK.06055', 'HK.06998'])
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -42,7 +44,7 @@ def daily_update_data(futu_trade, force_update: bool = False):
 
 
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
-    switcher = {
+    strategies = {
         'EMA_Ribbon': EMARibbon(input_data=input_data.copy()),
         'KDJ_Cross': KDJCross(input_data=input_data.copy()),
         'KDJ_MACD_Close': KDJMACDClose(input_data=input_data.copy()),
@@ -51,11 +53,11 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
         'Short_Term_Band': ShortTermBand(input_data=input_data.copy())
     }
     # Default return simplest MACD Cross Strategy
-    return switcher.get(strategy_name, MACDCross(input_data=input_data))
+    return strategies.get(strategy_name, MACDCross(input_data=input_data))
 
 
-def __init_filter(filter_name: str) -> Filters:
-    switcher = {
+def __init_filter(filter_name: str) -> Filters or dict:
+    filters = {
         'Boll_Gold_Cross': BollGoldCross(),
         'Boll_Up': BollUp(),
         'DZX_1B': DZX1B(),
@@ -65,7 +67,9 @@ def __init_filter(filter_name: str) -> Filters:
         'Triple_Cross': TripleCross()
     }
     # Default return simplest MA Stock Filter
-    return switcher.get(filter_name, MASimple())
+    if filter_name == 'all':
+        return filters.values()
+    return filters.get(filter_name, MASimple())
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):

@@ -6,6 +6,7 @@
  * Written by Bill Chan <billpwchan@hotmail.com>, 2021
  */
 
+-- we don't know how to generate root <with-no-name> (class Root) :(
 create table stock_data
 (
     id               integer not null
@@ -37,4 +38,17 @@ create unique index stock_data_id_uindex
 
 create unique index stock_time
     on stock_data (code, time_key, k_type);
+
+create table stock_pool
+(
+    id     integer not null
+        constraint stock_pool_pk
+            primary key autoincrement,
+    date   text    not null,
+    filter text    not null,
+    code   text    not null
+);
+
+create unique index stock_pool_id_uindex
+    on stock_pool (id);
 
