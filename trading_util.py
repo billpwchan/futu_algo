@@ -92,8 +92,9 @@ class TradingUtil:
                 trd_env=self.trd_env)
             if ret_code == RET_OK:
                 self.default_logger.info(
-                    'MAKE BUY ORDER\n\tcode = {} price = {} quantity = {}'.format(stock_code, cur_price, lot_size))
-
+                    f'MAKE BUY ORDER\n\tcode = {stock_code} price = {cur_price} quantity = {lot_size}')
+                self.toaster.show_toast("BUY ORDER", f'code = {stock_code} price = {cur_price} quantity = {lot_size}',
+                                        icon_path=None, duration=5, threaded=True)
                 break
             else:
                 self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
@@ -175,8 +176,10 @@ class TradingUtil:
                     trd_env=self.trd_env)
                 if ret_code == RET_OK:
                     self.default_logger.info(
-                        'MAKE SELL ORDER code = {} price = {} quantity = {}'.format(stock_code, cur_price,
-                                                                                    can_sell_qty))
+                        f'MAKE SELL ORDER\n\tcode = {stock_code} price = {cur_price} quantity = {can_sell_qty}')
+                    self.toaster.show_toast("SELL ORDER",
+                                            f'code = {stock_code} price = {cur_price} quantity = {lot_size}',
+                                            icon_path=None, duration=5, threaded=True)
                     break
                 else:
                     self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
