@@ -143,5 +143,19 @@ cython_debug/
 /data
 /config.ini
 /database
+
+# Strategies
 /strategies
+!/strategies/__init__.py
+!/strategies/Strategies.py
+!/strategies/KDJ_Cross.py
+!/strategies/MACD_Cross.py
+!/strategies/RSI_Threshold.py
+!/strategies/EMA_Ribbon.py
+
 /filters
+!/filters/__init__.py
+!/filters/Filters.py
+!/filters/MA_Simple.py
+!/filters/Price_Threshold.py
+!/filters/Volume_Threshold.py
