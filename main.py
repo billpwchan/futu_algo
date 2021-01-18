@@ -111,7 +111,8 @@ def main():
         print(filtered_stock_list)
     if args.strategy:
         # Initialize Strategies
-        stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
+        stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
+            database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
 
     futu_trade.display_quota()
