@@ -11,6 +11,7 @@ from futu import KLType
 
 import data_engine
 import trading_engine
+from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
 from filters.DZX_1B import DZX1B
 from filters.Filters import Filters
@@ -28,8 +29,12 @@ from strategies.Strategies import Strategies
 
 
 def daily_update_data(futu_trade, force_update: bool = False):
-    # Daily Update HSI Constituents & Customized Stocks
+    # Daily Update HKEX Security List & Subscribed Data
+    data_engine.HKEXInterface.update_security_list_full()
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
+    stock_list.extend(
+        ['HK.00728', 'HK.00799', 'HK.00941', 'HK.01119', 'HK.01224', 'HK.01238', 'HK.01347', 'HK.01800', 'HK.01958',
+         'HK.02196', 'HK.03613', 'HK.06055', 'HK.06998'])
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -50,6 +55,7 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
 
 def __init_filter(filter_name: str) -> Filters:
     switcher = {
+        'Boll_Gold_Cross': BollGoldCross(),
         'Boll_Up': BollUp(),
         'DZX_1B': DZX1B(),
         'MA_Simple': MASimple(),
