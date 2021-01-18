@@ -25,6 +25,7 @@ from strategies.KDJ_Cross import KDJCross
 from strategies.KDJ_MACD_Close import KDJMACDClose
 from strategies.MACD_Cross import MACDCross
 from strategies.RSI_Threshold import RSIThreshold
+from strategies.Short_Term_Band import ShortTermBand
 from strategies.Strategies import Strategies
 
 
@@ -47,7 +48,8 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
         'KDJ_Cross': KDJCross(input_data=input_data.copy()),
         'KDJ_MACD_Close': KDJMACDClose(input_data=input_data.copy()),
         'MACD_Cross': MACDCross(input_data=input_data.copy()),
-        'RSI_Threshold': RSIThreshold(input_data=input_data.copy())
+        'RSI_Threshold': RSIThreshold(input_data=input_data.copy()),
+        'Short_Term_Band': ShortTermBand(input_data=input_data.copy())
     }
     # Default return simplest MACD Cross Strategy
     return switcher.get(strategy_name, MACDCross(input_data=input_data))
