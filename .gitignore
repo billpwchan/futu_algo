@@ -145,7 +145,7 @@ cython_debug/
 /database
 
 # Strategies
-/strategies
+/strategies/*
 !/strategies/__init__.py
 !/strategies/Strategies.py
 !/strategies/KDJ_Cross.py
@@ -153,7 +153,8 @@ cython_debug/
 !/strategies/RSI_Threshold.py
 !/strategies/EMA_Ribbon.py
 
-/filters
+
+/filters/*
 !/filters/__init__.py
 !/filters/Filters.py
 !/filters/MA_Simple.py
