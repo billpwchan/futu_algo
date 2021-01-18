@@ -126,7 +126,7 @@ class HKEXInterface:
 
         wb = openpyxl.load_workbook('./data/Stock_Pool/ListOfSecurities.xlsx')
         sh = wb.active
-        with open('./data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
+        with open('../data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
             c = csv.writer(f)
             for r in sh.rows:
                 c.writerow([cell.value for cell in r])

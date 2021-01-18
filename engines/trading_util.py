@@ -8,7 +8,7 @@ import time
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus, ModifyOrderOp
 from win10toast import ToastNotifier
 
-import logger
+from util import logger
 
 
 class TradingUtil:

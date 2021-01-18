@@ -5,22 +5,21 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import configparser
-import json
 
-from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
+from futu import CurKlineHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
 
-import logger
+from engines.trading_util import TradingUtil
 from strategies.MACD_Cross import MACDCross
 from strategies.Strategies import Strategies
-from trading_util import TradingUtil
+from util import logger
 
 
-class StockQuoteHandler(StockQuoteHandlerBase):
+class CurKlineHandler(CurKlineHandlerBase):
     def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, input_data: dict = None,
                  strategy: Strategies = MACDCross, trd_env: TrdEnv = TrdEnv.SIMULATE):
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
-        self.default_logger = logger.get_logger('stock_quote')
+        self.default_logger = logger.get_logger('cur_kline')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx
         self.input_data = input_data
@@ -33,19 +32,20 @@ class StockQuoteHandler(StockQuoteHandlerBase):
         self.input_data = input_data.copy()
 
     def on_recv_rsp(self, rsp_str):
-        ret_code, data = super(StockQuoteHandler, self).on_recv_rsp(rsp_str)
+        ret_code, data = super(CurKlineHandler, self).on_recv_rsp(rsp_str)
         if ret_code != RET_OK:
-            self.default_logger.error("StockQuoteTest: error, msg: %s" % data)
+            self.default_logger.error("CurKlineTest: error, msg: %s" % data)
             return RET_ERROR, data
 
+        self.default_logger.info(f'Received:\n {data}')
+
         # Column Mapping between Subscribed Data <==> Historical Data
-        data['time_key'] = data['data_date'] + ' ' + data['data_time']
-        data = data[
-            ['code', 'time_key', 'open_price', 'last_price', 'high_price', 'low_price', 'amplitude',
-             'turnover_rate', 'volume', 'turnover', 'amplitude', 'prev_close_price']]
-        self.default_logger.info(
-            f"Received: \n {data[['code', 'time_key', 'last_price', 'volume', 'prev_close_price']]}")
-        data.columns = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+        # code, time_key, open, close, high, low, pe_ratio, turnover_rate, volume, turnover, change_rate, last_close
+        # code  time_key   open  close   high    low  volume    turnover k_type  last_close
+        data.drop(['k_type'], axis=1, inplace=True)
+        data.insert(6, 'pe_ratio', 0)
+        data.insert(7, 'turnover_rate', 0)
+        data.insert(10, 'change_rate', 0)
 
         # Update Latest Data to the Strategy before Buy/Sell
         self.strategy.parse_data(data)

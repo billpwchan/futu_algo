@@ -9,8 +9,8 @@ import glob
 
 from futu import KLType
 
-import data_engine
-import trading_engine
+from engines import trading_engine, data_engine
+from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
 from filters.DZX_1B import DZX1B
@@ -19,7 +19,6 @@ from filters.MA_Simple import MASimple
 from filters.Price_Threshold import PriceThreshold
 from filters.Triple_Cross import TripleCross
 from filters.Volume_Threshold import VolumeThreshold
-from stock_filter import StockFilter
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
 from strategies.KDJ_MACD_Close import KDJMACDClose
