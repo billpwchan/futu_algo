@@ -11,10 +11,12 @@ from futu import KLType
 
 import data_engine
 import trading_engine
+from filters.Boll_Up import BollUp
 from filters.DZX_1B import DZX1B
 from filters.Filters import Filters
 from filters.MA_Simple import MASimple
 from filters.Price_Threshold import PriceThreshold
+from filters.Triple_Cross import TripleCross
 from filters.Volume_Threshold import VolumeThreshold
 from stock_filter import StockFilter
 from strategies.EMA_Ribbon import EMARibbon
@@ -48,10 +50,12 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
 
 def __init_filter(filter_name: str) -> Filters:
     switcher = {
+        'Boll_Up': BollUp(),
         'DZX_1B': DZX1B(),
         'MA_Simple': MASimple(),
         'Price_Threshold': PriceThreshold(price_threshold=1),
-        'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7)
+        'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7),
+        'Triple_Cross': TripleCross()
     }
     # Default return simplest MA Stock Filter
     return switcher.get(filter_name, MASimple())
