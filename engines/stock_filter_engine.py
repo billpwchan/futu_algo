@@ -48,7 +48,7 @@ class StockFilter:
             Based on history data extracted from Yahoo Finance
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
-        database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+        # database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
 
         pool = Pool(cpu_count())
         filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
