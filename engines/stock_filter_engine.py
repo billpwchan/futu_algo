@@ -48,6 +48,8 @@ class StockFilter:
             Based on history data extracted from Yahoo Finance
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
+        database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+
         pool = Pool(cpu_count())
         filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
 
@@ -62,8 +64,12 @@ class StockFilter:
         pool = Pool(cpu_count())
         filtered_stock_list = pool.map(self.validate_stock_individual, self.full_equity_list)
 
-        # Flatten Nested List
+        # Remove Redundant Records (If Exists)
         database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+        database.delete_stock_pool_from_date(date.today().strftime("%Y-%m-%d"))
+        database.commit()
+
+        # Flatten Nested List
         for sublist in filtered_stock_list:
             for record in sublist:
                 database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1])

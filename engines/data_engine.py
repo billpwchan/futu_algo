@@ -20,7 +20,6 @@ class DatabaseInterface:
 
     def execute(self, query, data):
         self.cur.execute(query, data)
-        # self.conn.commit()
         return self.cur
 
     def commit(self):
@@ -42,6 +41,13 @@ class DatabaseInterface:
 
     def add_stock_pool(self, date, filter, code):
         return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?)", (None, date, filter, code))
+
+    def get_stock_pool(self, date, filter):
+        # NOT FINISHED YET.
+        self.cur.execute("SELECT date, filter, code FROM stock_pool WHERE date=? and filter=?", (date, filter))
+
+    def delete_stock_pool_from_date(self, date):
+        return self.execute("DELETE FROM stock_pool WHERE date=?", (date,))
 
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
