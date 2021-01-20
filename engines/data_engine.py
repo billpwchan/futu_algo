@@ -39,8 +39,8 @@ class DatabaseInterface:
              k_type)
         )
 
-    def add_stock_pool(self, date, filter, code):
-        return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?)", (None, date, filter, code))
+    def add_stock_pool(self, date, filter, code, name):
+        return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?, ?)", (None, date, filter, code, name))
 
     def get_stock_pool(self, date, filter):
         # NOT FINISHED YET.
@@ -96,7 +96,6 @@ class YahooFinanceInterface:
 
     @staticmethod
     def get_stock_info(stock_code: str) -> dict:
-        return {}
         try:
             stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
             return yf.Ticker(stock_code).info

@@ -23,7 +23,8 @@ class StockFilter:
     def validate_stock(self, equity_code):
         quant_data = YahooFinanceInterface.get_stock_history(equity_code)
         quant_data.columns = [item.lower().strip() for item in quant_data]
-        info_data = YahooFinanceInterface.get_stock_info(equity_code)
+        # info_data = YahooFinanceInterface.get_stock_info(equity_code)
+        info_data = {}
         if all([stock_filter.validate(quant_data, info_data) for stock_filter in self.stock_filters]):
             self.default_logger.info(
                 f"{equity_code} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")
@@ -33,7 +34,8 @@ class StockFilter:
     def validate_stock_individual(self, equity_code):
         quant_data = YahooFinanceInterface.get_stock_history(equity_code)
         quant_data.columns = [item.lower().strip() for item in quant_data]
-        info_data = YahooFinanceInterface.get_stock_info(equity_code)
+        # info_data = YahooFinanceInterface.get_stock_info(equity_code)
+        info_data = {}
         output_list = []
         for stock_filter in self.stock_filters:
             if stock_filter.validate(quant_data, info_data):
@@ -72,5 +74,6 @@ class StockFilter:
         # Flatten Nested List
         for sublist in filtered_stock_list:
             for record in sublist:
-                database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1])
+                database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1],
+                                        YahooFinanceInterface.get_stock_info(record[0])['longName'])
         database.commit()
