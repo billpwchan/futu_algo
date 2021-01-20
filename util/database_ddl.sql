@@ -46,7 +46,8 @@ create table stock_pool
             primary key autoincrement,
     date   text    not null,
     filter text    not null,
-    code   text    not null
+    code   text    not null,
+    name   text no
 );
 
 create unique index stock_pool_id_uindex

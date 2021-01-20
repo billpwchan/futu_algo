@@ -54,7 +54,8 @@ class KDJCross(Strategies):
         # Calculate EMA for the stock_list
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
-            self.input_data[stock_code] = self.input_data[stock_code].iloc[-self.OBSERVATION:]
+            self.input_data[stock_code] = self.input_data[stock_code].iloc[
+                                          -min(self.OBSERVATION, self.input_data[stock_code].shape[0]):]
             self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
                 ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 

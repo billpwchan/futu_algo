@@ -8,7 +8,7 @@ import unittest
 
 import pandas as pd
 
-from strategies.Short_Term_Band import ShortTermBand
+from strategies.Legendary import Legendary
 
 
 class StrategyTestCase(unittest.TestCase):
@@ -17,23 +17,24 @@ class StrategyTestCase(unittest.TestCase):
         self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)
         self.input_data = self.complete_data.iloc[:100, :]
         self.test_data = self.complete_data.iloc[100:, :]
-        self.strategy = ShortTermBand({self.stock_code: self.input_data}, observation=100)
+        self.strategy = Legendary({self.stock_code: self.input_data}, observation=100)
 
     def test_buy(self):
         for index, row in self.test_data.iterrows():
             latest_data = row.to_frame().transpose()
             latest_data.reset_index(drop=True, inplace=True)
             self.strategy.parse_data(latest_data=latest_data)
-            self.strategy.buy(self.stock_code)
+            self.strategy.input_data['HK.09988'].to_csv('output.csv')
+            # self.strategy.buy(self.stock_code)
         self.assertEqual(True, True)
 
-    def test_sell(self):
-        for index, row in self.test_data.iterrows():
-            latest_data = row.to_frame().transpose()
-            latest_data.reset_index(drop=True, inplace=True)
-            self.strategy.parse_data(latest_data=latest_data)
-            self.strategy.sell(self.stock_code)
-        self.assertEqual(True, True)
+    # def test_sell(self):
+    #     for index, row in self.test_data.iterrows():
+    #         latest_data = row.to_frame().transpose()
+    #         latest_data.reset_index(drop=True, inplace=True)
+    #         self.strategy.parse_data(latest_data=latest_data)
+    #         # self.strategy.sell(self.stock_code)
+    #     self.assertEqual(True, True)
 
 
 if __name__ == '__main__':
