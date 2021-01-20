@@ -17,12 +17,14 @@ from filters.DZX_1B import DZX1B
 from filters.Filters import Filters
 from filters.MA_Simple import MASimple
 from filters.Price_Threshold import PriceThreshold
+from filters.Quant_Breakthrough import QuantBreakthrough
 from filters.Triple_Cross import TripleCross
 from filters.Volume_Threshold import VolumeThreshold
 from strategies.EMA_Ribbon import EMARibbon
 from strategies.KDJ_Cross import KDJCross
 from strategies.KDJ_MACD_Close import KDJMACDClose
 from strategies.MACD_Cross import MACDCross
+from strategies.Quant_Legendary import QuantLegendary
 from strategies.RSI_Threshold import RSIThreshold
 from strategies.Short_Term_Band import ShortTermBand
 from strategies.Strategies import Strategies
@@ -50,7 +52,8 @@ def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
         'KDJ_MACD_Close': KDJMACDClose(input_data=input_data.copy()),
         'MACD_Cross': MACDCross(input_data=input_data.copy()),
         'RSI_Threshold': RSIThreshold(input_data=input_data.copy()),
-        'Short_Term_Band': ShortTermBand(input_data=input_data.copy())
+        'Short_Term_Band': ShortTermBand(input_data=input_data.copy()),
+        'Quant_Legendary': QuantLegendary(input_data=input_data.copy())
     }
     # Default return simplest MACD Cross Strategy
     return strategies.get(strategy_name, MACDCross(input_data=input_data))
@@ -64,7 +67,8 @@ def __init_filter(filter_name: str) -> Filters or dict:
         'MA_Simple': MASimple(),
         'Price_Threshold': PriceThreshold(price_threshold=1),
         'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7),
-        'Triple_Cross': TripleCross()
+        'Triple_Cross': TripleCross(),
+        'Quant_Breakthrough': QuantBreakthrough()
     }
     # Default return simplest MA Stock Filter
     if filter_name == 'all':

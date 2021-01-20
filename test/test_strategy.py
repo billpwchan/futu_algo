@@ -8,7 +8,7 @@ import unittest
 
 import pandas as pd
 
-from strategies.Legendary import Legendary
+from strategies.Quant_Legendary import QuantLegendary
 
 
 class StrategyTestCase(unittest.TestCase):
@@ -17,7 +17,7 @@ class StrategyTestCase(unittest.TestCase):
         self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)
         self.input_data = self.complete_data.iloc[:200, :]
         self.test_data = self.complete_data.iloc[200:, :]
-        self.strategy = Legendary({self.stock_code: self.input_data})
+        self.strategy = QuantLegendary({self.stock_code: self.input_data})
 
     def test_buy(self):
         for index, row in self.test_data.iterrows():
