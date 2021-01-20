@@ -24,7 +24,7 @@ class StrategyTestCase(unittest.TestCase):
             latest_data = row.to_frame().transpose()
             latest_data.reset_index(drop=True, inplace=True)
             self.strategy.parse_data(latest_data=latest_data)
-            self.strategy.input_data['HK.09988'].iloc[-5:].to_csv('output.csv')
+            self.strategy.input_data['HK.09988'].to_csv('output.csv')
             # self.strategy.buy(self.stock_code)
         self.assertEqual(True, True)
 

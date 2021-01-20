@@ -125,6 +125,11 @@ def main():
         stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
             database_path='./database/stock_data.sqlite').get_stock_list()
         init_day_trading(futu_trade, stock_list, args.strategy)
+    #
+    # print([(item, data_engine.YahooFinanceInterface.get_stock_info(item)['longName']) for item in
+    #        ['HK.00357', 'HK.00880', 'HK.00973', 'HK.01177', 'HK.01448', 'HK.01558', 'HK.01579', 'HK.01789', 'HK.01952',
+    #         'HK.02500', 'HK.02616', 'HK.02696', 'HK.03309', 'HK.03718', 'HK.03933', 'HK.09966', 'HK.09988']]
+    #       )
 
     futu_trade.display_quota()
 
