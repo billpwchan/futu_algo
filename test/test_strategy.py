@@ -15,16 +15,16 @@ class StrategyTestCase(unittest.TestCase):
     def setUp(self):
         self.stock_code = 'HK.09988'
         self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)
-        self.input_data = self.complete_data.iloc[:100, :]
-        self.test_data = self.complete_data.iloc[100:, :]
-        self.strategy = Legendary({self.stock_code: self.input_data}, observation=100)
+        self.input_data = self.complete_data.iloc[:200, :]
+        self.test_data = self.complete_data.iloc[200:, :]
+        self.strategy = Legendary({self.stock_code: self.input_data})
 
     def test_buy(self):
         for index, row in self.test_data.iterrows():
             latest_data = row.to_frame().transpose()
             latest_data.reset_index(drop=True, inplace=True)
             self.strategy.parse_data(latest_data=latest_data)
-            self.strategy.input_data['HK.09988'].to_csv('output.csv')
+            self.strategy.input_data['HK.09988'].iloc[-5:].to_csv('output.csv')
             # self.strategy.buy(self.stock_code)
         self.assertEqual(True, True)
 
