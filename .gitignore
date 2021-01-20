@@ -160,3 +160,4 @@ cython_debug/
 !/filters/MA_Simple.py
 !/filters/Price_Threshold.py
 !/filters/Volume_Threshold.py
+!/filters/Triple_Cross.py
