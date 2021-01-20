@@ -47,7 +47,7 @@ create table stock_pool
     date   text    not null,
     filter text    not null,
     code   text    not null,
-    name   text no
+    name text
 );
 
 create unique index stock_pool_id_uindex

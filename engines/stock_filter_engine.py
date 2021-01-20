@@ -74,7 +74,6 @@ class StockFilter:
         # Flatten Nested List
         for sublist in filtered_stock_list:
             for record in sublist:
-                print(record[0], YahooFinanceInterface.get_stock_info(record[0]))
                 database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1],
-                                        YahooFinanceInterface.get_stock_info(record[0])['longName'])
+                                        YahooFinanceInterface.get_stock_info(record[0]).get('longName', ''))
         database.commit()
