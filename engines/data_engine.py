@@ -39,12 +39,15 @@ class DatabaseInterface:
              k_type)
         )
 
-    def add_stock_pool(self, date, filter, code, name):
-        return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?, ?)", (None, date, filter, code, name))
+    def add_stock_pool(self, date, filter, code):
+        return self.execute("INSERT OR IGNORE INTO stock_pool VALUES(?, ?, ?, ?)", (None, date, filter, code))
 
     def get_stock_pool(self, date, filter):
         # NOT FINISHED YET.
         self.cur.execute("SELECT date, filter, code FROM stock_pool WHERE date=? and filter=?", (date, filter))
+
+    def add_stock_info(self, code, name):
+        return self.execute("INSERT OR IGNORE INTO stock_info VALUES(?, ?, ?)", (None, code, name))
 
     def delete_stock_pool_from_date(self, date):
         return self.execute("DELETE FROM stock_pool WHERE date=?", (date,))

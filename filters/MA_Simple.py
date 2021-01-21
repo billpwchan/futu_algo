@@ -22,7 +22,7 @@ class MASimple(Filters):
         :param info_data: Yahoo Finance Fundamental Data (Company Description. PE Ratio, Etc.)
         :return:
         """
-        if input_data.empty:
+        if input_data.empty or input_data.shape[0] < 21:
             return False
 
         input_data['MA_1'] = input_data['close'].rolling(window=self.MA_PERIOD1).mean()

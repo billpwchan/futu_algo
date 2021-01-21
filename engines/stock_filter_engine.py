@@ -40,7 +40,7 @@ class StockFilter:
         for stock_filter in self.stock_filters:
             if stock_filter.validate(quant_data, info_data):
                 self.default_logger.info(
-                    f"{equity_code} is selected based on stock filter {[type(stock_filter).__name__ for stock_filter in self.stock_filters]}")
+                    f"{equity_code} is selected based on stock filter {type(stock_filter).__name__}")
                 output_list.append((type(stock_filter).__name__, equity_code))
         return output_list
 
@@ -54,6 +54,8 @@ class StockFilter:
 
         pool = Pool(cpu_count())
         filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
+        pool.close()
+        pool.join()
 
         return [item for item in filtered_stock_list if item is not None]
 
@@ -65,15 +67,26 @@ class StockFilter:
        """
         pool = Pool(cpu_count())
         filtered_stock_list = pool.map(self.validate_stock_individual, self.full_equity_list)
+        pool.close()
+        pool.join()
+        # filtered_stock_list = []
+        # for stock_code in self.full_equity_list:
+        #     filtered_stock_list.append(self.validate_stock_individual(stock_code))
 
         # Remove Redundant Records (If Exists)
         database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         database.delete_stock_pool_from_date(date.today().strftime("%Y-%m-%d"))
         database.commit()
-
         # Flatten Nested List
         for sublist in filtered_stock_list:
             for record in sublist:
-                database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1],
-                                        YahooFinanceInterface.get_stock_info(record[1]).get('longName', ''))
-        database.commit()
+                database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1])
+                self.default_logger.info(f"Added Filtered Stock {record[1]} based on Filter {record[0]}")
+            database.commit()
+
+    def update_stock_info(self):
+        database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+        for stock_code in self.full_equity_list:
+            database.add_stock_info(stock_code, YahooFinanceInterface.get_stock_info(stock_code).get("longName", ""))
+            database.commit()
+            self.default_logger.info(f"Updated Stock Info for {stock_code}")
