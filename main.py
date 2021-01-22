@@ -132,6 +132,7 @@ def main():
 
     stock_filter = StockFilter(stock_filters=[])
     stock_filter.update_stock_info()
+
     futu_trade.display_quota()
 
 

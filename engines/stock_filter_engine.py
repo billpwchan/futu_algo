@@ -4,6 +4,7 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import configparser
+import json
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
@@ -84,9 +85,19 @@ class StockFilter:
                 self.default_logger.info(f"Added Filtered Stock {record[1]} based on Filter {record[0]}")
             database.commit()
 
+    def parse_stock_info(self, stock_code):
+        return (stock_code, YahooFinanceInterface.get_stock_info(stock_code))
+
     def update_stock_info(self):
-        database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
-        for stock_code in self.full_equity_list:
-            database.add_stock_info(stock_code, YahooFinanceInterface.get_stock_info(stock_code).get("longName", ""))
-            database.commit()
-            self.default_logger.info(f"Updated Stock Info for {stock_code}")
+        pool = Pool(cpu_count())
+        output_list = pool.map(self.parse_stock_info, self.full_equity_list)
+        pool.close()
+        pool.join()
+
+        output_dict = {}
+        for record in output_list:
+            output_dict[record[0]] = output_dict.get(record[0], record[1])
+            self.default_logger.info(f"Updated Stock Info for {record[0]}")
+
+        with open('./data/Stock_Pool/stock_info.json', 'w') as fp:
+            json.dump(output_dict, fp)
