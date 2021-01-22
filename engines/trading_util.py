@@ -60,7 +60,7 @@ class TradingUtil:
             self.default_logger.info(
                 f"Detected unfilled SELL ORDER for {stock_code}, withdrawal based on new Buy Decision")
             # Iterate all unfilled Sell order
-            for index, row in order_list_data['order_id'].iterrows():
+            for index, row in order_list_data.iterrows():
                 self.trade_ctx.modify_order(modify_order_op=ModifyOrderOp.CANCEL, order_id=row['order_id'], qty=0,
                                             price=0, adjust_limit=0, trd_env=self.trd_env, acc_id=0, acc_index=0)
                 return
@@ -138,7 +138,7 @@ class TradingUtil:
             self.default_logger.info(
                 f"Detected unfilled BUY ORDER for {stock_code}, withdrawal based on new SELL Decision")
             # Iterate all unfilled Buy order
-            for index, row in order_list_data['order_id'].iterrows():
+            for index, row in order_list_data.iterrows():
                 self.trade_ctx.modify_order(modify_order_op=ModifyOrderOp.CANCEL, order_id=row['order_id'], qty=0,
                                             price=0, adjust_limit=0, trd_env=self.trd_env, acc_id=0, acc_index=0)
             return

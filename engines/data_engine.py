@@ -61,7 +61,8 @@ class YahooFinanceInterface:
     @staticmethod
     def get_top_30_hsi_constituents() -> list:
         payload = pd.read_html('https://finance.yahoo.com/quote/%5EHSI/components/')[0]
-        return payload['Symbol'].tolist()
+        return [YahooFinanceInterface.yfinance_code_to_futu_code(stock_code) for stock_code in
+                payload['Symbol'].tolist()]
 
     @staticmethod
     def futu_code_to_yfinance_code(futu_code: str) -> str:

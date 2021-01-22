@@ -36,6 +36,9 @@ def daily_update_data(futu_trade, force_update: bool = False):
     stock_filter = StockFilter(stock_filters=filters)
     stock_filter.update_filtered_equity_pools()
 
+    # Daily Update Stock Info (Need to Rethink!!!)
+    # stock_filter.update_stock_info()
+
     # Daily Update HKEX Security List & Subscribed Data
     data_engine.HKEXInterface.update_security_list_full()
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
@@ -126,12 +129,11 @@ def main():
         print(filtered_stock_list)
     if args.strategy:
         # Initialize Strategies
-        stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
-            database_path='./database/stock_data.sqlite').get_stock_list()
+        # stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
+        #     database_path='./database/stock_data.sqlite').get_stock_list()
+        stock_list = ['HK.00322', 'HK.01208', 'HK.01378', 'HK.01530', 'HK.01860', 'HK.02600']
+        stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
-
-    stock_filter = StockFilter(stock_filters=[])
-    stock_filter.update_stock_info()
 
     futu_trade.display_quota()
 
