@@ -15,7 +15,7 @@ from util import logger
 
 
 class Backtesting:
-    def __init__(self, stock_list: list, start_date: date, end_date: date):
+    def __init__(self, stock_list: list, start_date: date, end_date: date, observation: int = 100):
         self.INITIAL_CAPITAL = 10 ** 6
         self.stock_list = stock_list
         self.strategy = None
@@ -24,6 +24,9 @@ class Backtesting:
         self.date_range = pd.date_range(self.start_date, self.end_date - timedelta(days=1), freq='d').strftime(
             "%Y-%m-%d").tolist()
         self.input_data = None
+        self.observation = observation
+        self.transactions = {}
+        self.returns_df = pd.DataFrame(columns=self.stock_list, index=self.date_range)
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger("backtesting")
@@ -39,16 +42,33 @@ class Backtesting:
                  Path(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').exists() and (not pd.read_csv(
                      f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').empty)],
                 ignore_index=True)
-
+            input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
             output_dict[stock_code] = output_dict.get(stock_code, input_df)
             self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
         self.input_data = output_dict
 
-    def get_backtesting_init_data(self, observation: int = 100) -> dict:
-        return {key: value.copy().iloc[:min(value.shape[0], observation)] for (key, value) in self.input_data.items()}
+    def get_backtesting_init_data(self) -> dict:
+        return {key: value.copy().iloc[:min(value.shape[0], self.observation)] for (key, value) in
+                self.input_data.items()}
 
     def init_strategy(self, strategy: Strategies):
-        print("Hello")
+        self.strategy = strategy
 
     def calculate_return(self):
-        print("Hello")
+        backtesting_data = {key: value.iloc[self.observation:].reset_index(drop=True) for (key, value) in
+                            self.input_data.items()}
+        for stock_code in self.stock_list:
+            for index, row in backtesting_data[stock_code].iterrows():
+                latest_data = row.to_frame().transpose()
+                latest_data.reset_index(drop=True, inplace=True)
+                self.strategy.parse_data(latest_data=latest_data)
+                if self.strategy.buy(stock_code):
+                    if self.transactions.get(stock_code, 0) == 0:
+                        self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
+                        self.transactions[stock_code] = self.transactions.get(stock_code, row['close'])
+                    elif self.transactions.get(stock_code, 0) != 0:
+                        self.default_logger.info(
+                            f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
+                if self.strategy.sell(stock_code):
+                    if self.transactions.get(stock_code, 0) != 0:
+                        print(0)
