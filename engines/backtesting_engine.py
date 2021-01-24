@@ -15,19 +15,20 @@ from util import logger
 
 
 class Backtesting:
-    def __init__(self, stock_list: list, strategy: Strategies, start_date: date, end_date: date):
+    def __init__(self, stock_list: list, start_date: date, end_date: date):
         self.INITIAL_CAPITAL = 10 ** 6
         self.stock_list = stock_list
-        self.strategy = strategy
+        self.strategy = None
         self.start_date = start_date
         self.end_date = end_date
         self.date_range = pd.date_range(self.start_date, self.end_date - timedelta(days=1), freq='d').strftime(
             "%Y-%m-%d").tolist()
+        self.input_data = None
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger("backtesting")
 
-    def prepare_input_data_file_1M(self):
+    def prepare_input_data_file_1M(self) -> None:
         column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
         output_dict = {}
         for stock_code in self.stock_list:
@@ -41,7 +42,13 @@ class Backtesting:
 
             output_dict[stock_code] = output_dict.get(stock_code, input_df)
             self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
-        return output_dict
+        self.input_data = output_dict
+
+    def get_backtesting_init_data(self, observation: int = 100) -> dict:
+        return {key: value.copy().iloc[:min(value.shape[0], observation)] for (key, value) in self.input_data.items()}
+
+    def init_strategy(self, strategy: Strategies):
+        print("Hello")
 
     def calculate_return(self):
         print("Hello")

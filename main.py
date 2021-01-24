@@ -84,9 +84,10 @@ def __init_filter(filter_name: str) -> Filters or dict:
 def init_backtesting():
     start_date = datetime(2019, 1, 1).date()
     end_date = datetime(2020, 12, 20).date()
-    bt = Backtesting(stock_list=['HK.00001'], strategy=KDJMACDClose(input_data={}), start_date=start_date,
+    bt = Backtesting(stock_list=['HK.00001'], start_date=start_date,
                      end_date=end_date)
-    print(bt.prepare_input_data_file_1M())
+    bt.prepare_input_data_file_1M()
+    KDJ_MACD_Close = KDJMACDClose(input_data=bt.get_backtesting_init_data())
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
