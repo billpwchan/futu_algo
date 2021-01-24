@@ -88,7 +88,8 @@ def init_backtesting():
     bt.prepare_input_data_file_1M()
     strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
-    bt.calculate_return()
+    # bt.calculate_return()
+    bt.create_tear_sheet()
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):

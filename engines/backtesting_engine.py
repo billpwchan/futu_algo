@@ -9,6 +9,7 @@ from datetime import date, timedelta, datetime
 from pathlib import Path
 
 import pandas as pd
+import pyfolio as pf
 
 from engines.data_engine import HKEXInterface
 from strategies.Strategies import Strategies
@@ -105,10 +106,12 @@ class Backtesting:
                         self.default_logger.info(f"PROFIT earned: {profit}")
                         # Update Positions
                         self.positions.pop(stock_code, None)
+        self.returns_df['returns'] = self.returns_df.sum(axis=1)
+        self.returns_df.to_csv(f'./backtesting_report/Report_{datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")}.csv')
 
-        self.returns_df.to_csv('output.csv')
-
-# for index, row in backtesting_data[stock_code].iterrows():
-#     latest_data = row.to_frame().transpose()
-#     latest_data.reset_index(drop=True, inplace=True)
-#     self.strategy.parse_data(latest_data=latest_data)
+    def create_tear_sheet(self):
+        return_ser = pd.read_csv('output.csv', index_col=0, header=0)
+        return_ser.index = pd.to_datetime(return_ser.index)
+        # pf.create_returns_tear_sheet(return_ser['HK.00001'])
+        with open("data.html", "w") as file:
+            file.write(pf.create_simple_tear_sheet(returns=return_ser['HK.00001']))
