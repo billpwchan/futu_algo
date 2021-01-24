@@ -3,11 +3,15 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-from datetime import date
+import configparser
+import json
+from datetime import date, timedelta
+from pathlib import Path
 
 import pandas as pd
 
 from strategies.Strategies import Strategies
+from util import logger
 
 
 class Backtesting:
@@ -17,20 +21,27 @@ class Backtesting:
         self.strategy = strategy
         self.start_date = start_date
         self.end_date = end_date
+        self.date_range = pd.date_range(self.start_date, self.end_date - timedelta(days=1), freq='d').strftime(
+            "%Y-%m-%d").tolist()
+        self.config = configparser.ConfigParser()
+        self.config.read("config.ini")
+        self.default_logger = logger.get_logger("backtesting")
 
-    def __prepare_input_data(self):
+    def prepare_input_data_file_1M(self):
+        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+        output_dict = {}
         for stock_code in self.stock_list:
-            delta = 0
-            # Check if the file already exists or the dataframe has no data (Non-Trading Day)
-            while \
-                    not Path(
-                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() or pd.read_csv(
-                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
-                delta += 1
+            # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
+            input_df = pd.concat(
+                [pd.read_csv(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv', index_col=None) for input_date in
+                 self.date_range if
+                 Path(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').exists() and (not pd.read_csv(
+                     f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').empty)],
+                ignore_index=True)
 
-            self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)
-            self.input_data = self.complete_data.iloc[:150, :]
-            self.test_data = self.complete_data.iloc[150:, :]
+            output_dict[stock_code] = output_dict.get(stock_code, input_df)
+            self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
+        return output_dict
 
     def calculate_return(self):
         print("Hello")

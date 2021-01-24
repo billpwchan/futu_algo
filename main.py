@@ -6,11 +6,12 @@
 
 import argparse
 import glob
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from futu import KLType
 
 from engines import trading_engine, data_engine
+from engines.backtesting_engine import Backtesting
 from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
@@ -80,8 +81,12 @@ def __init_filter(filter_name: str) -> Filters or dict:
     return filters.get(filter_name, MASimple())
 
 
-def __init_backtesting():
-    start_date = datetime.today() - timedelta(days=365)
+def init_backtesting():
+    start_date = datetime(2019, 1, 1).date()
+    end_date = datetime(2020, 12, 20).date()
+    bt = Backtesting(stock_list=['HK.00001'], strategy=KDJMACDClose(input_data={}), start_date=start_date,
+                     end_date=end_date)
+    print(bt.prepare_input_data_file_1M())
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
@@ -139,6 +144,8 @@ def main():
         stock_list = ['HK.00322', 'HK.01208', 'HK.01378', 'HK.01530', 'HK.01860', 'HK.02600']
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
+
+    init_backtesting()
 
     futu_trade.display_quota()
 
