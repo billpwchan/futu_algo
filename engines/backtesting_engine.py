@@ -10,12 +10,19 @@ from pathlib import Path
 
 import pandas as pd
 
+from engines.data_engine import HKEXInterface
 from strategies.Strategies import Strategies
 from util import logger
 
 
 class Backtesting:
     def __init__(self, stock_list: list, start_date: date, end_date: date, observation: int = 100):
+        # Program-Related
+        self.config = configparser.ConfigParser()
+        self.config.read("config.ini")
+        self.default_logger = logger.get_logger("backtesting")
+
+        # Backtesting-Related
         self.INITIAL_CAPITAL = 10 ** 6
         self.stock_list = stock_list
         self.strategy = None
@@ -23,13 +30,15 @@ class Backtesting:
         self.end_date = end_date
         self.date_range = pd.date_range(self.start_date, self.end_date - timedelta(days=1), freq='d').strftime(
             "%Y-%m-%d").tolist()
-        self.input_data = None
         self.observation = observation
+
+        # Transactions-Related
+        self.input_data = None
         self.transactions = {}
+        self.board_lot_mapping = HKEXInterface.get_board_lot_full()
         self.returns_df = pd.DataFrame(columns=self.stock_list, index=self.date_range)
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
-        self.default_logger = logger.get_logger("backtesting")
+        self.fixed_charge = self.config['Backtesting.Commission.HK'].getfloat('Fixed_Charge')
+        self.perc_charge = self.config['Backtesting.Commission.HK'].getfloat('Perc_Charge')
 
     def prepare_input_data_file_1M(self) -> None:
         column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
@@ -71,4 +80,7 @@ class Backtesting:
                             f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
                 if self.strategy.sell(stock_code):
                     if self.transactions.get(stock_code, 0) != 0:
-                        print(0)
+                        current_price = row['close']
+                        buy_price = self.transactions.get(stock_code, current_price)
+
+                        self.transactions[stock_code] = 0

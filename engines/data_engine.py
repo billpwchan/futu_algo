@@ -154,3 +154,12 @@ class HKEXInterface:
         """
         input_csv = HKEXInterface.get_security_df_full()
         return [('HK.' + item) for item in input_csv[input_csv['Category'] == 'Equity']['Stock Code'].tolist()]
+
+    @staticmethod
+    def get_board_lot_full() -> dict:
+        """
+            Return Full Dict of the Board Lot Size (Minimum Trading Unit) for each stock E.g. {'HK.00001': 500}
+        """
+        input_csv = HKEXInterface.get_security_df_full()
+        return {('HK.' + row['Stock Code']): int(row['Board Lot'].replace(',', '')) for index, row in
+                input_csv[input_csv['Category'] == 'Equity'].iterrows()}
