@@ -5,7 +5,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import configparser
 import json
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -34,7 +34,7 @@ class Backtesting:
 
         # Transactions-Related
         self.input_data = None
-        self.transactions = {}
+        self.positions = {}
         self.board_lot_mapping = HKEXInterface.get_board_lot_full()
         self.returns_df = pd.DataFrame(columns=self.stock_list, index=self.date_range)
         self.fixed_charge = self.config['Backtesting.Commission.HK'].getfloat('Fixed_Charge')
@@ -72,15 +72,26 @@ class Backtesting:
                 latest_data.reset_index(drop=True, inplace=True)
                 self.strategy.parse_data(latest_data=latest_data)
                 if self.strategy.buy(stock_code):
-                    if self.transactions.get(stock_code, 0) == 0:
+                    if self.positions.get(stock_code, 0) == 0:
                         self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
-                        self.transactions[stock_code] = self.transactions.get(stock_code, row['close'])
-                    elif self.transactions.get(stock_code, 0) != 0:
+                        self.positions[stock_code] = self.positions.get(stock_code, row['close'])
+                    elif self.positions.get(stock_code, 0) != 0:
                         self.default_logger.info(
                             f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
                 if self.strategy.sell(stock_code):
-                    if self.transactions.get(stock_code, 0) != 0:
+                    if self.positions.get(stock_code, 0) != 0:
                         current_price = row['close']
-                        buy_price = self.transactions.get(stock_code, current_price)
+                        buy_price = self.positions.get(stock_code, current_price)
+                        qty = self.board_lot_mapping.get(stock_code, 0)
+                        EBIT = (current_price - buy_price) * qty
+                        profit = EBIT * self.perc_charge - self.fixed_charge
+                        current_date = datetime.strptime(row['time_key'], '%Y-%m-%d  %H:%M:%S').date()
 
-                        self.transactions[stock_code] = 0
+                        self.returns_df.loc[str(current_date), stock_code] += profit
+
+                        self.default_logger.info(f"SIMULATE SELL ORDER FOR {stock_code} using PRICE {row['close']}")
+                        self.default_logger.info(f"PROFIT earned: {profit}")
+                        # Update Positions
+                        self.positions[stock_code] = 0
+
+        self.returns_df.to_csv('output.csv')

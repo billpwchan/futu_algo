@@ -16,7 +16,7 @@ class Strategies(ABC):
         super().__init__()
 
     @abstractmethod
-    def parse_data(self, latest_data: pd.DataFrame):
+    def parse_data(self, latest_data: pd.DataFrame, backtesting: bool):
         pass
 
     @abstractmethod

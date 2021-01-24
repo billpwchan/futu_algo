@@ -34,7 +34,7 @@ class KDJCross(Strategies):
         super().__init__(input_data)
         self.parse_data()
 
-    def parse_data(self, latest_data: pd.DataFrame = None):
+    def parse_data(self, latest_data: pd.DataFrame = None, backtesting: bool = False):
         # Received New Data => Parse it Now to input_data
         if latest_data is not None:
             # Only need to update MACD for the stock_code with new data
@@ -54,8 +54,9 @@ class KDJCross(Strategies):
         # Calculate EMA for the stock_list
         for stock_code in stock_list:
             # Need to truncate to a maximum length for low-latency
-            self.input_data[stock_code] = self.input_data[stock_code].iloc[
-                                          -min(self.OBSERVATION, self.input_data[stock_code].shape[0]):]
+            if not backtesting:
+                self.input_data[stock_code] = self.input_data[stock_code].iloc[
+                                              -min(self.OBSERVATION, self.input_data[stock_code].shape[0]):]
             self.input_data[stock_code][['open', 'close', 'high', 'low']] = self.input_data[stock_code][
                 ['open', 'close', 'high', 'low']].apply(pd.to_numeric)
 
