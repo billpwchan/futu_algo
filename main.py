@@ -6,6 +6,7 @@
 
 import argparse
 import glob
+from datetime import datetime, timedelta
 
 from futu import KLType
 
@@ -77,6 +78,10 @@ def __init_filter(filter_name: str) -> Filters or dict:
     if filter_name == 'all':
         return filters.values()
     return filters.get(filter_name, MASimple())
+
+
+def __init_backtesting():
+    start_date = datetime.today() - timedelta(days=365)
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
