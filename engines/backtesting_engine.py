@@ -24,6 +24,7 @@ class Backtesting:
 
         # Backtesting-Related
         self.INITIAL_CAPITAL = 10 ** 6
+        self.capital = self.INITIAL_CAPITAL
         self.stock_list = stock_list
         self.strategy = None
         self.start_date = start_date
@@ -36,7 +37,8 @@ class Backtesting:
         self.input_data = None
         self.positions = {}
         self.board_lot_mapping = HKEXInterface.get_board_lot_full()
-        self.returns_df = pd.DataFrame(columns=self.stock_list, index=self.date_range)
+        self.returns_df = pd.DataFrame(0, columns=self.stock_list, index=self.date_range)
+        self.returns_df = self.returns_df.apply(pd.to_numeric)
         self.fixed_charge = self.config['Backtesting.Commission.HK'].getfloat('Fixed_Charge')
         self.perc_charge = self.config['Backtesting.Commission.HK'].getfloat('Perc_Charge')
 
@@ -72,9 +74,10 @@ class Backtesting:
                 latest_data.reset_index(drop=True, inplace=True)
                 self.strategy.parse_data(latest_data=latest_data)
                 if self.strategy.buy(stock_code):
-                    if self.positions.get(stock_code, 0) == 0:
+                    if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:
                         self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
                         self.positions[stock_code] = self.positions.get(stock_code, row['close'])
+                        self.capital -= row['close'] * self.board_lot_mapping.get(stock_code, 0)
                     elif self.positions.get(stock_code, 0) != 0:
                         self.default_logger.info(
                             f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
@@ -88,10 +91,11 @@ class Backtesting:
                         current_date = datetime.strptime(row['time_key'], '%Y-%m-%d  %H:%M:%S').date()
 
                         self.returns_df.loc[str(current_date), stock_code] += profit
+                        self.capital += current_price * qty
 
                         self.default_logger.info(f"SIMULATE SELL ORDER FOR {stock_code} using PRICE {row['close']}")
                         self.default_logger.info(f"PROFIT earned: {profit}")
                         # Update Positions
-                        self.positions[stock_code] = 0
+                        self.positions.pop(stock_code, None)
 
         self.returns_df.to_csv('output.csv')
