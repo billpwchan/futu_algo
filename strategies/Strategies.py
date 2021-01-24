@@ -27,6 +27,18 @@ class Strategies(ABC):
     def sell(self, stock_code) -> bool:
         pass
 
+    def get_input_data(self) -> dict:
+        return self.input_data.copy()
+
+    def get_input_data_stock_code(self, stock_code: str) -> pd.DataFrame:
+        return self.input_data[stock_code].copy()
+
+    def set_input_data(self, input_data: dict) -> None:
+        self.input_data = input_data.copy()
+
+    def set_input_data_stock_code(self, stock_code: str, input_df: pd.DataFrame) -> None:
+        self.input_data[stock_code] = input_df.copy()
+
 
 def timeit(method):
     def timed(*args, **kw):

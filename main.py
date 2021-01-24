@@ -84,10 +84,9 @@ def __init_filter(filter_name: str) -> Filters or dict:
 def init_backtesting():
     start_date = datetime(2020, 1, 1).date()
     end_date = datetime(2020, 2, 3).date()
-    bt = Backtesting(stock_list=['HK.00001'], start_date=start_date,
-                     end_date=end_date)
+    bt = Backtesting(stock_list=['HK.00001'], start_date=start_date, end_date=end_date, observation=100)
     bt.prepare_input_data_file_1M()
-    strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data())
+    strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
     bt.calculate_return()
 

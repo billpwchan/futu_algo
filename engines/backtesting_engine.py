@@ -69,10 +69,18 @@ class Backtesting:
         backtesting_data = {key: value.iloc[self.observation:].reset_index(drop=True) for (key, value) in
                             self.input_data.items()}
         for stock_code in self.stock_list:
-            for index, row in backtesting_data[stock_code].iterrows():
-                latest_data = row.to_frame().transpose()
-                latest_data.reset_index(drop=True, inplace=True)
-                self.strategy.parse_data(latest_data=latest_data)
+            self.strategy.parse_data(latest_data=backtesting_data[stock_code], backtesting=True)
+            parsed_backtesting_data = self.strategy.get_input_data_stock_code(stock_code)
+            # print(parsed_backtesting_data)
+            # return
+            for index in range(self.observation, parsed_backtesting_data.shape[0]):
+                start_index = index - self.observation
+                end_index = index
+                input_df = parsed_backtesting_data.iloc[start_index:end_index]
+                self.strategy.set_input_data_stock_code(stock_code=stock_code,
+                                                        input_df=parsed_backtesting_data.iloc[start_index:end_index])
+                row = input_df.iloc[-1]
+
                 if self.strategy.buy(stock_code):
                     if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:
                         self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
@@ -99,3 +107,8 @@ class Backtesting:
                         self.positions.pop(stock_code, None)
 
         self.returns_df.to_csv('output.csv')
+
+# for index, row in backtesting_data[stock_code].iterrows():
+#     latest_data = row.to_frame().transpose()
+#     latest_data.reset_index(drop=True, inplace=True)
+#     self.strategy.parse_data(latest_data=latest_data)
