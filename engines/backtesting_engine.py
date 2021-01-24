@@ -37,6 +37,7 @@ class Backtesting:
         # Transactions-Related
         self.input_data = None
         self.positions = {}
+        self.transactions = pd.DataFrame(columns=['time_key', 'code', 'price', 'quantity', 'trd_side'])
         self.board_lot_mapping = HKEXInterface.get_board_lot_full()
         self.returns_df = pd.DataFrame(0, columns=self.stock_list, index=self.date_range)
         self.returns_df = self.returns_df.apply(pd.to_numeric)
@@ -69,12 +70,18 @@ class Backtesting:
     def calculate_return(self):
         backtesting_data = {key: value.iloc[self.observation:].reset_index(drop=True) for (key, value) in
                             self.input_data.items()}
-        for stock_code in self.stock_list:
-            self.strategy.parse_data(latest_data=backtesting_data[stock_code], backtesting=True)
-            parsed_backtesting_data = self.strategy.get_input_data_stock_code(stock_code)
-            # print(parsed_backtesting_data)
-            # return
-            for index in range(self.observation, parsed_backtesting_data.shape[0]):
+
+        # ASSUME All Dataframe has the same shape (Should Be Validated in Prepare Data Step)
+        for index in range(self.observation, list(backtesting_data.values())[0].shape[0]):
+
+            for stock_code in self.stock_list:
+                if backtesting_data[stock_code].shape[0] <= index:
+                    self.default_logger.error(f"INVALID DIMENSION FOUND IN BACKTESTING ENGINE FOR {stock_code}")
+                    continue
+
+                self.strategy.parse_data(latest_data=backtesting_data[stock_code], backtesting=True)
+                parsed_backtesting_data = self.strategy.get_input_data_stock_code(stock_code)
+
                 start_index = index - self.observation
                 end_index = index
                 input_df = parsed_backtesting_data.iloc[start_index:end_index]
@@ -84,9 +91,15 @@ class Backtesting:
 
                 if self.strategy.buy(stock_code):
                     if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:
-                        self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
                         self.positions[stock_code] = self.positions.get(stock_code, row['close'])
-                        self.capital -= row['close'] * self.board_lot_mapping.get(stock_code, 0)
+                        current_price = row['close']
+                        qty = self.board_lot_mapping.get(stock_code, 0)
+                        # Update Holding Capital
+                        self.capital -= current_price * qty
+                        # Update Transaction History Dataframe
+                        self.transactions.append(pd.Series([row['time_key'], stock_code, current_price, qty, 'BUY'],
+                                                           index=self.transactions.columns))
+                        self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
                     elif self.positions.get(stock_code, 0) != 0:
                         self.default_logger.info(
                             f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
@@ -101,7 +114,8 @@ class Backtesting:
 
                         self.returns_df.loc[str(current_date), stock_code] += profit
                         self.capital += current_price * qty
-
+                        self.transactions.append(pd.Series([row['time_key'], stock_code, current_price, qty, 'SELL'],
+                                                           index=self.transactions.columns))
                         self.default_logger.info(f"SIMULATE SELL ORDER FOR {stock_code} using PRICE {row['close']}")
                         self.default_logger.info(f"PROFIT earned: {profit}")
                         # Update Positions
