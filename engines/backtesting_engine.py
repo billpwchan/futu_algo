@@ -97,8 +97,9 @@ class Backtesting:
                         # Update Holding Capital
                         self.capital -= current_price * qty
                         # Update Transaction History Dataframe
-                        self.transactions.append(pd.Series([row['time_key'], stock_code, current_price, qty, 'BUY'],
-                                                           index=self.transactions.columns))
+                        self.transactions = self.transactions.append(
+                            pd.Series([row['time_key'], stock_code, current_price, qty, 'BUY'],
+                                      index=self.transactions.columns), ignore_index=True)
                         self.default_logger.info(f"SIMULATE BUY ORDER for {stock_code} using PRICE {row['close']}")
                     elif self.positions.get(stock_code, 0) != 0:
                         self.default_logger.info(
@@ -109,19 +110,25 @@ class Backtesting:
                         buy_price = self.positions.get(stock_code, current_price)
                         qty = self.board_lot_mapping.get(stock_code, 0)
                         EBIT = (current_price - buy_price) * qty
-                        profit = EBIT * self.perc_charge - self.fixed_charge
+
+                        # Profit = EBIT - fixed charge (15 HKD * 2) - Percentage Charge (Buy Value + Sale Value) * 0.10%
+                        profit = EBIT - 2 * self.fixed_charge - (
+                                buy_price + current_price) * qty * self.perc_charge / 100
                         current_date = datetime.strptime(row['time_key'], '%Y-%m-%d  %H:%M:%S').date()
 
                         self.returns_df.loc[str(current_date), stock_code] += profit
                         self.capital += current_price * qty
-                        self.transactions.append(pd.Series([row['time_key'], stock_code, current_price, qty, 'SELL'],
-                                                           index=self.transactions.columns))
+                        self.transactions = self.transactions.append(
+                            pd.Series([row['time_key'], stock_code, current_price, qty, 'SELL'],
+                                      index=self.transactions.columns), ignore_index=True)
                         self.default_logger.info(f"SIMULATE SELL ORDER FOR {stock_code} using PRICE {row['close']}")
                         self.default_logger.info(f"PROFIT earned: {profit}")
                         # Update Positions
                         self.positions.pop(stock_code, None)
         self.returns_df['returns'] = self.returns_df.sum(axis=1)
-        self.returns_df.to_csv(f'./backtesting_report/Report_{datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")}.csv')
+        time_key = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
+        self.returns_df.to_csv(f'./backtesting_report/{time_key}_Returns.csv')
+        self.transactions.to_csv(f'./backtesting_report/{time_key}_Transactions.csv')
 
     def create_tear_sheet(self):
         return_ser = pd.read_csv('output.csv', index_col=0, header=0)

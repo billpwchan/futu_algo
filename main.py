@@ -35,15 +35,17 @@ from strategies.Strategies import Strategies
 
 def daily_update_data(futu_trade, force_update: bool = False):
     # Daily Update Filtered Security
-    filters = list(__init_filter(filter_name='all'))
-    stock_filter = StockFilter(stock_filters=filters)
-    stock_filter.update_filtered_equity_pools()
+    # filters = list(__init_filter(filter_name='all'))
+    # stock_filter = StockFilter(stock_filters=filters)
+    # stock_filter.update_filtered_equity_pools()
 
     # Daily Update Stock Info (Need to Rethink!!!)
     # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
     data_engine.HKEXInterface.update_security_list_full()
+
+    # Daily Update FuTu Historical Data
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
