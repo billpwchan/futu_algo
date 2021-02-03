@@ -82,12 +82,14 @@ class Backtesting:
                 self.strategy.parse_data(latest_data=backtesting_data[stock_code], backtesting=True)
                 parsed_backtesting_data = self.strategy.get_input_data_stock_code(stock_code)
 
+                # Added Empty Row at the bottom because the Strategies used -2 & -3 for trading only.
                 start_index = index - self.observation
                 end_index = index
                 input_df = parsed_backtesting_data.iloc[start_index:end_index]
+                input_df = input_df.append(pd.Series(), ignore_index=True)
                 self.strategy.set_input_data_stock_code(stock_code=stock_code,
                                                         input_df=parsed_backtesting_data.iloc[start_index:end_index])
-                row = input_df.iloc[-1]
+                row = input_df.iloc[-2]
 
                 if self.strategy.buy(stock_code):
                     if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:
@@ -107,7 +109,7 @@ class Backtesting:
                 if self.strategy.sell(stock_code):
                     if self.positions.get(stock_code, 0) != 0:
                         current_price = row['close']
-                        buy_price = self.positions.get(stock_code, current_price)
+                        buy_price = self.positions[stock_code]
                         qty = self.board_lot_mapping.get(stock_code, 0)
                         EBIT = (current_price - buy_price) * qty
 

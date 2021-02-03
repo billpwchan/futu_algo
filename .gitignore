@@ -161,3 +161,5 @@ cython_debug/
 !/filters/Price_Threshold.py
 !/filters/Volume_Threshold.py
 !/filters/Triple_Cross.py
+
+/backtesting_report/*

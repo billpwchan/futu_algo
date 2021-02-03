@@ -12,7 +12,6 @@ from futu import KLType
 
 from engines import trading_engine, data_engine
 from engines.backtesting_engine import Backtesting
-from engines.data_engine import YahooFinanceInterface
 from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
@@ -85,9 +84,9 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2020, 1, 1).date()
-    end_date = datetime(2020, 1, 10).date()
-    bt = Backtesting(stock_list=YahooFinanceInterface.get_top_30_hsi_constituents(), start_date=start_date,
+    start_date = datetime(2021, 1, 1).date()
+    end_date = datetime(2021, 1, 20).date()
+    bt = Backtesting(stock_list=['HK.00700'], start_date=start_date,
                      end_date=end_date, observation=100)
     bt.prepare_input_data_file_1M()
     strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
@@ -135,15 +134,15 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
 
+    if args.filter:
+        filtered_stock_list = init_stock_filter(args.filter)
+        print(filtered_stock_list)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
     if args.database:
         # Update ALl Data to Database
         futu_trade.store_all_data_database()
-    if args.filter:
-        filtered_stock_list = init_stock_filter(args.filter)
-        print(filtered_stock_list)
     if args.strategy:
         # Initialize Strategies
         # stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
@@ -151,10 +150,10 @@ def main():
         stock_list = ['HK.00322', 'HK.01208', 'HK.01378', 'HK.01530', 'HK.01860', 'HK.02600']
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
+        futu_trade.display_quota()
 
     init_backtesting()
 
-    futu_trade.display_quota()
 
 
 if __name__ == '__main__':
