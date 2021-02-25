@@ -162,4 +162,4 @@ cython_debug/
 !/filters/Volume_Threshold.py
 !/filters/Triple_Cross.py
 
-/backtesting_report/*
+/backtesting_report/
