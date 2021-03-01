@@ -12,6 +12,7 @@ from futu import KLType
 
 from engines import trading_engine, data_engine, email_engine
 from engines.backtesting_engine import Backtesting
+from engines.data_engine import YahooFinanceInterface
 from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
@@ -138,7 +139,8 @@ def main():
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
-        print(filtered_stock_list)
+        filtered_stock_dict = dict(zip(filtered_stock_list, YahooFinanceInterface.get_stocks_name(filtered_stock_list)))
+        email_handler.write_email('billpwchan@hotmail.com', filtered_stock_dict)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
@@ -153,8 +155,6 @@ def main():
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
-
-    email_handler.write_email('billpwchan@hotmail.com', 'Testing')
 
 
 if __name__ == '__main__':
