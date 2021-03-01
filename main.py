@@ -139,8 +139,9 @@ def main():
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
-        filtered_stock_dict = dict(zip(filtered_stock_list, YahooFinanceInterface.get_stocks_name(filtered_stock_list)))
+        filtered_stock_dict = YahooFinanceInterface.get_stocks_name(filtered_stock_list)
         email_handler.write_email('billpwchan@hotmail.com', filtered_stock_dict)
+        email_handler.write_email('ziwiiii3@gmail.com', filtered_stock_dict)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
@@ -151,7 +152,6 @@ def main():
         # Initialize Strategies
         stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
             database_path='./database/stock_data.sqlite').get_stock_list()
-        # stock_list = ['HK.00322', 'HK.01208', 'HK.01378', 'HK.01530', 'HK.01860', 'HK.02600']
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()

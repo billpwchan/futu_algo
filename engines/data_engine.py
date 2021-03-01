@@ -114,12 +114,12 @@ class YahooFinanceInterface:
     @staticmethod
     def get_stocks_history(stock_list: list) -> pd.DataFrame:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
-        return yf.download(stock_list, period="ytd", group_by="ticker", auto_adjust=True, actions=True, progress=False)
+        return yf.download(stock_list, period="max", group_by="ticker", auto_adjust=True, actions=True, progress=False)
 
     @staticmethod
     def get_stock_history(stock_code: str) -> pd.DataFrame:
         stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
-        return yf.download(stock_code, period="ytd", auto_adjust=True, actions=True, progress=False)
+        return yf.download(stock_code, period="max", auto_adjust=True, actions=True, progress=False)
 
 
 class HKEXInterface:

@@ -22,7 +22,10 @@ class StockFilter:
         self.stock_filters = stock_filters
 
     def validate_stock(self, equity_code):
-        quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+        try:
+            quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+        except:
+            self.default_logger.error('Exception Happened')
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
         info_data = {}
@@ -33,7 +36,10 @@ class StockFilter:
         return None
 
     def validate_stock_individual(self, equity_code):
-        quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+        try:
+            quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+        except:
+            self.default_logger.error('Exception Happened')
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
         info_data = {}
