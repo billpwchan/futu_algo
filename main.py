@@ -10,7 +10,7 @@ from datetime import datetime
 
 from futu import KLType
 
-from engines import trading_engine, data_engine
+from engines import trading_engine, data_engine, email_engine
 from engines.backtesting_engine import Backtesting
 from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
@@ -42,9 +42,10 @@ def daily_update_data(futu_trade, force_update: bool = False):
     # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    # data_engine.HKEXInterface.update_security_list_full()
+    data_engine.HKEXInterface.update_security_list_full()
 
     # Daily Update FuTu Historical Data
+    futu_trade.store_all_data_database()
     stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
@@ -133,6 +134,7 @@ def main():
 
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
+    email_handler = email_engine.Email()
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
@@ -152,7 +154,7 @@ def main():
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
 
-    # init_backtesting()
+    email_handler.write_email('to@example.com', 'Testing')
 
 
 if __name__ == '__main__':
