@@ -154,7 +154,7 @@ def main():
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
 
-    email_handler.write_email('to@example.com', 'Testing')
+    email_handler.write_email('billpwchan@hotmail.com', 'Testing')
 
 
 if __name__ == '__main__':
