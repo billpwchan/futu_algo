@@ -7,6 +7,7 @@
 import csv
 import sqlite3
 
+import humanize
 import openpyxl
 import pandas as pd
 import requests
@@ -110,6 +111,23 @@ class YahooFinanceInterface:
     def get_stocks_name(stock_list: list) -> dict:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         return {stock_code: yf.Ticker(stock_code).info['longName'] for stock_code in stock_list}
+
+    @staticmethod
+    def get_stocks_email(stock_list: list) -> dict:
+        stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
+        output_dict = {}
+        for stock_code in stock_list:
+            stock_info = yf.Ticker(stock_code).info
+            output_dict[stock_code] = {'longName': stock_info['longName'],
+                                       'previousClose': f"{stock_info['currency']} {stock_info['previousClose']}",
+                                       'open': f"{stock_info['currency']} {stock_info['open']}",
+                                       'dayRange': f"{stock_info['currency']} {stock_info['dayLow']}-{stock_info['dayHigh']}",
+                                       'marketCap': f"{stock_info['currency']} {stock_info['marketCap']}",
+                                       'beta': f"{stock_info['beta']}",
+                                       'PE(Trailing/Forward)': f"{stock_info['trailingPE']}, {stock_info['forwardPE']}",
+                                       'EPS(Trailing/Forward)': f"{stock_info['trailingEps']}, {stock_info['forwardEps']}",
+                                       'volume': humanize.intword(stock_info['volume'])}
+        return output_dict
 
     @staticmethod
     def get_stocks_history(stock_list: list) -> pd.DataFrame:

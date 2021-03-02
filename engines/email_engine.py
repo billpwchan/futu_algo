@@ -8,6 +8,7 @@
 import configparser
 import smtplib
 import ssl
+from datetime import datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from socket import gaierror
@@ -34,12 +35,9 @@ class Email:
 
         self.default_logger = logger.get_logger("email")
 
-    def write_email(self, receiver, message_content: dict):
-
-        # type your message: use two newlines (\n) to separate the subject from the message body, and use 'f' to  automatically insert variables in the text
-
+    def write_daily_stock_filter_email(self, receiver, message_content: dict):
         message = MIMEMultipart("alternative")
-        message["Subject"] = "Daily Filtered Stock List"
+        message["Subject"] = f"Daily Selected Stock List - {datetime.today().strftime('%Y-%m-%d')}"
         message["From"] = self.sender
         message["To"] = receiver
         text = "Please kindly review today's chosen stock list! "
@@ -94,15 +92,30 @@ class Email:
             <tr>
               <th>Stock Code</th>
               <th>Company Name</th>
+              <th>Last Close</th>
+              <th>Day's Range</th>
+              <th>Market Cap</th>
+              <th>Beta (5Y Monthly)</th>
+              <th>PE (Trailing/Forward)</th>
+              <th>EPS (Trailing/Forward)</th>
+              <th>Volume</th>
             </tr>
           </thead>
           <tbody>\n
         """
+
         for equity, values in message_content.items():
             html += f"""\
             <tr>
               <td>{equity}</td>
-              <td>{values}</td>
+              <td>{values['longName']}</td>
+              <td>{values['previousClose']}</td>
+              <td>{values['dayRange']}</td>
+              <td>{values['marketCap']}</td>
+              <td>{values['beta']}</td>
+              <td>{values['PE(Trailing/Forward)']}</td>
+              <td>{values['EPS(Trailing/Forward)']}</td>
+              <td>{values['volume']}</td>
             </tr>\n
             """
         html += """\

@@ -5,7 +5,9 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import argparse
+import configparser
 import glob
+import json
 from datetime import datetime
 
 from futu import KLType
@@ -111,6 +113,9 @@ def init_stock_filter(filter_list: list) -> list:
 
 def main():
     # Initialize Argument Parser
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--update", help="Daily Update Data (Execute Before Market Starts)",
                         action="store_true")
@@ -139,9 +144,12 @@ def main():
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
-        filtered_stock_dict = YahooFinanceInterface.get_stocks_name(filtered_stock_list)
-        email_handler.write_email('billpwchan@hotmail.com', filtered_stock_dict)
-        email_handler.write_email('ziwiiii3@gmail.com', filtered_stock_dict)
+        filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
+        subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
+        # for subscriber in subscription_list:
+
+        email_handler.write_daily_stock_filter_email('billpwchan@hotmail.com', filtered_stock_dict)
+        # email_handler.write_daily_stock_filter_email('ziwiiii3@gmail.com', filtered_stock_dict)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
