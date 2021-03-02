@@ -146,10 +146,8 @@ def main():
         filtered_stock_list = init_stock_filter(args.filter)
         filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
-        # for subscriber in subscription_list:
-
-        email_handler.write_daily_stock_filter_email('billpwchan@hotmail.com', filtered_stock_dict)
-        # email_handler.write_daily_stock_filter_email('ziwiiii3@gmail.com', filtered_stock_dict)
+        for subscriber in subscription_list:
+            email_handler.write_daily_stock_filter_email(subscriber, filtered_stock_dict)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)

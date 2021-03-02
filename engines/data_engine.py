@@ -118,15 +118,15 @@ class YahooFinanceInterface:
         output_dict = {}
         for stock_code in stock_list:
             stock_info = yf.Ticker(stock_code).info
-            output_dict[stock_code] = {'longName': stock_info.get('longName', ''),
-                                       'previousClose': f"{stock_info.get('currency', '')} {stock_info.get('previousClose', '')}",
-                                       'open': f"{stock_info.get('currency', '')} {stock_info.get('open', '')}",
-                                       'dayRange': f"{stock_info.get('currency', '')} {stock_info.get('dayLow', '')}-{stock_info.get('dayHigh', '')}",
-                                       'marketCap': f"{stock_info.get('currency', '')} {stock_info.get('marketCap', '')}",
-                                       'beta': f"{stock_info.get('beta', '')}",
-                                       'PE(Trailing/Forward)': f"{stock_info.get('trailingPE', '')}, {stock_info.get('forwardPE', '')}",
-                                       'EPS(Trailing/Forward)': f"{stock_info.get('trailingEps', '')}, {stock_info.get('forwardEps', '')}",
-                                       'volume': humanize.intword(stock_info.get('volume', ''))}
+            output_dict[stock_code] = {'longName': stock_info.get('longName', 'N/A'),
+                                       'previousClose': f"{stock_info.get('currency', 'N/A')} {stock_info.get('previousClose', 'N/A')}",
+                                       'open': f"{stock_info.get('currency', 'N/A')} {stock_info.get('open', 'N/A')}",
+                                       'dayRange': f"{stock_info.get('currency', 'N/A')} {stock_info.get('dayLow', 'N/A')}-{stock_info.get('dayHigh', 'N/A')}",
+                                       'marketCap': f"{stock_info.get('currency', 'N/A')} {humanize.intword(stock_info.get('marketCap', 'N/A'))}",
+                                       'beta': f"{stock_info.get('beta', 'N/A')}",
+                                       'PE(Trailing/Forward)': f"{stock_info.get('trailingPE', 'N/A')} / {stock_info.get('forwardPE', 'N/A')}",
+                                       'EPS(Trailing/Forward)': f"{stock_info.get('trailingEps', 'N/A')} / {stock_info.get('forwardEps', 'N/A')}",
+                                       'volume': humanize.intword(stock_info.get('volume', 'N/A'))}
         return output_dict
 
     @staticmethod
