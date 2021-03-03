@@ -16,6 +16,8 @@
 
 - Developed based on FutoOpenD and FutuOpenAPI
 - Low-latency Trading Support (up to 1M level)
+- Daily Stock Filtering and Email Notification
+- Strategy Backtesting and Reporting
 
 ## Issues
 
@@ -29,7 +31,7 @@
 
 | FutuAlgo Release | Futu OpenAPI Specification |
 |:-----------------|:---------------------------|
-| 0.0.1-alpha.x    | 4.0                        |
+| 0.0.2-alpha.x    | 4.0                        |
 
 ## Deployment
 
@@ -53,6 +55,21 @@ SubscribedDataFormat = None
 
 [Database]
 Database_path = <Your SQLite Database File Path>
+
+[TradePreference]
+Lot_size_multiplier = <# of Stocks to Buy per Signal>
+
+[Backtesting.Commission.HK]
+Fixed_Charge = <Fixed Transaction Fee and Tax in HKD - 15.5>
+Perc_Charge = <Percentage Transaction Fee in % - 0.1097>
+
+[Email]
+Port = <Server SMTP Setting>
+Smtp_server = <Server SMTP Setting>
+Sender = <Sender Email Address - account1@example.com>
+Login = <Sender Email Address - account1@example.com>
+Password = <Sender Email Password>
+SubscriptionList = ["account1@example.com", "account2@example.com"]
 ```
 
 **IMPORTANT NOTE:** The format may be changed in later commits. Please refer to this README if exception is raised.
@@ -104,6 +121,10 @@ Store all data from CSV to SQLite Database
 Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 
     python main.py -s MACD_Cross    /   python main.py --strategy MACD_Cross
+
+Execute Stock Filtering with Pre-defined Filtering Strategies
+
+    python main.py -f olume_Threshold Price_Threshold   /   python main.py --filter olume_Threshold Price_Threshold
 
 -----------
 

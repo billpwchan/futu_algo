@@ -24,11 +24,11 @@ class Email:
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
 
-        self.port = self.config['Email'].get('port')
-        self.smtp_server = self.config['Email'].get('smtp_server')
-        self.sender = self.config['Email'].get('sender')
-        self.login = self.config['Email'].get('login')
-        self.password = self.config['Email'].get('password')
+        self.port = self.config['Email'].get('Port')
+        self.smtp_server = self.config['Email'].get('Smtp_server')
+        self.sender = self.config['Email'].get('Sender')
+        self.login = self.config['Email'].get('Login')
+        self.password = self.config['Email'].get('Password')
 
         # Create a secure SSL context
         self.context = ssl.create_default_context()
