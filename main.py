@@ -21,6 +21,7 @@ from filters.Boll_Up import BollUp
 from filters.DZX_1B import DZX1B
 from filters.Filters import Filters
 from filters.MA_Simple import MASimple
+from filters.MA_Up_Trend import MAUpTrend
 from filters.Price_Threshold import PriceThreshold
 from filters.Quant_Breakthrough import QuantBreakthrough
 from filters.Triple_Cross import TripleCross
@@ -76,6 +77,7 @@ def __init_filter(filter_name: str) -> Filters or dict:
         'Boll_Up': BollUp(),
         'DZX_1B': DZX1B(),
         'MA_Simple': MASimple(),
+        'MA_Up_Trend': MAUpTrend(),
         'Price_Threshold': PriceThreshold(price_threshold=1),
         'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7),
         'Triple_Cross': TripleCross(),

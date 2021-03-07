@@ -139,7 +139,7 @@ class Email:
                 server.login(self.login, self.password)
                 server.sendmail(self.sender, receiver, message.as_string())
 
-            self.default_logger.info('Sent')
+            self.default_logger.info(f'Email Sent: {receiver}')
         except (gaierror, ConnectionRefusedError):
             self.default_logger.info('Failed to connect to the server. Bad connection settings?')
         except smtplib.SMTPServerDisconnected:
