@@ -35,9 +35,9 @@ class Email:
 
         self.default_logger = logger.get_logger("email")
 
-    def write_daily_stock_filter_email(self, receiver, message_content: dict):
+    def write_daily_stock_filter_email(self, receiver: str, filter_name: str, message_content: dict):
         message = MIMEMultipart("alternative")
-        message["Subject"] = f"Daily Selected Stock List - {datetime.today().strftime('%Y-%m-%d')}"
+        message["Subject"] = f"Daily Selected Stock List - {datetime.today().strftime('%Y-%m-%d')} - {filter_name}"
         message["From"] = self.sender
         message["To"] = receiver
         text = "Please kindly review today's chosen stock list! "

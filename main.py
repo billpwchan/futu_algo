@@ -136,6 +136,7 @@ def main():
                    "__init__" not in file_name and "Filters" not in file_name]
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
+    parser.add_argument("-en", "--email_name", type=str, help="Name of the applied stock filtering techniques")
 
     # Evaluate Arguments
     args = parser.parse_args()
@@ -149,7 +150,8 @@ def main():
         filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
         for subscriber in subscription_list:
-            email_handler.write_daily_stock_filter_email(subscriber, filtered_stock_dict)
+            filter_name = args.email_name if args.email_name else "Default Stock Filter"
+            email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
     if args.update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, force_update=args.force_update)

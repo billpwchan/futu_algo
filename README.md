@@ -124,7 +124,7 @@ Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 
 Execute Stock Filtering with Pre-defined Filtering Strategies
 
-    python main.py -f olume_Threshold Price_Threshold   /   python main.py --filter olume_Threshold Price_Threshold
+    python main.py -f Volume_Threshold Price_Threshold   /   python main.py --filter Volume_Threshold Price_Threshold
 
 -----------
 
