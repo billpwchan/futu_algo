@@ -6,7 +6,6 @@
  * Written by Bill Chan <billpwchan@hotmail.com>, 2021
  */
 
--- we don't know how to generate root <with-no-name> (class Root) :(
 create table stock_data
 (
     id               integer not null
@@ -46,8 +45,7 @@ create table stock_pool
             primary key autoincrement,
     date   text    not null,
     filter text    not null,
-    code   text    not null,
-    name text
+    code   text    not null
 );
 
 create unique index stock_pool_id_uindex
