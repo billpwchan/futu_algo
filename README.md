@@ -58,6 +58,7 @@ Database_path = <Your SQLite Database File Path>
 
 [TradePreference]
 Lot_size_multiplier = <# of Stocks to Buy per Signal>
+StockList = <Subscribed Stocks in List Format>
 
 [Backtesting.Commission.HK]
 Fixed_Charge = <Fixed Transaction Fee and Tax in HKD - 15.5>
@@ -76,13 +77,9 @@ SubscriptionList = ["account1@example.com", "account2@example.com"]
 
 ### 1. Install Dependencies
 
-Install using [pip](https://pypi.org/project/pip/):
+Install using [conda](https://docs.conda.io/en/latest/):
 
-    pip install -r requirements.txt
-
-or using [conda](https://docs.conda.io/en/latest/):
-
-    conda install --file requirements. txt
+    conda create --name <env> --file requirements.txt
 
 ### 2. Install FutuOpenD
 
@@ -90,7 +87,21 @@ For **Windows/MacOS/CentOS/Ubuntu**:
 
 https://www.futunn.com/download/OpenAPI
 
-### 3. Download Data (e.g. 1M Data for max. 2 Years)
+### 3. Initialize SQLite Database
+
+Go to [SQLite official website](https://www.sqlite.org/quickstart.html) and follow the QuickStart instruction to install
+SQLite tools in the device.
+
+Create a folder named 'database' in the root folder, and execute the SQLite DDL file stored in *./util/database_ddl.sql*
+.
+
+```
+./
+  ├── database
+  │       └── stock_data.sqlite
+```
+
+### 4. Download Data (e.g. 1M Data for max. 2 Years)
 
 For **Windows**:
 

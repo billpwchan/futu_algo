@@ -36,7 +36,7 @@ from strategies.Short_Term_Band import ShortTermBand
 from strategies.Strategies import Strategies
 
 
-def daily_update_data(futu_trade, force_update: bool = False):
+def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Daily Update Filtered Security
     # filters = list(__init_filter(filter_name='all'))
     # stock_filter = StockFilter(stock_filters=filters)
@@ -49,8 +49,7 @@ def daily_update_data(futu_trade, force_update: bool = False):
     data_engine.HKEXInterface.update_security_list_full()
 
     # Daily Update FuTu Historical Data
-    futu_trade.store_all_data_database()
-    stock_list = data_engine.DatabaseInterface(database_path='./database/stock_data.sqlite').get_stock_list()
+    # futu_trade.store_all_data_database()
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -115,9 +114,6 @@ def init_stock_filter(filter_list: list) -> list:
 
 def main():
     # Initialize Argument Parser
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
     parser = argparse.ArgumentParser()
     parser.add_argument("-u", "--update", help="Daily Update Data (Execute Before Market Starts)",
                         action="store_true")
@@ -145,6 +141,16 @@ def main():
     futu_trade = trading_engine.FutuTrade()
     email_handler = email_engine.Email()
 
+    # Initialize Config Parser
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
+    # Initialize Stock List
+    stock_list = json.loads(config.get('TradePreference', 'StockList'))
+    if not stock_list:
+        stock_list = data_engine.DatabaseInterface(
+            database_path=config.get('Database', 'Database_path')).get_stock_list()
+
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
         filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
@@ -154,14 +160,13 @@ def main():
             email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
     if args.update:
         # Daily Update Data
-        daily_update_data(futu_trade=futu_trade, force_update=args.force_update)
+        daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
     if args.database:
         # Update ALl Data to Database
         futu_trade.store_all_data_database()
     if args.strategy:
         # Initialize Strategies
-        stock_list = filtered_stock_list if args.filter else data_engine.DatabaseInterface(
-            database_path='./database/stock_data.sqlite').get_stock_list()
+        stock_list = filtered_stock_list if args.filter else stock_list
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
