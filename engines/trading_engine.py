@@ -303,13 +303,16 @@ class FutuTrade:
                                  subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)
 
-    def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60):
+    def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy: Strategies, timeout: int = 60,
+                               subtype: SubType = SubType.K_1M):
         """
             实时 K 线回调，异步处理已订阅股票的实时 K 线推送。
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy: Strategies defined in ./strategies class. Should be inherited from based class Strategies
         :param timeout: Subscription Timeout in secs.
+        :param subtype: Subscription SubType for FuTu (i.e., Trading Frequency)
+
         """
         self.__unlock_trade()
 
@@ -317,7 +320,7 @@ class FutuTrade:
         handler = CurKlineHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
                                   strategy=strategy, trd_env=self.trd_env)
         self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
-        self.quote_ctx.subscribe(stock_list, [SubType.K_1M, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
+        self.quote_ctx.subscribe(stock_list, [subtype, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
                                  subscribe_push=True)  # 订阅K线数据类型，FutuOpenD开始持续收到服务器的推送
         time.sleep(timeout)
 

@@ -10,7 +10,7 @@ import glob
 import json
 from datetime import datetime
 
-from futu import KLType
+from futu import KLType, SubType
 
 from engines import trading_engine, data_engine, email_engine
 from engines.backtesting_engine import Backtesting
@@ -100,10 +100,12 @@ def init_backtesting():
     # bt.create_tear_sheet()
 
 
-def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str):
-    input_data = futu_trade.get_data_realtime(stock_list, sub_type=KLType.K_1M, kline_num=100)
+def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
+                     subtype: SubType = SubType.K_1M):
+    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=100)
     strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
-    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12)
+    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12,
+                                      subtype=subtype)
 
 
 def init_stock_filter(filter_list: list) -> list:
