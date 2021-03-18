@@ -101,8 +101,8 @@ def init_backtesting():
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
-                     subtype: SubType = SubType.K_1M):
-    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=100)
+                     subtype: SubType = SubType.K_5M):
+    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=50)
     strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
     futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12,
                                       subtype=subtype)

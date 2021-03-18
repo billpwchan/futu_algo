@@ -6,7 +6,6 @@
 import time
 
 from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus, ModifyOrderOp
-from win10toast import ToastNotifier
 
 from util import logger
 
@@ -14,7 +13,6 @@ from util import logger
 class TradingUtil:
     def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, trd_env: TrdEnv = TrdEnv.SIMULATE):
         self.default_logger = logger.get_logger('trading_util')
-        self.toaster = ToastNotifier()
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx
         self.trd_env = trd_env
@@ -93,8 +91,7 @@ class TradingUtil:
             if ret_code == RET_OK:
                 self.default_logger.info(
                     f'MAKE BUY ORDER\n\tcode = {stock_code} price = {cur_price} quantity = {lot_size}')
-                self.toaster.show_toast("BUY ORDER", f'code = {stock_code} price = {cur_price} quantity = {lot_size}',
-                                        icon_path=None, duration=5, threaded=True)
+
                 break
             else:
                 self.default_logger.error('MAKE BUY ORDER FAILURE: {}'.format(ret_data))
@@ -177,9 +174,7 @@ class TradingUtil:
                 if ret_code == RET_OK:
                     self.default_logger.info(
                         f'MAKE SELL ORDER\n\tcode = {stock_code} price = {cur_price} quantity = {can_sell_qty}')
-                    self.toaster.show_toast("SELL ORDER",
-                                            f'code = {stock_code} price = {cur_price} quantity = {lot_size}',
-                                            icon_path=None, duration=5, threaded=True)
+
                     break
                 else:
                     self.default_logger.error('MAKE SELL ORDER FAILURE: {}'.format(ret_data))
