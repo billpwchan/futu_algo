@@ -9,6 +9,7 @@ import configparser
 import glob
 import json
 from datetime import datetime
+from pathlib import Path
 
 from futu import KLType, SubType
 
@@ -124,13 +125,13 @@ def main():
     parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
 
     # Retrieve file names for all strategies as the argument option
-    strategy_list = [file_name.split("\\")[1][:-3] for file_name in glob.glob(f"./strategies/*.py") if
+    strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                      "__init__" not in file_name and "Strategies" not in file_name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute HFT using Pre-defined Strategy")
 
     # Retrieve file names for all strategies as the argument option
-    filter_list = [file_name.split("\\")[1][:-3] for file_name in glob.glob(f"./filters/*.py") if
+    filter_list = [Path(file_name).name[:-3] for file_name in glob.glob("./filters/*.py") if
                    "__init__" not in file_name and "Filters" not in file_name]
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
