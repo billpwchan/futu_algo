@@ -3,9 +3,12 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-
+import configparser
 import csv
+import json
 import sqlite3
+from datetime import datetime
+from pathlib import Path
 
 import humanize
 import openpyxl
@@ -56,6 +59,77 @@ class DatabaseInterface:
     def __del__(self):
         """ Destroys instance and connection on completion of called method """
         self.conn.close()
+
+
+class DataProcessingInterface:
+    @staticmethod
+    def get_custom_interval_data(target_date: datetime, custom_interval: int, stock_list: list) -> dict:
+        """
+            Get 5M/15M/Other Customized-Interval Data from CSV based on Stock List. Returned in Dict format
+        :param target_date: Date in DateTime Format (YYYY-MM-DD)
+        :param custom_interval: Customized-Interval in unit of "Minutes"
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        """
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+        input_data = {}
+        for stock_code in stock_list:
+            input_path = f'./data/{stock_code}/{stock_code}_{str(target_date)}_1M.csv'
+            if not Path(input_path).exists():
+                continue
+            input_csv = pd.read_csv(input_path, index_col=None)
+            # Non-Trading Day -> Skip
+            if input_csv.empty:
+                continue
+            # Set Time-key as Index & Convert to Datetime
+            input_csv = input_csv.set_index('time_key')
+            input_csv.index = pd.to_datetime(input_csv.index, infer_datetime_format=True)
+            # Define Function List
+            agg_list = {
+                "code": "first",
+                "open": "first",
+                "close": "last",
+                "high": "max",
+                "low": "min",
+                "pe_ratio": "last",
+                "turnover_rate": "sum",
+                "volume": "sum",
+                "turnover": "sum",
+            }
+            # Group from 09:31:00 with Freq = 5 Min
+            minute_df = input_csv.groupby(pd.Grouper(freq=f'{custom_interval}Min', closed='left', offset='1min')).agg(
+                agg_list)[1:]
+            # For 1min -> 5min, need to add Timedelta of 4min
+            minute_df.index = minute_df.index + pd.Timedelta(minutes=int(custom_interval - 1))
+            # Drop Lunch Time
+            minute_df.dropna(inplace=True)
+
+            # Update First Row (Special Cases) e.g. For 1min -> 5min, need to use the first 6min Rows of data
+            minute_df.iloc[0] = \
+                input_csv.iloc[:(custom_interval + 1)].groupby('code').agg(agg_list).iloc[0]
+
+            # Update Last Close Price
+            last_index = minute_df.index[0]
+            minute_df['change_rate'] = 0
+            minute_df['last_close'] = input_csv['last_close'][0]
+            minute_df.loc[last_index, 'change_rate'] = 100 * (float(minute_df.loc[last_index, 'close']) - float(
+                minute_df.loc[last_index, 'last_close'])) / float(minute_df.loc[last_index, 'last_close'])
+
+            # Change Rate = (Close Price - Last Close Price) / Last Close Price * 100
+            # Last Close = Previous Close Price
+            for index, row in minute_df[1:].iterrows():
+                minute_df.loc[index, 'last_close'] = minute_df.loc[last_index, 'close']
+                minute_df.loc[index, 'change_rate'] = 100 * (
+                        float(row['close']) - float(minute_df.loc[last_index, 'close'])) / float(
+                    minute_df.loc[last_index, 'close'])
+                last_index = index
+
+            minute_df.reset_index(inplace=True)
+            column_names = json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+            minute_df = minute_df.reindex(columns=column_names)
+            input_data[stock_code] = input_data.get(stock_code, minute_df)
+        return input_data
 
 
 class YahooFinanceInterface:

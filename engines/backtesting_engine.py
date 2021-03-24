@@ -11,7 +11,7 @@ from pathlib import Path
 import pandas as pd
 import pyfolio as pf
 
-from engines.data_engine import HKEXInterface
+from engines.data_engine import HKEXInterface, DataProcessingInterface
 from strategies.Strategies import Strategies
 from util import logger
 
@@ -58,6 +58,22 @@ class Backtesting:
             input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
             output_dict[stock_code] = output_dict.get(stock_code, input_df)
             self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
+        self.input_data = output_dict
+
+    def prepare_input_data_file_custom_M(self, custom_interval: int = 5) -> None:
+        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+        output_dict = {}
+        for input_date in self.date_range:
+            custom_dict = DataProcessingInterface.get_custom_interval_data(target_date=input_date,
+                                                                           custom_interval=custom_interval,
+                                                                           stock_list=self.stock_list)
+            for stock_code, df in custom_dict.items():
+                print(type(output_dict.get(stock_code, pd.DataFrame(columns=column_names))))
+                output_dict[stock_code] = pd.concat(
+                    [output_dict.get(stock_code, pd.DataFrame(columns=column_names)), df],
+                    ignore_index=True)
+        for stock_code, df in output_dict.items():
+            df[['open', 'close', 'high', 'low']] = df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
         self.input_data = output_dict
 
     def get_backtesting_init_data(self) -> dict:
