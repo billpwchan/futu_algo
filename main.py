@@ -91,14 +91,15 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2021, 3, 1).date()
-    end_date = datetime(2021, 3, 13).date()
-    bt = Backtesting(stock_list=['HK.00700'], start_date=start_date,
+    start_date = datetime(2021, 1, 1).date()
+    end_date = datetime(2021, 3, 23).date()
+    bt = Backtesting(stock_list=['HK.00700', 'HK.09988', 'HK.03690', 'HK.01810', 'HK.00981'], start_date=start_date,
                      end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
     # strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
-    strategy = MACDCross(input_data=bt.get_backtesting_init_data(), observation=100)
+    # strategy = MACDCross(input_data=bt.get_backtesting_init_data(), observation=100)
+    strategy = KDJCross(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
     bt.calculate_return()
     # bt.create_tear_sheet()

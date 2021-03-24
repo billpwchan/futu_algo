@@ -88,6 +88,7 @@ class Backtesting:
         for stock_code in self.stock_list:
             self.strategy.parse_data(latest_data=self.input_data[stock_code], backtesting=True)
             ta_backtesting_data[stock_code] = self.strategy.get_input_data_stock_code(stock_code)
+            ta_backtesting_data[stock_code].to_csv(stock_code + '.csv')
 
         # Revert back to its initial state (i.e., with 0-99 beginning records)
         self.strategy.set_input_data(self.get_backtesting_init_data())
@@ -97,10 +98,6 @@ class Backtesting:
         for index in range(self.observation, list(ta_backtesting_data.values())[0].shape[0]):
             # For each new timestamp, check for each stock if they satisfy the buy/sell condition
             for stock_code in self.stock_list:
-                # if backtesting_data[stock_code].shape[0] <= index:
-                #     self.default_logger.error(f"INVALID DIMENSION FOUND IN BACKTESTING ENGINE FOR {stock_code}")
-                #     continue
-
                 # Overwrite input data in the strategy
                 start_index = index - self.observation
                 end_index = index
@@ -133,7 +130,7 @@ class Backtesting:
 
                         # Profit = EBIT - fixed charge (15 HKD * 2) - Percentage Charge (Buy Value + Sale Value) * 0.10%
                         profit = EBIT - 2 * self.fixed_charge - (
-                                buy_price + current_price) * qty * self.perc_charge / 100
+                                buy_price + current_price) * qty * self.perc_charge / 100 / 2
                         current_date = datetime.strptime(row['time_key'], '%Y-%m-%d  %H:%M:%S').date()
 
                         self.returns_df.loc[str(current_date), stock_code] += profit
