@@ -9,21 +9,21 @@ import configparser
 from futu import CurKlineHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
 
 from engines.trading_util import TradingUtil
-from strategies.MACD_Cross import MACDCross
-from strategies.Strategies import Strategies
 from util import logger
 
 
 class CurKlineHandler(CurKlineHandlerBase):
     def __init__(self, quote_ctx: OpenQuoteContext, trade_ctx: OpenHKTradeContext, input_data: dict = None,
-                 strategy: Strategies = MACDCross, trd_env: TrdEnv = TrdEnv.SIMULATE):
+                 strategy_map: dict = None, trd_env: TrdEnv = TrdEnv.SIMULATE):
+        if strategy_map is None:
+            strategy_map = {}
         self.config = configparser.ConfigParser()
         self.config.read("config.ini")
         self.default_logger = logger.get_logger('cur_kline')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx
         self.input_data = input_data
-        self.strategy = strategy
+        self.strategy_map = strategy_map
         self.trd_env = trd_env
         self.trading_util = TradingUtil(self.quote_ctx, self.trade_ctx, self.trd_env)
         super().__init__()
@@ -48,13 +48,14 @@ class CurKlineHandler(CurKlineHandlerBase):
         data.insert(10, 'change_rate', 0)
 
         # Update Latest Data to the Strategy before Buy/Sell
-        self.strategy.parse_data(data)
+        strategy = self.strategy_map[data['code'][0]]
+        strategy.parse_data(data)
 
         # Buy/Sell Strategy
         stock_code = data['code'][0]
 
-        if self.strategy.sell(stock_code=stock_code):
+        if strategy.sell(stock_code=stock_code):
             self.trading_util.place_sell_order(stock_code)
 
-        if self.strategy.buy(stock_code=stock_code):
+        if strategy.buy(stock_code=stock_code):
             self.trading_util.place_buy_order(stock_code)

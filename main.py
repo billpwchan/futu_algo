@@ -105,10 +105,13 @@ def init_backtesting():
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
+                     stock_strategy_map: dict,
                      subtype: SubType = SubType.K_5M):
     input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=100)
-    strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
-    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12,
+    # strategy_map = dict object {'HK.00001', MACD_Cross(), 'HK.00002', MACD_Cross()...}
+    strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_map.get(stock_code, strategy_name),
+                                                input_data=input_data) for stock_code in stock_list}
+    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy_map=strategy_map, timeout=3600 * 12,
                                       subtype=subtype)
 
 
@@ -181,9 +184,9 @@ def main():
         # 4. Top 30 HSI Constituents
         if args.filter:
             stock_list.extend(filtered_stock_list)
-        stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
+        # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
 
-        init_day_trading(futu_trade, stock_list, args.strategy)
+        init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
         futu_trade.display_quota()
 
 
