@@ -11,6 +11,7 @@ import json
 from datetime import datetime
 from pathlib import Path
 
+import yaml
 from futu import KLType, SubType
 
 from engines import trading_engine, data_engine, email_engine
@@ -150,6 +151,9 @@ def main():
     config = configparser.ConfigParser()
     config.read("config.ini")
 
+    with open('stock_strategy_map.yml', 'r') as infile:
+        stock_strategy_map = yaml.safe_load(infile)
+
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
     if not stock_list:
@@ -170,9 +174,15 @@ def main():
         # Update ALl Data to Database
         futu_trade.store_all_data_database()
     if args.strategy:
-        # Initialize Strategies
-        stock_list = filtered_stock_list if args.filter else stock_list
+        # Stock Basket => 4 Parts
+        # 1. Currently Holding Stocks (i.e., in the trading account with existing position)
+        # 2. Filtered Stocks (i.e., based on 1D data if -f option is adopted
+        # 3. StockList in config.ini (i.e., if empty, default use all stocks in the database)
+        # 4. Top 30 HSI Constituents
+        if args.filter:
+            stock_list.extend(filtered_stock_list)
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
+
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
 

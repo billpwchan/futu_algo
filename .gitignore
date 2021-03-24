@@ -143,6 +143,7 @@ cython_debug/
 /data
 /config.ini
 /database
+/stock_strategy_map.yml
 
 # Strategies
 /strategies/*
