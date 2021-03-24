@@ -90,21 +90,22 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2021, 3, 1).date()
-    end_date = datetime(2021, 3, 2).date()
-    bt = Backtesting(stock_list=['HK.00700', 'HK.09988'], start_date=start_date,
+    start_date = datetime(2021, 3, 12).date()
+    end_date = datetime(2021, 3, 13).date()
+    bt = Backtesting(stock_list=['HK.00700'], start_date=start_date,
                      end_date=end_date, observation=100)
-    bt.prepare_input_data_file_custom_M(custom_interval=5)
-    print(bt.input_data)
+    # bt.prepare_input_data_file_custom_M(custom_interval=5)
+    bt.prepare_input_data_file_1M()
     # strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
-    # bt.init_strategy(strategy)
-    # bt.calculate_return()
+    strategy = MACDCross(input_data=bt.get_backtesting_init_data(), observation=100)
+    bt.init_strategy(strategy)
+    bt.calculate_return()
     # bt.create_tear_sheet()
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
                      subtype: SubType = SubType.K_5M):
-    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=50)
+    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=100)
     strategy = __init_strategy(strategy_name=strategy_name, input_data=input_data)
     futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy=strategy, timeout=3600 * 12,
                                       subtype=subtype)
@@ -174,8 +175,6 @@ def main():
         stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         init_day_trading(futu_trade, stock_list, args.strategy)
         futu_trade.display_quota()
-
-    init_backtesting()
 
 
 if __name__ == '__main__':

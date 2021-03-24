@@ -128,6 +128,9 @@ class DataProcessingInterface:
             minute_df.reset_index(inplace=True)
             column_names = json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
             minute_df = minute_df.reindex(columns=column_names)
+
+            # Convert Timestamp type column to standard String format
+            minute_df['time_key'] = minute_df['time_key'].dt.strftime('%Y-%m-%d  %H:%M:%S')
             input_data[stock_code] = input_data.get(stock_code, minute_df)
         return input_data
 

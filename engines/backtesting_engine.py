@@ -68,7 +68,6 @@ class Backtesting:
                                                                            custom_interval=custom_interval,
                                                                            stock_list=self.stock_list)
             for stock_code, df in custom_dict.items():
-                print(type(output_dict.get(stock_code, pd.DataFrame(columns=column_names))))
                 output_dict[stock_code] = pd.concat(
                     [output_dict.get(stock_code, pd.DataFrame(columns=column_names)), df],
                     ignore_index=True)

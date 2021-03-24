@@ -142,7 +142,14 @@ class FutuTrade:
             input_data[stock_code] = input_data.get(stock_code, input_csv)
         return input_data
 
-    def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000):
+    def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
+        """
+        Receive real-time K-Line data as initial technical indicators observations
+        :param stock_list: List of selected stocks ['HK.00009', 'HK.00001']
+        :param sub_type: Futu subscription type
+        :param kline_num: Number of observations (i.e., default to 100)
+        :return: dictionary of k-line data
+        """
         input_data = {}
         ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type], subscribe_push=False)
         for stock_code in stock_list:
