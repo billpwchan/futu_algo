@@ -83,28 +83,31 @@ class Backtesting:
         self.strategy = strategy
 
     def calculate_return(self):
-        backtesting_data = {key: value.iloc[self.observation:].reset_index(drop=True) for (key, value) in
-                            self.input_data.items()}
+        # We want to get the calculated technical indicators values (e.g., MACD, KDJ, etc.) for all records
+        ta_backtesting_data = {}
+        for stock_code in self.stock_list:
+            self.strategy.parse_data(latest_data=self.input_data[stock_code], backtesting=True)
+            ta_backtesting_data[stock_code] = self.strategy.get_input_data_stock_code(stock_code)
+
+        # Revert back to its initial state (i.e., with 0-99 beginning records)
+        self.strategy.set_input_data(self.get_backtesting_init_data())
 
         # ASSUME All Dataframe has the same shape (Should Be Validated in Prepare Data Step)
-        for index in range(self.observation, list(backtesting_data.values())[0].shape[0]):
-
+        # Start from the 100 records (i.e., defined as self.observation)
+        for index in range(self.observation, list(ta_backtesting_data.values())[0].shape[0]):
+            # For each new timestamp, check for each stock if they satisfy the buy/sell condition
             for stock_code in self.stock_list:
-                if backtesting_data[stock_code].shape[0] <= index:
-                    self.default_logger.error(f"INVALID DIMENSION FOUND IN BACKTESTING ENGINE FOR {stock_code}")
-                    continue
+                # if backtesting_data[stock_code].shape[0] <= index:
+                #     self.default_logger.error(f"INVALID DIMENSION FOUND IN BACKTESTING ENGINE FOR {stock_code}")
+                #     continue
 
-                self.strategy.parse_data(latest_data=backtesting_data[stock_code], backtesting=True)
-                parsed_backtesting_data = self.strategy.get_input_data_stock_code(stock_code)
-
-                # Added Empty Row at the bottom because the Strategies used -2 & -3 for trading only.
+                # Overwrite input data in the strategy
                 start_index = index - self.observation
                 end_index = index
-                input_df = parsed_backtesting_data.iloc[start_index:end_index]
-                input_df = input_df.append(pd.Series(), ignore_index=True)
-                self.strategy.set_input_data_stock_code(stock_code=stock_code,
-                                                        input_df=parsed_backtesting_data.iloc[start_index:end_index])
-                row = input_df.iloc[-2]
+                input_df = ta_backtesting_data[stock_code].iloc[start_index:end_index]
+                self.strategy.set_input_data_stock_code(stock_code=stock_code, input_df=input_df)
+
+                row = input_df.iloc[-1]
 
                 if self.strategy.buy(stock_code):
                     if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:

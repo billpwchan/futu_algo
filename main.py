@@ -48,7 +48,7 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    data_engine.HKEXInterface.update_security_list_full()
+    # data_engine.HKEXInterface.update_security_list_full()
 
     # Daily Update FuTu Historical Data
     # futu_trade.store_all_data_database()
@@ -91,12 +91,12 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2021, 3, 12).date()
+    start_date = datetime(2021, 3, 1).date()
     end_date = datetime(2021, 3, 13).date()
     bt = Backtesting(stock_list=['HK.00700'], start_date=start_date,
                      end_date=end_date, observation=100)
-    # bt.prepare_input_data_file_custom_M(custom_interval=5)
-    bt.prepare_input_data_file_1M()
+    bt.prepare_input_data_file_custom_M(custom_interval=5)
+    # bt.prepare_input_data_file_1M()
     # strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
     strategy = MACDCross(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
@@ -189,6 +189,7 @@ def main():
         init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
         futu_trade.display_quota()
 
+    init_backtesting()
 
 if __name__ == '__main__':
     main()
