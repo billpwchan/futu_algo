@@ -25,7 +25,7 @@ class Email:
         self.config.read("config.ini")
 
         self.port = self.config['Email'].get('Port')
-        self.smtp_server = self.config['Email'].get('Smtp_server')
+        self.smtp_server = self.config['Email'].get('SmtpServer')
         self.sender = self.config['Email'].get('Sender')
         self.login = self.config['Email'].get('Login')
         self.password = self.config['Email'].get('Password')

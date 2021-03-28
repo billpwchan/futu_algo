@@ -92,12 +92,12 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2021, 3, 1).date()
+    start_date = datetime(2019, 3, 20).date()
     end_date = datetime(2021, 3, 23).date()
-    bt = Backtesting(stock_list=data_engine.YahooFinanceInterface.get_top_30_hsi_constituents(), start_date=start_date,
-                     end_date=end_date, observation=100)
-    bt.prepare_input_data_file_custom_M(custom_interval=5)
-    # bt.prepare_input_data_file_1M()
+    stock_list = data_engine.YahooFinanceInterface.get_top_30_hsi_constituents()
+    bt = Backtesting(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
+    # bt.prepare_input_data_file_custom_M(custom_interval=5)
+    bt.prepare_input_data_file_1M()
     strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
     bt.calculate_return()
@@ -190,6 +190,7 @@ def main():
         futu_trade.display_quota()
 
     init_backtesting()
+
 
 if __name__ == '__main__':
     main()

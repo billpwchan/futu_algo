@@ -5,17 +5,19 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import configparser
 import json
+import warnings
+from collections import ChainMap
 from datetime import date
 from datetime import timedelta, datetime
 from multiprocessing import Pool, cpu_count
-from pathlib import Path
 
 import pandas as pd
-import pyfolio as pf
 
 from engines.data_engine import HKEXInterface, DataProcessingInterface
 from strategies.Strategies import Strategies
 from util import logger
+
+warnings.filterwarnings('ignore')
 
 
 class Backtesting:
@@ -28,6 +30,8 @@ class Backtesting:
         # Backtesting-Related
         self.INITIAL_CAPITAL = 10 ** 6
         self.capital = self.INITIAL_CAPITAL
+        self.lot_size_multiplier = self.config['TradePreference'].getfloat('LotSizeMultiplier')
+        self.max_perc_per_asset = self.config['TradePreference'].getfloat('MaxPercPerAsset')
         self.stock_list = stock_list
         self.strategy = None
         self.start_date = start_date
@@ -43,27 +47,14 @@ class Backtesting:
         self.board_lot_mapping = HKEXInterface.get_board_lot_full()
         self.returns_df = pd.DataFrame(0, columns=self.stock_list, index=self.date_range)
         self.returns_df = self.returns_df.apply(pd.to_numeric)
-        self.fixed_charge = self.config['Backtesting.Commission.HK'].getfloat('Fixed_Charge')
-        self.perc_charge = self.config['Backtesting.Commission.HK'].getfloat('Perc_Charge')
+        self.fixed_charge = self.config['Backtesting.Commission.HK'].getfloat('FixedCharge')
+        self.perc_charge = self.config['Backtesting.Commission.HK'].getfloat('PercCharge')
 
     def prepare_input_data_file_1M(self) -> None:
         """
         Prepare input data with 1M interval. Directly load data from stored .csv file (Assume 1M data already downloaded)
         """
-        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
-        output_dict = {}
-        for stock_code in self.stock_list:
-            # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
-            input_df = pd.concat(
-                [pd.read_csv(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv', index_col=None) for input_date in
-                 self.date_range if
-                 Path(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').exists() and (not pd.read_csv(
-                     f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').empty)],
-                ignore_index=True)
-            input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
-            output_dict[stock_code] = output_dict.get(stock_code, input_df)
-            self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
-        self.input_data = output_dict
+        self.input_data = DataProcessingInterface.get_1M_data_range(self.date_range, self.stock_list)
 
     def process_custom_interval_data(self, stock_code, column_names, custom_interval: int = 5):
         output_dict = {}
@@ -76,8 +67,9 @@ class Backtesting:
                     [output_dict.get(stock_code, pd.DataFrame(columns=column_names)), df],
                     ignore_index=True)
 
-        for stock_code, df in output_dict.items():
-            df[['open', 'close', 'high', 'low']] = df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
+        for stock_code, input_df in output_dict.items():
+            input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
+            input_df.sort_values(by='time_key', ascending=True, inplace=True)
         return output_dict
 
     def prepare_input_data_file_custom_M(self, custom_interval: int = 5) -> None:
@@ -97,10 +89,7 @@ class Backtesting:
         pool.close()
         pool.join()
 
-        from collections import ChainMap
         output_dict = dict(ChainMap(*list_of_custom_dict))
-        print(output_dict)
-
         self.input_data = output_dict
 
     def get_backtesting_init_data(self) -> dict:
@@ -112,32 +101,49 @@ class Backtesting:
 
     def calculate_return(self):
         # We want to get the calculated technical indicators values (e.g., MACD, KDJ, etc.) for all records
+        unique_time = set()
         ta_backtesting_data = {}
         for stock_code in self.stock_list:
             self.strategy.parse_data(latest_data=self.input_data[stock_code], backtesting=True)
             ta_backtesting_data[stock_code] = self.strategy.get_input_data_stock_code(stock_code)
+            unique_time.update(ta_backtesting_data[stock_code]['time_key'])
+            ta_backtesting_data[stock_code].set_index('time_key', inplace=True, drop=False)
+
+        # Gather all unique dates
+        sequence_time = list(unique_time)
+        sequence_time.sort()
+        # Remove initial data => Used for calculating technical indicators
+        sequence_time = sequence_time[self.observation:]
 
         # Revert back to its initial state (i.e., with 0-99 beginning records)
         self.strategy.set_input_data(self.get_backtesting_init_data())
 
         # ASSUME All Dataframe has the same shape (Should Be Validated in Prepare Data Step)
         # Start from the 100 records (i.e., defined as self.observation)
-        for index in range(self.observation, list(ta_backtesting_data.values())[0].shape[0]):
+        for index in range(self.observation, len(sequence_time)):
             # For each new timestamp, check for each stock if they satisfy the buy/sell condition
             for stock_code in self.stock_list:
-                # Overwrite input data in the strategy
-                start_index = index - self.observation
-                end_index = index
-                input_df = ta_backtesting_data[stock_code].iloc[start_index:end_index]
+                start_time = sequence_time[index - self.observation]
+                end_time = sequence_time[index]
+                if (start_time not in ta_backtesting_data[stock_code].index) or (
+                        end_time not in ta_backtesting_data[stock_code].index):
+                    continue
+
+                input_df = ta_backtesting_data[stock_code].loc[start_time:end_time]
+
                 self.strategy.set_input_data_stock_code(stock_code=stock_code, input_df=input_df)
 
+                # At 9:40 AM, if we have a buy signal based on 9:38 and 9:39 AM, we execute it based on 9:40 AM data
+                # This assumes 1M time buffer.
                 row = input_df.iloc[-1]
 
                 if self.strategy.buy(stock_code):
                     if self.positions.get(stock_code, 0) == 0 and self.capital >= 0:
                         self.positions[stock_code] = self.positions.get(stock_code, row['close'])
                         current_price = row['close']
-                        qty = self.board_lot_mapping.get(stock_code, 0)
+                        lot_size = self.board_lot_mapping.get(stock_code, 0)
+                        qty = lot_size * self.lot_size_multiplier
+
                         # Update Holding Capital
                         self.capital -= current_price * qty
                         # Update Transaction History Dataframe
@@ -152,10 +158,12 @@ class Backtesting:
                     if self.positions.get(stock_code, 0) != 0:
                         current_price = row['close']
                         buy_price = self.positions[stock_code]
-                        qty = self.board_lot_mapping.get(stock_code, 0)
-                        EBIT = (current_price - buy_price) * qty
+                        # Sell all holding assets
+                        lot_size = self.board_lot_mapping.get(stock_code, 0)
+                        qty = lot_size * self.lot_size_multiplier
 
                         # Profit = EBIT - fixed charge (15 HKD * 2) - Percentage Charge (Buy Value + Sale Value) * 0.10%
+                        EBIT = (current_price - buy_price) * qty
                         profit = EBIT - 2 * self.fixed_charge - (
                                 buy_price + current_price) * qty * self.perc_charge / 100 / 2
                         current_date = datetime.strptime(row['time_key'], '%Y-%m-%d  %H:%M:%S').date()
@@ -175,9 +183,9 @@ class Backtesting:
         self.returns_df.to_csv(f'./backtesting_report/{time_key}_Returns.csv')
         self.transactions.to_csv(f'./backtesting_report/{time_key}_Transactions.csv')
 
-    def create_tear_sheet(self):
-        return_ser = pd.read_csv('output.csv', index_col=0, header=0)
-        return_ser.index = pd.to_datetime(return_ser.index)
-        # pf.create_returns_tear_sheet(return_ser['HK.00001'])
-        with open("data.html", "w") as file:
-            file.write(pf.create_simple_tear_sheet(returns=return_ser['HK.00001']))
+    # def create_tear_sheet(self):
+    #     return_ser = pd.read_csv('output.csv', index_col=0, header=0)
+    #     return_ser.index = pd.to_datetime(return_ser.index)
+    #     # pf.create_returns_tear_sheet(return_ser['HK.00001'])
+    #     with open("data.html", "w") as file:
+    #         file.write(pf.create_simple_tear_sheet(returns=return_ser['HK.00001']))

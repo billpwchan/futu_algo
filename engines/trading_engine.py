@@ -8,7 +8,6 @@ import configparser
 import datetime
 import glob
 from datetime import date
-from pathlib import Path
 
 from futu import *
 
@@ -117,29 +116,6 @@ class FutuTrade:
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
-
-    def get_1M_data(self, stock_list: list) -> dict:
-        """
-            Get 1M Data from CSV based on Stock List. Returned in Dict format
-        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
-        :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
-        """
-        # Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
-        input_data = {}
-        for stock_code in stock_list:
-            delta = 0
-            # Check if the file already exists or the dataframe has no data (Non-Trading Day)
-            while \
-                    not Path(
-                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').exists() or pd.read_csv(
-                        f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv').empty:
-                delta += 1
-
-            input_path = f'./data/{stock_code}/{stock_code}_{str((datetime.today() - timedelta(days=delta)).date())}_1M.csv'
-            input_csv = pd.read_csv(input_path, index_col=None)
-            self.default_logger.info(f'Get {input_path} Success from Stock List Success.')
-            input_data[stock_code] = input_data.get(stock_code, input_csv)
-        return input_data
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
         """

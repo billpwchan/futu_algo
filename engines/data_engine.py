@@ -66,6 +66,29 @@ class DataProcessingInterface:
     config.read("config.ini")
 
     @staticmethod
+    def get_1M_data_range(date_range: list, stock_list: list) -> dict:
+        """
+            Get 1M Data from CSV based on Stock List. Returned in Dict format
+        :param date_range: A list of Date in DateTime Format (YYYY-MM-DD)
+        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
+        :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
+        """
+
+        output_dict = {}
+        for stock_code in stock_list:
+            # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
+            input_df = pd.concat(
+                [pd.read_csv(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv', index_col=None) for input_date in
+                 date_range if
+                 Path(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').exists() and (not pd.read_csv(
+                     f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').empty)],
+                ignore_index=True)
+            input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
+            input_df.sort_values(by='time_key', ascending=True, inplace=True)
+            output_dict[stock_code] = output_dict.get(stock_code, input_df)
+        return output_dict
+
+    @staticmethod
     def get_custom_interval_data(target_date: datetime, custom_interval: int, stock_list: list) -> dict:
         """
             Get 5M/15M/Other Customized-Interval Data from CSV based on Stock List. Returned in Dict format
