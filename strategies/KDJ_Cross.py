@@ -65,9 +65,10 @@ class KDJCross(Strategies):
             high = self.input_data[stock_code]['high'].rolling(self.FAST_K, min_periods=self.FAST_K).max()
             high.fillna(value=self.input_data[stock_code]['high'].expanding().max(), inplace=True)
             rsv = (self.input_data[stock_code]['close'] - low) / (high - low) * 100
-
-            self.input_data[stock_code]['%k'] = pd.DataFrame(rsv).ewm(com=self.SLOW_K).mean()
-            self.input_data[stock_code]['%d'] = self.input_data[stock_code]['%k'].ewm(com=self.SLOW_D).mean()
+            # Com = Specify decay in terms of center of mass, α=1/(1+com), for com≥0.
+            # For common KDJ 9-3-3, the com option should be set as 3 - 1 = 2
+            self.input_data[stock_code]['%k'] = pd.DataFrame(rsv).ewm(com=self.SLOW_K - 1).mean()
+            self.input_data[stock_code]['%d'] = self.input_data[stock_code]['%k'].ewm(com=self.SLOW_D - 1).mean()
             self.input_data[stock_code]['%j'] = 3 * self.input_data[stock_code]['%k'] - \
                                                 2 * self.input_data[stock_code]['%d']
 

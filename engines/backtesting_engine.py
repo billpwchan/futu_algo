@@ -88,7 +88,6 @@ class Backtesting:
         for stock_code in self.stock_list:
             self.strategy.parse_data(latest_data=self.input_data[stock_code], backtesting=True)
             ta_backtesting_data[stock_code] = self.strategy.get_input_data_stock_code(stock_code)
-            ta_backtesting_data[stock_code].to_csv(stock_code + '.csv')
 
         # Revert back to its initial state (i.e., with 0-99 beginning records)
         self.strategy.set_input_data(self.get_backtesting_init_data())
@@ -121,7 +120,7 @@ class Backtesting:
                     elif self.positions.get(stock_code, 0) != 0:
                         self.default_logger.info(
                             f"BUY ORDER CANCELLED for {stock_code} because existing holding positions")
-                if self.strategy.sell(stock_code):
+                if self.strategy.sell(stock_code) or index == list(ta_backtesting_data.values())[0].shape[0] - 1:
                     if self.positions.get(stock_code, 0) != 0:
                         current_price = row['close']
                         buy_price = self.positions[stock_code]
@@ -142,6 +141,7 @@ class Backtesting:
                         self.default_logger.info(f"PROFIT earned: {profit}")
                         # Update Positions
                         self.positions.pop(stock_code, None)
+
         self.returns_df['returns'] = self.returns_df.sum(axis=1)
         time_key = datetime.now().strftime("%Y_%m_%d-%I_%M_%S_%p")
         self.returns_df.to_csv(f'./backtesting_report/{time_key}_Returns.csv')

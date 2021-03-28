@@ -40,18 +40,19 @@ from strategies.Strategies import Strategies
 
 def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Daily Update Filtered Security
-    # filters = list(__init_filter(filter_name='all'))
-    # stock_filter = StockFilter(stock_filters=filters)
-    # stock_filter.update_filtered_equity_pools()
+    filters = list(__init_filter(filter_name='all'))
+    stock_filter = StockFilter(stock_filters=filters)
+    stock_filter.update_filtered_equity_pools()
 
     # Daily Update Stock Info (Need to Rethink!!!)
-    # stock_filter.update_stock_info()
+    stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    # data_engine.HKEXInterface.update_security_list_full()
+    data_engine.HKEXInterface.update_security_list_full()
 
     # Daily Update FuTu Historical Data
     # futu_trade.store_all_data_database()
+
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -91,15 +92,13 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2021, 1, 1).date()
+    start_date = datetime(2020, 1, 1).date()
     end_date = datetime(2021, 3, 23).date()
-    bt = Backtesting(stock_list=['HK.00700', 'HK.09988', 'HK.03690', 'HK.01810', 'HK.00981'], start_date=start_date,
+    bt = Backtesting(stock_list=['HK.00001'], start_date=start_date,
                      end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
-    # strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
-    # strategy = MACDCross(input_data=bt.get_backtesting_init_data(), observation=100)
-    strategy = KDJCross(input_data=bt.get_backtesting_init_data(), observation=100)
+    strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
     bt.init_strategy(strategy)
     bt.calculate_return()
     # bt.create_tear_sheet()
