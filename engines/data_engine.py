@@ -62,6 +62,9 @@ class DatabaseInterface:
 
 
 class DataProcessingInterface:
+    config = configparser.ConfigParser()
+    config.read("config.ini")
+
     @staticmethod
     def get_custom_interval_data(target_date: datetime, custom_interval: int, stock_list: list) -> dict:
         """
@@ -71,8 +74,7 @@ class DataProcessingInterface:
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         """
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+
         input_data = {}
         for stock_code in stock_list:
             input_path = f'./data/{stock_code}/{stock_code}_{str(target_date)}_1M.csv'
@@ -126,7 +128,7 @@ class DataProcessingInterface:
                 last_index = index
 
             minute_df.reset_index(inplace=True)
-            column_names = json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+            column_names = json.loads(DataProcessingInterface.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
             minute_df = minute_df.reindex(columns=column_names)
 
             # Convert Timestamp type column to standard String format

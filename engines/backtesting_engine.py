@@ -5,7 +5,9 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import configparser
 import json
-from datetime import date, timedelta, datetime
+from datetime import date
+from datetime import timedelta, datetime
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 
 import pandas as pd
@@ -45,6 +47,9 @@ class Backtesting:
         self.perc_charge = self.config['Backtesting.Commission.HK'].getfloat('Perc_Charge')
 
     def prepare_input_data_file_1M(self) -> None:
+        """
+        Prepare input data with 1M interval. Directly load data from stored .csv file (Assume 1M data already downloaded)
+        """
         column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
         output_dict = {}
         for stock_code in self.stock_list:
@@ -60,19 +65,42 @@ class Backtesting:
             self.default_logger.info(f'{stock_code} 1M Data from Data Files has been processed.')
         self.input_data = output_dict
 
-    def prepare_input_data_file_custom_M(self, custom_interval: int = 5) -> None:
-        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+    def process_custom_interval_data(self, stock_code, column_names, custom_interval: int = 5):
         output_dict = {}
         for input_date in self.date_range:
             custom_dict = DataProcessingInterface.get_custom_interval_data(target_date=input_date,
                                                                            custom_interval=custom_interval,
-                                                                           stock_list=self.stock_list)
+                                                                           stock_list=[stock_code])
             for stock_code, df in custom_dict.items():
                 output_dict[stock_code] = pd.concat(
                     [output_dict.get(stock_code, pd.DataFrame(columns=column_names)), df],
                     ignore_index=True)
+
         for stock_code, df in output_dict.items():
             df[['open', 'close', 'high', 'low']] = df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
+        return output_dict
+
+    def prepare_input_data_file_custom_M(self, custom_interval: int = 5) -> None:
+        """
+        Prepare input data with customized interval. Generated based on 1M data.
+        Multi-threading enabled
+        :param custom_interval: Integer
+        """
+        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+
+        # Use Starmap to pass multiple arguments into process_custom_interval_data function
+        # Received a list of dict in format [{'HK.00001': pd.Dataframe}, {...}]
+        pool = Pool(cpu_count())
+        list_of_custom_dict = pool.starmap(self.process_custom_interval_data,
+                                           [(stock_code, column_names, custom_interval) for stock_code in
+                                            self.stock_list])
+        pool.close()
+        pool.join()
+
+        from collections import ChainMap
+        output_dict = dict(ChainMap(*list_of_custom_dict))
+        print(output_dict)
+
         self.input_data = output_dict
 
     def get_backtesting_init_data(self) -> dict:

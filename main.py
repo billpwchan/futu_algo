@@ -92,9 +92,9 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 
 def init_backtesting():
-    start_date = datetime(2020, 1, 1).date()
+    start_date = datetime(2021, 3, 1).date()
     end_date = datetime(2021, 3, 23).date()
-    bt = Backtesting(stock_list=['HK.00001'], start_date=start_date,
+    bt = Backtesting(stock_list=data_engine.YahooFinanceInterface.get_top_30_hsi_constituents(), start_date=start_date,
                      end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
