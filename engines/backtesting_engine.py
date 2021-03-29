@@ -82,7 +82,7 @@ class Backtesting:
 
         # Use Starmap to pass multiple arguments into process_custom_interval_data function
         # Received a list of dict in format [{'HK.00001': pd.Dataframe}, {...}]
-        pool = Pool(cpu_count())
+        pool = Pool(min(cpu_count(), len(self.stock_list)))
         list_of_custom_dict = pool.starmap(self.process_custom_interval_data,
                                            [(stock_code, column_names, custom_interval) for stock_code in
                                             self.stock_list])
@@ -104,10 +104,18 @@ class Backtesting:
         unique_time = set()
         ta_backtesting_data = {}
         for stock_code in self.stock_list:
+            # !!! It's concatenated. So have to reset the entire input_data in the strategy!
+            self.strategy.set_input_data_stock_code(stock_code=stock_code,
+                                                    input_df=self.strategy.get_input_data_stock_code(
+                                                        stock_code=stock_code)[0:0])
             self.strategy.parse_data(latest_data=self.input_data[stock_code], backtesting=True)
             ta_backtesting_data[stock_code] = self.strategy.get_input_data_stock_code(stock_code)
             unique_time.update(ta_backtesting_data[stock_code]['time_key'])
             ta_backtesting_data[stock_code].set_index('time_key', inplace=True, drop=False)
+            # Remove duplicated indices
+            ta_backtesting_data[stock_code] = ta_backtesting_data[stock_code][
+                ~ta_backtesting_data[stock_code].index.duplicated(keep='first')]
+        ta_backtesting_data['HK.09988'].to_csv('error.csv')
 
         # Gather all unique dates
         sequence_time = list(unique_time)
