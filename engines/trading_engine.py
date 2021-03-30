@@ -7,6 +7,7 @@
 import configparser
 import datetime
 import glob
+import itertools
 from datetime import date
 
 from futu import *
@@ -35,6 +36,12 @@ class FutuTrade:
         self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         self.default_logger = logger.get_logger("futu_trade")
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
+
+        # Futu-Specific Variables
+        self.market_list = [Market.HK, Market.US, Market.SH, Market.SZ, Market.HK_FUTURE, Market.SG, Market.JP]
+        self.security_type_list = [SecurityType.BOND, SecurityType.BWRT, SecurityType.STOCK, SecurityType.WARRANT,
+                                   SecurityType.IDX, SecurityType.ETF, SecurityType.FUTURE, SecurityType.PLATE,
+                                   SecurityType.PLATESET]
 
     def __del__(self):
         """
@@ -159,20 +166,29 @@ class FutuTrade:
             history_df = pd.concat([history_df, data], ignore_index=True)
         else:
             self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+            return
 
         # 请求后面的所有结果
         while page_req_key is not None:
-            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code,
-                                                                           start=start_date,
-                                                                           end=end_date,
-                                                                           ktype=KLType.K_1M, autype=AuType.QFQ,
-                                                                           fields=[KL_FIELD.ALL],
-                                                                           max_count=1000, page_req_key=page_req_key,
-                                                                           extended_time=False)
-            if ret == RET_OK:
-                history_df = pd.concat([history_df, data], ignore_index=True)
-            else:
-                self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+            # The inner loop is to ensure that whenever there is an error, we can re-try until it success
+            while True:
+                original_page_req_key = page_req_key
+                ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code,
+                                                                               start=start_date,
+                                                                               end=end_date,
+                                                                               ktype=KLType.K_1M, autype=AuType.QFQ,
+                                                                               fields=[KL_FIELD.ALL],
+                                                                               max_count=1000,
+                                                                               page_req_key=page_req_key,
+                                                                               extended_time=False)
+                if ret == RET_OK:
+                    history_df = pd.concat([history_df, data], ignore_index=True)
+                    break
+                else:
+                    self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+                    # Revert back to previous page req key and re-try again
+                    page_req_key = original_page_req_key
+                    time.sleep(1)
 
         for input_date in date_range:
             output_path = f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv'
@@ -197,7 +213,40 @@ class FutuTrade:
                 continue
             time.sleep(0.6)
 
+    def update_owner_plate(self, stock_list: list):
+        """
+        Update Owner Plate information for all equities in Hong Kong Kong stock market.
+        :param stock_list: A list of all equities (i.e., stock code)
+        """
+        # Slice the list into 200-elements per list
+        stock_lists = [stock_list[i:i + 200] for i in range(0, len(stock_list), 200)]
+        output_df = pd.DataFrame()
+        for stock_list in stock_lists:
+            ret, data = self.quote_ctx.get_owner_plate(stock_list)
+            if ret == RET_OK:
+                output_df = pd.concat([output_df, data], ignore_index=True)
+            else:
+                self.default_logger.error(f'Cannot get Owner Plate: {data}')
+            time.sleep(3.5)
+        output_df.to_csv('./data/Stock_Pool/stock_owner_plate.csv', index=False)
+
+    def update_stock_basicinfo(self):
+        """
+        Update stock static information for all markets and all forms of equities (E.g., Stock, Futures, etc.)
+        """
+        output_df = pd.DataFrame()
+        for market, stock_type in itertools.product(self.market_list, self.security_type_list):
+            ret, data = self.quote_ctx.get_stock_basicinfo(market=market, stock_type=stock_type)
+            if ret == RET_OK:
+                output_df = pd.concat([output_df, data], ignore_index=True)
+            else:
+                self.default_logger.error(f'Cannot get Stock Basic Info: {data}')
+        output_df.to_csv('./data/Stock_Pool/stock_basic_info.csv', index=False)
+
     def store_all_data_database(self):
+        """
+        Store all files in ./data/{stock_code}/*.csv to the database in pre-defined format.
+        """
         file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
         for input_file in file_list:
             input_csv = pd.read_csv(input_file, index_col=None)

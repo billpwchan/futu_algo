@@ -48,15 +48,22 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    # data_engine.HKEXInterface.update_security_list_full()
+    data_engine.HKEXInterface.update_security_list_full()
 
-    # Daily Update FuTu Historical Data
-    # futu_trade.store_all_data_database()
+    # Daily Update Owner Plate for all Stocks
+    full_equity_list = data_engine.HKEXInterface.get_equity_list_full()
+    futu_trade.update_owner_plate(stock_list=full_equity_list)
+
+    # Update basic information for all markets
+    futu_trade.update_stock_basicinfo()
 
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update)
+
+    # Daily Update FuTu Historical Data
+    # futu_trade.store_all_data_database()
 
 
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
@@ -160,8 +167,9 @@ def main():
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
-    stock_list = list(set(stock_list.extend(data_engine.DatabaseInterface(
-        database_path=config.get('Database', 'Database_path')).get_stock_list())))
+    stock_list.extend(data_engine.DatabaseInterface(
+        database_path=config.get('Database', 'Database_path')).get_stock_list())
+    stock_list = list(set(stock_list))
     if not stock_list:
         stock_list = data_engine.DatabaseInterface(
             database_path=config.get('Database', 'Database_path')).get_stock_list()
