@@ -59,7 +59,7 @@ class FutuTrade:
     def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
                                k_type: object = KLType, force_update: bool = False) -> bool:
         """
-        Save Historical Data (e.g., 1M, 15M, 1D, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
+        Save Historical Data (e.g., 1D, 1W, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param start_date: Datetime Object that specifies the start date
         :param end_date: Datetime Object that specifies the end date. If left as None, it will be automatically calculated as 365 days after start_date
@@ -69,8 +69,6 @@ class FutuTrade:
         out_dir = f'./data/{stock_code}'
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-        if k_type == KLType.K_1M:
-            output_path = f'./data/{stock_code}/{stock_code}_{start_date.strftime("%Y-%m-%d")}_1M.csv'
         elif k_type == KLType.K_DAY:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
         elif k_type == KLType.K_WEEK:
@@ -143,12 +141,45 @@ class FutuTrade:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 2 years
         """
-        for i in range(round(365 * years)):
-            day = datetime.today() - timedelta(days=i)
-            if not self.__save_historical_data(stock_code=stock_code, start_date=day.date(), end_date=day.date(),
-                                               k_type=KLType.K_1M, force_update=force_update):
-                continue
-            time.sleep(0.6)
+        column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+        history_df = pd.DataFrame(columns=column_names)
+        start_date = str((datetime.today() - timedelta(days=round(365 * years))).date())
+        end_date = str(datetime.today().date())
+        # This will give a list of dates between 2-years range
+        date_range = pd.date_range(start_date, end_date, freq='d').strftime("%Y-%m-%d").tolist()
+        # Retrieve the first page
+        ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code,
+                                                                       start=start_date,
+                                                                       end=end_date,
+                                                                       ktype=KLType.K_1M, autype=AuType.QFQ,
+                                                                       fields=[KL_FIELD.ALL],
+                                                                       max_count=1000, page_req_key=None,
+                                                                       extended_time=False)
+        if ret == RET_OK:
+            history_df = pd.concat([history_df, data], ignore_index=True)
+        else:
+            self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+
+        # 请求后面的所有结果
+        while page_req_key is not None:
+            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code,
+                                                                           start=start_date,
+                                                                           end=end_date,
+                                                                           ktype=KLType.K_1M, autype=AuType.QFQ,
+                                                                           fields=[KL_FIELD.ALL],
+                                                                           max_count=1000, page_req_key=page_req_key,
+                                                                           extended_time=False)
+            if ret == RET_OK:
+                history_df = pd.concat([history_df, data], ignore_index=True)
+            else:
+                self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+
+        for input_date in date_range:
+            output_path = f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv'
+            output_df = history_df[history_df['time_key'].str.contains(input_date)]
+            output_df.to_csv(output_path, index=False)
+            self.default_logger.info(f'Saved: {output_path}')
+            self.__store_data_database(output_df, k_type=KLType.K_1M)
 
     def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
                        k_type: KLType = KLType.K_DAY) -> None:
@@ -252,3 +283,49 @@ class FutuTrade:
         ret, data = self.quote_ctx.get_history_kl_quota(get_detail=True)
         if ret == RET_OK:
             self.default_logger.info(f'Historical K-line Quota: \n{data}')
+
+    def request_trading_days(self, start_date: str, end_date: str) -> dict:
+        """
+        请求交易日，注意该交易日是通过自然日剔除周末和节假日得到，未剔除临时休市数据。
+        :param start_date:
+        :param end_date:
+        :return: [{'time': '2020-04-01', 'trade_date_type': 'WHOLE'}, ...]
+        """
+        ret, data = self.quote_ctx.request_trading_days(TradeDateMarket.HK, start=start_date, end=end_date)
+        if ret == RET_OK:
+            self.default_logger.info(f'Trading Days: {data}')
+            return data
+        else:
+            self.default_logger.error(f'error: {data}')
+
+    def get_filtered_turnover_stocks(self) -> list:
+        """
+        A quick way to get all stocks with at least 100 million HKD turnover and a stock price >= 1 HKD
+        :return:
+        """
+        simple_filter = SimpleFilter()
+        simple_filter.filter_min = 1
+        simple_filter.stock_field = StockField.CUR_PRICE
+        simple_filter.is_no_filter = False
+        financial_filter = AccumulateFilter()
+        financial_filter.filter_min = 100000000
+        financial_filter.stock_field = StockField.TURNOVER
+        financial_filter.is_no_filter = False
+        financial_filter.sort = SortDir.ASCEND
+        financial_filter.days = 10
+        begin_index = 0
+        output_list = []
+
+        while True:
+            ret, ls = self.quote_ctx.get_stock_filter(market=Market.HK, filter_list=[simple_filter, financial_filter],
+                                                      begin=begin_index)  # 对香港市场的股票做简单和财务筛选
+            if ret == RET_OK:
+                last_page, all_count, ret_list = ls
+                output_list.extend([item.stock_code for item in ret_list])
+                begin_index += 200
+                if begin_index >= all_count:
+                    break
+            elif ret == RET_ERROR:
+                return []
+
+        return output_list

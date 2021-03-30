@@ -15,6 +15,7 @@
 ## Features
 
 - Developed based on FutoOpenD and FutuOpenAPI
+- Auto-Download Historical K-Line Data (up to 1M level for max. 2 years, or 1D level for max. 10 years)
 - Low-latency Trading Support (up to 1M level)
 - Daily Stock Filtering and Email Notification
 - Strategy Backtesting and Reporting

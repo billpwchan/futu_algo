@@ -40,15 +40,15 @@ from strategies.Strategies import Strategies
 
 def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Daily Update Filtered Security
-    filters = list(__init_filter(filter_name='all'))
-    stock_filter = StockFilter(stock_filters=filters)
-    stock_filter.update_filtered_equity_pools()
+    # filters = list(__init_filter(filter_name='all'))
+    # stock_filter = StockFilter(stock_filters=filters)
+    # stock_filter.update_filtered_equity_pools()
 
     # Daily Update Stock Info (Need to Rethink!!!)
-    stock_filter.update_stock_info()
+    # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    data_engine.HKEXInterface.update_security_list_full()
+    # data_engine.HKEXInterface.update_security_list_full()
 
     # Daily Update FuTu Historical Data
     # futu_trade.store_all_data_database()
@@ -93,7 +93,7 @@ def __init_filter(filter_name: str) -> Filters or dict:
 
 def init_backtesting():
     start_date = datetime(2019, 3, 20).date()
-    end_date = datetime(2019, 12, 23).date()
+    end_date = datetime(2021, 3, 23).date()
     stock_list = data_engine.YahooFinanceInterface.get_top_30_hsi_constituents()
     bt = Backtesting(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
@@ -129,6 +129,7 @@ def main():
     parser.add_argument("-fu", "--force_update",
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
     parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
+    parser.add_argument("-b", "--backtesting", help="Backtesting strategy", action="store_true")
 
     # Retrieve file names for all strategies as the argument option
     strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
@@ -159,6 +160,8 @@ def main():
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
+    stock_list = list(set(stock_list.extend(data_engine.DatabaseInterface(
+        database_path=config.get('Database', 'Database_path')).get_stock_list())))
     if not stock_list:
         stock_list = data_engine.DatabaseInterface(
             database_path=config.get('Database', 'Database_path')).get_stock_list()
@@ -188,8 +191,8 @@ def main():
 
         init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
         futu_trade.display_quota()
-
-    init_backtesting()
+    if args.backtesting:
+        init_backtesting()
 
 
 if __name__ == '__main__':

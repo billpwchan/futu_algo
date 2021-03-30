@@ -5,7 +5,9 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import configparser
 import csv
+import glob
 import json
+import os
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -15,6 +17,8 @@ import openpyxl
 import pandas as pd
 import requests
 import yfinance as yf
+
+from util import logger
 
 
 class DatabaseInterface:
@@ -64,6 +68,7 @@ class DatabaseInterface:
 class DataProcessingInterface:
     config = configparser.ConfigParser()
     config.read("config.ini")
+    default_logger = logger.get_logger("data_processing")
 
     @staticmethod
     def get_1M_data_range(date_range: list, stock_list: list) -> dict:
@@ -158,6 +163,20 @@ class DataProcessingInterface:
             minute_df['time_key'] = minute_df['time_key'].dt.strftime('%Y-%m-%d  %H:%M:%S')
             input_data[stock_code] = input_data.get(stock_code, minute_df)
         return input_data
+
+    @staticmethod
+    def validate_1M_data(date_range: list, stock_list: list, trading_days: dict):
+        raise NotImplementedError
+        # TODO: Validate data against futu records
+
+    @staticmethod
+    def clear_empty_data():
+        file_list = glob.glob(f"./data/*/*_1[DWM].csv", recursive=True)
+        for input_file in file_list:
+            input_csv = pd.read_csv(input_file, index_col=None)
+            if input_csv.empty:
+                os.remove(input_file)
+                DataProcessingInterface.default_logger.info(f'{input_file} removed.')
 
 
 class YahooFinanceInterface:

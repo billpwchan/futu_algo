@@ -91,6 +91,7 @@ class Backtesting:
 
         output_dict = dict(ChainMap(*list_of_custom_dict))
         self.input_data = output_dict
+        self.input_data['HK.01997'].to_csv("STEP 1.csv")
 
     def get_backtesting_init_data(self) -> dict:
         return {key: value.copy().iloc[:min(value.shape[0], self.observation)] for (key, value) in
@@ -115,7 +116,7 @@ class Backtesting:
             # Remove duplicated indices
             ta_backtesting_data[stock_code] = ta_backtesting_data[stock_code][
                 ~ta_backtesting_data[stock_code].index.duplicated(keep='first')]
-        ta_backtesting_data['HK.09988'].to_csv('error.csv')
+        ta_backtesting_data['HK.01997'].to_csv("STEP 2.csv")
 
         # Gather all unique dates
         sequence_time = list(unique_time)
