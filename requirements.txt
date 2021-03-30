@@ -5,9 +5,11 @@ argon2-cffi=20.1.0=py38he774522_1
 async_generator=1.10=py_0
 attrs=20.3.0=pyhd3eb1b0_0
 backcall=0.2.0=py_0
+backtesting=0.3.1=pypi_0
 beautifulsoup4=4.9.3=pyhb0f4dca_0
 blas=1.0=mkl
 bleach=3.2.1=py_0
+bokeh=2.3.0=pypi_0
 brotlipy=0.7.0=py38h2bbff1b_1003
 ca-certificates=2020.12.8=haa95532_0
 certifi=2020.12.5=py38haa95532_0
@@ -22,7 +24,7 @@ empyrical=0.5.5=pypi_0
 entrypoints=0.3=py38_0
 et_xmlfile=1.0.1=py_1001
 freetype=2.10.4=hd328e21_0
-futu-api=3.27.2=pypi_0
+futu-api=5.2.1408=pypi_0
 html5lib=1.1=py_0
 humanize=3.2.0=pypi_0
 icu=58.2=ha925a31_3
@@ -104,6 +106,7 @@ pytz=2020.5=pyhd3eb1b0_0
 pywin32=227=py38he774522_1
 pywinpty=0.5.7=py38_0
 pyxlsb=1.0.7=pypi_0
+pyyaml=5.4.1=pypi_0
 pyzmq=20.0.0=py38hd77b12b_1
 qt=5.9.7=vc14h73c81de_0
 requests=2.25.1=pyhd3eb1b0_0
@@ -125,13 +128,13 @@ tk=8.6.10=he774522_0
 tornado=6.1=py38h2bbff1b_0
 traitlets=5.0.5=py_0
 tulipy=0.4.0=pypi_0
+typing-extensions=3.7.4.3=pypi_0
 urllib3=1.26.2=pyhd3eb1b0_0
 vc=14.2=h21ff451_1
 vs2015_runtime=14.27.29016=h5e58377_2
 wcwidth=0.2.5=py_0
 webencodings=0.5.1=py38_1
 wheel=0.36.2=pyhd3eb1b0_0
-win10toast=0.9=pypi_0
 win_inet_pton=1.1.0=py38haa95532_0
 wincertstore=0.2=py38_0
 winpty=0.4.3=4
