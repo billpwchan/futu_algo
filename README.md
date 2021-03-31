@@ -58,16 +58,17 @@ SubscribedDataFormat = None
 Database_path = <Your SQLite Database File Path>
 
 [TradePreference]
-Lot_size_multiplier = <# of Stocks to Buy per Signal>
+LotSizeMultiplier = <# of Stocks to Buy per Signal>
+MaxPercPerAsset = <Maximum % of Capital Allocated per Asset>
 StockList = <Subscribed Stocks in List Format>
 
 [Backtesting.Commission.HK]
-Fixed_Charge = <Fixed Transaction Fee and Tax in HKD - 15.5>
-Perc_Charge = <Percentage Transaction Fee in % - 0.1097>
+FixedCharge = <Fixed Transaction Fee and Tax in HKD - 15.5>
+PercCharge = <Percentage Transaction Fee in % - 0.1097>
 
 [Email]
 Port = <Server SMTP Setting>
-Smtp_server = <Server SMTP Setting>
+SmtpServer = <Server SMTP Setting>
 Sender = <Sender Email Address - account1@example.com>
 Login = <Sender Email Address - account1@example.com>
 Password = <Sender Email Password>

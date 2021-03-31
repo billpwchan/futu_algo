@@ -40,13 +40,13 @@ from strategies.Strategies import Strategies
 
 
 def __daily_update_filters():
-    # Daily Update Filtered Security
     filters = list(__init_filter(filter_name='all'))
     stock_filter = StockFilter(stock_filters=filters)
     stock_filter.update_filtered_equity_pools()
 
 
 def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
+    # Daily Update Filtered Security
     procs = []
     proc = Process(target=__daily_update_filters)  # instantiating without any argument
     procs.append(proc)
@@ -179,9 +179,6 @@ def main():
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
-    stock_list.extend(data_engine.DatabaseInterface(
-        database_path=config.get('Database', 'Database_path')).get_stock_list())
-    stock_list = list(set(stock_list))
     if not stock_list:
         stock_list = data_engine.DatabaseInterface(
             database_path=config.get('Database', 'Database_path')).get_stock_list()
@@ -193,7 +190,7 @@ def main():
         for subscriber in subscription_list:
             filter_name = args.email_name if args.email_name else "Default Stock Filter"
             email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
-    if args.update:
+    if args.update or args.force_update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
     if args.database:
