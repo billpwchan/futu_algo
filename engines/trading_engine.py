@@ -103,7 +103,7 @@ class FutuTrade:
                                                                            max_count=1000, page_req_key=None,
                                                                            extended_time=False)
             if ret == RET_OK:
-                data.to_csv(output_path, index=False)
+                data.to_csv(output_path, index=False, encoding='utf-8-sig')
                 self.default_logger.info(f'Saved: {output_path}')
                 self.__store_data_database(data, k_type=k_type)
                 return True
@@ -150,7 +150,9 @@ class FutuTrade:
         """
         column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
         history_df = pd.DataFrame(columns=column_names)
-        start_date = str((datetime.today() - timedelta(days=round(365 * years))).date())
+        # If force update, update all 2-years 1M data. Otherwise only update the last week's data
+        start_date = str((datetime.today() - timedelta(days=round(365 * years))).date()) if force_update else str(
+            (datetime.today() - timedelta(days=7)).date())
         end_date = str(datetime.today().date())
         # This will give a list of dates between 2-years range
         date_range = pd.date_range(start_date, end_date, freq='d').strftime("%Y-%m-%d").tolist()
@@ -193,7 +195,7 @@ class FutuTrade:
         for input_date in date_range:
             output_path = f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
-            output_df.to_csv(output_path, index=False)
+            output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
             self.default_logger.info(f'Saved: {output_path}')
             self.__store_data_database(output_df, k_type=KLType.K_1M)
 
@@ -228,7 +230,9 @@ class FutuTrade:
             else:
                 self.default_logger.error(f'Cannot get Owner Plate: {data}')
             time.sleep(3.5)
-        output_df.to_csv('./data/Stock_Pool/stock_owner_plate.csv', index=False)
+        output_path = './data/Stock_Pool/stock_owner_plate.csv'
+        output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
+        self.default_logger.info(f'Stock Owner Plate Updated: {output_path}')
 
     def update_stock_basicinfo(self):
         """
@@ -241,7 +245,9 @@ class FutuTrade:
                 output_df = pd.concat([output_df, data], ignore_index=True)
             else:
                 self.default_logger.error(f'Cannot get Stock Basic Info: {data}')
-        output_df.to_csv('./data/Stock_Pool/stock_basic_info.csv', index=False)
+        output_path = './data/Stock_Pool/stock_basic_info.csv'
+        output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
+        self.default_logger.error(f'Stock Static Basic Info Updated: {output_path}')
 
     def store_all_data_database(self):
         """

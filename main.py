@@ -9,6 +9,7 @@ import configparser
 import glob
 import json
 from datetime import datetime
+from multiprocessing import Process
 from pathlib import Path
 
 import yaml
@@ -38,11 +39,18 @@ from strategies.Short_Term_Band import ShortTermBand
 from strategies.Strategies import Strategies
 
 
-def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
+def __daily_update_filters():
     # Daily Update Filtered Security
-    # filters = list(__init_filter(filter_name='all'))
-    # stock_filter = StockFilter(stock_filters=filters)
-    # stock_filter.update_filtered_equity_pools()
+    filters = list(__init_filter(filter_name='all'))
+    stock_filter = StockFilter(stock_filters=filters)
+    stock_filter.update_filtered_equity_pools()
+
+
+def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
+    procs = []
+    proc = Process(target=__daily_update_filters)  # instantiating without any argument
+    procs.append(proc)
+    proc.start()
 
     # Daily Update Stock Info (Need to Rethink!!!)
     # stock_filter.update_stock_info()
@@ -57,6 +65,7 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Update basic information for all markets
     futu_trade.update_stock_basicinfo()
 
+    # Update historical k-line
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
@@ -64,6 +73,9 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
 
     # Daily Update FuTu Historical Data
     # futu_trade.store_all_data_database()
+
+    for proc in procs:
+        proc.join()
 
 
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
