@@ -11,6 +11,7 @@ import itertools
 from datetime import date
 
 from futu import *
+from tqdm import *
 
 from engines import data_engine
 from handlers.cur_kline_handler import CurKlineHandler
@@ -42,6 +43,7 @@ class FutuTrade:
         self.security_type_list = [SecurityType.BOND, SecurityType.BWRT, SecurityType.STOCK, SecurityType.WARRANT,
                                    SecurityType.IDX, SecurityType.ETF, SecurityType.FUTURE, SecurityType.PLATE,
                                    SecurityType.PLATESET]
+        self.reference_type_list = [SecurityReferenceType.WARRANT, SecurityReferenceType.FUTURE]
 
     def __del__(self):
         """
@@ -76,7 +78,7 @@ class FutuTrade:
         out_dir = f'./data/{stock_code}'
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
-        elif k_type == KLType.K_DAY:
+        if k_type == KLType.K_DAY:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
         elif k_type == KLType.K_WEEK:
             output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1W.csv'
@@ -120,7 +122,99 @@ class FutuTrade:
         self.futu_data.commit()
 
     def get_market_state(self):
+        """
+                获取全局状态
+
+                :return: (ret, data)
+
+                        ret == RET_OK data为包含全局状态的字典，含义如下
+
+                        ret != RET_OK data为错误描述字符串
+
+                        =====================   ===========   ==============================================================
+                        key                      value类型                        说明
+                        =====================   ===========   ==============================================================
+                        market_sz               str            深圳市场状态，参见MarketState
+                        market_us               str            美国市场状态，参见MarketState
+                        market_sh               str            上海市场状态，参见MarketState
+                        market_hk               str            香港市场状态，参见MarketState
+                        market_hkfuture         str            香港期货市场状态，参见MarketState
+                        market_usfuture         str            美国期货市场状态，参见MarketState
+                        server_ver              str            FutuOpenD版本号
+                        trd_logined             str            '1'：已登录交易服务器，'0': 未登录交易服务器
+                        qot_logined             str            '1'：已登录行情服务器，'0': 未登录行情服务器
+                        timestamp               str            Futu后台服务器当前时间戳(秒)
+                        local_timestamp         double         FutuOpenD运行机器当前时间戳(
+                        =====================   ===========   ==============================================================
+        """
         return self.quote_ctx.get_global_state()
+
+    def get_referencestock_list(self, stock_code: str) -> pd.DataFrame:
+        """
+        获取证券的关联数据
+        :param code: 证券id，str，例如HK.00700
+        :return: (ret, data)
+
+                ret == RET_OK 返回pd dataframe数据，数据列格式如下
+
+                ret != RET_OK 返回错误字符串
+                =======================   ===========   ==============================================================================
+                参数                        类型                        说明
+                =======================   ===========   ==============================================================================
+                code                        str           证券代码
+                lot_size                    int           每手数量
+                stock_type                  str           证券类型，参见SecurityType
+                stock_name                  str           证券名字
+                list_time                   str           上市时间（美股默认是美东时间，港股A股默认是北京时间）
+                wrt_valid                   bool          是否是窝轮，如果为True，下面wrt开头的字段有效
+                wrt_type                    str           窝轮类型，参见WrtType
+                wrt_code                    str           所属正股
+                future_valid                bool          是否是期货，如果为True，下面future开头的字段有效
+                future_main_contract        bool          是否主连合约（期货特有字段）
+                future_last_trade_time      string        最后交易时间（期货特有字段，非主连期货合约才有值）
+                =======================   ===========   ==============================================================================
+        """
+        output_df = pd.DataFrame()
+        for security_reference_type in self.security_type_list:
+            ret, data = self.quote_ctx.get_referencestock_list(stock_code, security_reference_type)
+            if ret == RET_OK:
+                self.default_logger.info(f"Received Reference Stock List for {stock_code}")
+                output_df = pd.concat([output_df, data], ignore_index=True)
+            else:
+                self.default_logger.error(f"Cannot Retrieve Reference Stock List for {stock_code}")
+        return output_df
+
+    def get_filtered_turnover_stocks(self) -> list:
+        """
+        A quick way to get all stocks with at least 100 million HKD turnover and a stock price >= 1 HKD
+        :return:
+        """
+        simple_filter = SimpleFilter()
+        simple_filter.filter_min = 1
+        simple_filter.stock_field = StockField.CUR_PRICE
+        simple_filter.is_no_filter = False
+        financial_filter = AccumulateFilter()
+        financial_filter.filter_min = 100000000
+        financial_filter.stock_field = StockField.TURNOVER
+        financial_filter.is_no_filter = False
+        financial_filter.sort = SortDir.ASCEND
+        financial_filter.days = 10
+        begin_index = 0
+        output_list = []
+
+        while True:
+            ret, ls = self.quote_ctx.get_stock_filter(market=Market.HK, filter_list=[simple_filter, financial_filter],
+                                                      begin=begin_index)  # 对香港市场的股票做简单和财务筛选
+            if ret == RET_OK:
+                last_page, all_count, ret_list = ls
+                output_list.extend([item.stock_code for item in ret_list])
+                begin_index += 200
+                if begin_index >= all_count:
+                    break
+            elif ret == RET_ERROR:
+                return []
+
+        return output_list
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
         """
@@ -208,7 +302,7 @@ class FutuTrade:
         :param years: 10 years
         :param k_type: Futu K-Line Type
         """
-        for i in range(0, round(years + 1)):
+        for i in trange(0, round(years + 1)):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
                                                k_type=k_type, force_update=force_update):
@@ -352,35 +446,3 @@ class FutuTrade:
             return data
         else:
             self.default_logger.error(f'error: {data}')
-
-    def get_filtered_turnover_stocks(self) -> list:
-        """
-        A quick way to get all stocks with at least 100 million HKD turnover and a stock price >= 1 HKD
-        :return:
-        """
-        simple_filter = SimpleFilter()
-        simple_filter.filter_min = 1
-        simple_filter.stock_field = StockField.CUR_PRICE
-        simple_filter.is_no_filter = False
-        financial_filter = AccumulateFilter()
-        financial_filter.filter_min = 100000000
-        financial_filter.stock_field = StockField.TURNOVER
-        financial_filter.is_no_filter = False
-        financial_filter.sort = SortDir.ASCEND
-        financial_filter.days = 10
-        begin_index = 0
-        output_list = []
-
-        while True:
-            ret, ls = self.quote_ctx.get_stock_filter(market=Market.HK, filter_list=[simple_filter, financial_filter],
-                                                      begin=begin_index)  # 对香港市场的股票做简单和财务筛选
-            if ret == RET_OK:
-                last_page, all_count, ret_list = ls
-                output_list.extend([item.stock_code for item in ret_list])
-                begin_index += 200
-                if begin_index >= all_count:
-                    break
-            elif ret == RET_ERROR:
-                return []
-
-        return output_list
