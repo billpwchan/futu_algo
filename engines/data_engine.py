@@ -10,6 +10,7 @@ import json
 import os
 import sqlite3
 from datetime import datetime
+from multiprocessing import Pool, cpu_count
 from pathlib import Path
 
 import humanize
@@ -170,13 +171,19 @@ class DataProcessingInterface:
         # TODO: Validate data against futu records
 
     @staticmethod
+    def check_empty_data(input_file: str):
+        input_csv = pd.read_csv(input_file, index_col=None)
+        if input_csv.empty:
+            os.remove(input_file)
+            DataProcessingInterface.default_logger.info(f'{input_file} removed.')
+
+    @staticmethod
     def clear_empty_data():
         file_list = glob.glob(f"./data/*/*_1[DWM].csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            if input_csv.empty:
-                os.remove(input_file)
-                DataProcessingInterface.default_logger.info(f'{input_file} removed.')
+        pool = Pool(cpu_count())
+        pool.map(DataProcessingInterface.check_empty_data, file_list)
+        pool.close()
+        pool.join()
 
 
 class YahooFinanceInterface:

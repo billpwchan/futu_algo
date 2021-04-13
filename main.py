@@ -17,7 +17,7 @@ from futu import KLType, SubType
 
 from engines import trading_engine, data_engine, email_engine
 from engines.backtesting_engine import Backtesting
-from engines.data_engine import YahooFinanceInterface
+from engines.data_engine import YahooFinanceInterface, DataProcessingInterface
 from engines.stock_filter_engine import StockFilter
 from filters.Boll_Gold_Cross import BollGoldCross
 from filters.Boll_Up import BollUp
@@ -73,6 +73,9 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
 
     # Daily Update FuTu Historical Data
     # futu_trade.store_all_data_database()
+
+    # Clean non-trading days data
+    DataProcessingInterface.clear_empty_data()
 
     for proc in procs:
         proc.join()

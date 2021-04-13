@@ -11,7 +11,6 @@ import itertools
 from datetime import date
 
 from futu import *
-from tqdm import *
 
 from engines import data_engine
 from handlers.cur_kline_handler import CurKlineHandler
@@ -219,6 +218,7 @@ class FutuTrade:
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
         """
         Receive real-time K-Line data as initial technical indicators observations
+        注意：len(code_list) * 订阅的K线类型的数量 <= 100
         :param stock_list: List of selected stocks ['HK.00009', 'HK.00001']
         :param sub_type: Futu subscription type
         :param kline_num: Number of observations (i.e., default to 100)
@@ -246,7 +246,7 @@ class FutuTrade:
         history_df = pd.DataFrame(columns=column_names)
         # If force update, update all 2-years 1M data. Otherwise only update the last week's data
         start_date = str((datetime.today() - timedelta(days=round(365 * years))).date()) if force_update else str(
-            (datetime.today() - timedelta(days=7)).date())
+            (datetime.today() - timedelta(days=30)).date())
         end_date = str(datetime.today().date())
         # This will give a list of dates between 2-years range
         date_range = pd.date_range(start_date, end_date, freq='d').strftime("%Y-%m-%d").tolist()
@@ -302,7 +302,7 @@ class FutuTrade:
         :param years: 10 years
         :param k_type: Futu K-Line Type
         """
-        for i in trange(0, round(years + 1)):
+        for i in range(0, round(years + 1)):
             day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
             if not self.__save_historical_data(stock_code=stock_code, start_date=day,
                                                k_type=k_type, force_update=force_update):
