@@ -9,7 +9,7 @@ import glob
 import json
 import os
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
 from pathlib import Path
 
@@ -260,12 +260,17 @@ class YahooFinanceInterface:
     @staticmethod
     def get_stocks_history(stock_list: list) -> pd.DataFrame:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
-        return yf.download(stock_list, period="max", group_by="ticker", auto_adjust=True, actions=True, progress=False)
+        return yf.download(stock_list, end=datetime.now().date().strftime("%Y-%m-%d"),
+                           start=(datetime.today() - timedelta(days=365 * 30)).date().strftime("%Y-%m-%d"),
+                           group_by="ticker",
+                           auto_adjust=True, actions=True, progress=False)
 
     @staticmethod
     def get_stock_history(stock_code: str) -> pd.DataFrame:
         stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
-        return yf.download(stock_code, period="max", auto_adjust=True, actions=True, progress=False)
+        return yf.download(stock_code, end=datetime.now().date().strftime("%Y-%m-%d"),
+                           start=(datetime.today() - timedelta(days=365 * 30)).date().strftime("%Y-%m-%d"),
+                           auto_adjust=True, actions=True, progress=False)
 
 
 class HKEXInterface:

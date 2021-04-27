@@ -106,7 +106,7 @@ class FutuTrade:
             if ret == RET_OK:
                 data.to_csv(output_path, index=False, encoding='utf-8-sig')
                 self.default_logger.info(f'Saved: {output_path}')
-                self.__store_data_database(data, k_type=k_type)
+                # self.__store_data_database(data, k_type=k_type)
                 return True
             else:
                 # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
@@ -291,7 +291,7 @@ class FutuTrade:
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
             output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
             self.default_logger.info(f'Saved: {output_path}')
-            self.__store_data_database(output_df, k_type=KLType.K_1M)
+            # self.__store_data_database(output_df, k_type=KLType.K_1M)
 
     def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
                        k_type: KLType = KLType.K_DAY) -> None:
@@ -341,7 +341,7 @@ class FutuTrade:
                 self.default_logger.error(f'Cannot get Stock Basic Info: {data}')
         output_path = './data/Stock_Pool/stock_basic_info.csv'
         output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
-        self.default_logger.error(f'Stock Static Basic Info Updated: {output_path}')
+        self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
     def store_all_data_database(self):
         """

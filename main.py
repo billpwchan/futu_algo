@@ -8,6 +8,7 @@ import argparse
 import configparser
 import glob
 import json
+import os
 from datetime import datetime
 from multiprocessing import Process
 from pathlib import Path
@@ -183,8 +184,11 @@ def main():
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
     if not stock_list:
-        stock_list = data_engine.DatabaseInterface(
-            database_path=config.get('Database', 'Database_path')).get_stock_list()
+        # stock_list = data_engine.DatabaseInterface(
+        #     database_path=config.get('Database', 'Database_path')).get_stock_list()
+        # Directly get list of stock codes from the data folder. Easier.
+        stock_list = [str(f.path).replace('./data/', '') for f in os.scandir("./data/") if f.is_dir()]
+        stock_list = stock_list[:-1]
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
@@ -210,9 +214,10 @@ def main():
         # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
 
         init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
-        futu_trade.display_quota()
     if args.backtesting:
         init_backtesting()
+
+    futu_trade.display_quota()
 
 
 if __name__ == '__main__':
