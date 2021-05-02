@@ -150,9 +150,9 @@ Execute Stock Filtering with Pre-defined Filtering Strategies
 
 ## Future Plans
 
-- [ ] ~~[NEED A GREAT NAME FOR THIS ALGO TRADE!!](https://github.com/billpwchan/futu_algo/issues/23)~~
-- [ ] ~~[Custom Backtesting Time Interval]()~~
-- [ ] ~~[Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)~~
+- [ ] [NEED A GREAT NAME FOR THIS ALGO TRADE!!](https://github.com/billpwchan/futu_algo/issues/23)
+- [ ] [Custom Backtesting Time Interval]()
+- [ ] [Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)
 
 -----------
 
