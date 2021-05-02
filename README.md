@@ -12,21 +12,27 @@
 
 </div>
 
-## Features
+## Highlights
 
-- Developed based on FutoOpenD and FutuOpenAPI
-- Auto-Download Historical K-Line Data (up to 1M level for max. 2 years, or 1D level for max. 10 years)
-- Low-latency Trading Support (up to 1M level)
-- Daily Stock Filtering and Email Notification
-- Strategy Backtesting and Reporting
+- **Supported Platforms and Markets**: Futu_algo is a algorithmtic trading solution developed based on FutuOpenD and
+  FutuOpenAPI. Fully support FutuNiuNiu and FutuMooMoo users in Hong Kong stock market. *(More market support is coming
+  soon)*
+- **Historical K-Line Data**: Allow users to automatically downloading historical data for your interested stocks into
+  CSV and storing to SQLite database for backtesting. *(up to 1M level for max. 2 years, or 1D level for max. 10 years)*
+- **Backtesting Trading Strategies (BETA)**: Backtest your own trading strategies on historical data with a summarized
+  reports and visualizations using Pyfolio. For more demanding users, feel free to other commercial solutions such as
+  Amibroker for backtesting.
+- **High-Frequency Trading**: Real-time low-latency trading features that allows applying your own basket of trading
+  strategies on your stock pool. User can specify the trading strategy to be used for each stock based on their
+  preference. *(up to 1M level)*
+- **Advanced Stock Screener**: Screens high-quality stocks using your own stock screening strategies, and notify your
+  friends using the email subscription feature.
+- **Trading Strategy Editor**: Write your own trading strategy following a simple template (buy, sell, calculate
+  technical indicators). Common strategies such as MACD and KDJ-based trading rules are provided as guidelines.
 
 ## Issues
 
 - [x] ~~[ADX & RSI Trading Strategy Support](https://github.com/billpwchan/futu_algo/issues/1)~~
-
-## Releases
-
-**Important:** Program still in Alpha Phase now.
 
 ## Version Guidance
 
@@ -130,7 +136,7 @@ If you want to refresh all data, use the following command instead (WITH CAUTION
 
     python main.py -fu  /   python main.py --force_update
 
-Store all data from CSV to SQLite Database
+Store all data from CSV to SQLite Database *(Currently the database isn't used for any feature)*
 
     python main.py -d   /   python main.py --database
 
@@ -142,8 +148,44 @@ Execute Stock Filtering with Pre-defined Filtering Strategies
 
     python main.py -f Volume_Threshold Price_Threshold   /   python main.py --filter Volume_Threshold Price_Threshold
 
+## Future Plans
+
+- [ ] ~~[NEED A GREAT NAME FOR THIS ALGO TRADE!!](https://github.com/billpwchan/futu_algo/issues/23)~~
+- [ ] ~~[Custom Backtesting Time Interval]()~~
+- [ ] ~~[Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)~~
+
 -----------
 
 ## Contributor
 
 [Bill Chan -- Main Developer](https://github.com/billpwchan/)
+
+## Disclaimer
+
+Futures, stocks and options trading involves substantial risk of loss and is not suitable for every investor. The
+valuation of futures, stocks and options may fluctuate, and, as a result, clients may lose more than their original
+investment. The impact of seasonal and geopolitical events is already factored into market prices. The highly leveraged
+nature of futures trading means that small market movements will have a great impact on your trading account and this
+can work against you, leading to large losses or can work for you, leading to large gains.
+
+If the market moves against you, you may sustain a total loss greater than the amount you deposited into your account.
+You are responsible for all the risks and financial resources you use and for the chosen trading system. You should not
+engage in trading unless you fully understand the nature of the transactions you are entering into and the extent of
+your exposure to loss. If you do not fully understand these risks you must seek independent advice from your financial
+advisor.
+
+All trading strategies are used at your own risk.
+
+Any content in this repository should not be relied upon as advice or construed as providing recommendations of any
+kind. It is your responsibility to confirm and decide which trades to make. Trade only with risk capital; that is, trade
+with money that, if lost, will not adversely impact your lifestyle and your ability to meet your financial obligations.
+Past results are no indication of future performance. In no event should the content of this correspondence be construed
+as an express or implied promise or guarantee.
+
+This repository and its author are not responsible for any losses incurred as a result of using any of our trading
+strategies. Loss-limiting strategies such as stop loss orders may not be effective because market conditions or
+technological issues may make it impossible to execute such orders. Likewise, strategies using combinations of options
+and/or futures positions such as “spread” or “straddle” trades may be just as risky as simple long and short positions.
+Information provided in this correspondence is intended solely for informational purposes and is obtained from sources
+believed to be reliable. Information is in no way guaranteed. No guarantee of any kind is implied or possible where
+projections of future conditions are attempted.
