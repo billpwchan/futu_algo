@@ -11,6 +11,10 @@ import pandas as pd
 
 class Filters(ABC):
     def __init__(self):
+        """
+        MAKE SURE THE FILE NAME IS EXACTLY THE SAME EXCEPT FOR ADDING UNDERSCORES!
+        This is required for dynamic instantiation
+        """
         super().__init__()
 
     @abstractmethod

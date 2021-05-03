@@ -7,6 +7,7 @@
 import argparse
 import configparser
 import glob
+import importlib
 import json
 import os
 from datetime import datetime
@@ -20,28 +21,11 @@ from engines import trading_engine, data_engine, email_engine
 from engines.backtesting_engine import Backtesting
 from engines.data_engine import YahooFinanceInterface, DataProcessingInterface
 from engines.stock_filter_engine import StockFilter
-from filters.Boll_Gold_Cross import BollGoldCross
-from filters.Boll_Up import BollUp
-from filters.DZX_1B import DZX1B
-from filters.Filters import Filters
-from filters.MA_Simple import MASimple
-from filters.MA_Up_Trend import MAUpTrend
-from filters.Price_Threshold import PriceThreshold
-from filters.Quant_Breakthrough import QuantBreakthrough
-from filters.Triple_Cross import TripleCross
-from filters.Volume_Threshold import VolumeThreshold
-from strategies.EMA_Ribbon import EMARibbon
-from strategies.KDJ_Cross import KDJCross
-from strategies.KDJ_MACD_Close import KDJMACDClose
-from strategies.MACD_Cross import MACDCross
-from strategies.Quant_Legendary import QuantLegendary
-from strategies.RSI_Threshold import RSIThreshold
-from strategies.Short_Term_Band import ShortTermBand
 from strategies.Strategies import Strategies
 
 
 def __daily_update_filters():
-    filters = list(__init_filter(filter_name='all'))
+    filters = list(__init_filter(filter_list=['all']))
     stock_filter = StockFilter(stock_filters=filters)
     stock_filter.update_filtered_equity_pools()
 
@@ -82,46 +66,49 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
         proc.join()
 
 
+def __dynamic_instantiation(prefix: str, module_name: str, optional_parameter=None):
+    filter_module = importlib.import_module(f"{prefix}.{module_name}")
+    # Assume the class name is identical with the file name except for the underscore _
+    class_ = getattr(filter_module, module_name.replace("_", ""))
+    if optional_parameter is not None:
+        return class_(optional_parameter)
+    else:
+        return class_()
+
+
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
-    strategies = {
-        'EMA_Ribbon': EMARibbon(input_data=input_data.copy()),
-        'KDJ_Cross': KDJCross(input_data=input_data.copy()),
-        'KDJ_MACD_Close': KDJMACDClose(input_data=input_data.copy()),
-        'MACD_Cross': MACDCross(input_data=input_data.copy()),
-        'RSI_Threshold': RSIThreshold(input_data=input_data.copy()),
-        'Short_Term_Band': ShortTermBand(input_data=input_data.copy()),
-        'Quant_Legendary': QuantLegendary(input_data=input_data.copy())
-    }
-    # Default return simplest MACD Cross Strategy
-    return strategies.get(strategy_name, MACDCross(input_data=input_data))
+    """
+    Return a trading strategy instance using a strategy name in string.
+    :param strategy_name: an available strategy module name in the strategies folder
+    :param input_data: Initialized input data for the strategy to calculate the technical indicator
+    :return: a strategy instance
+    """
+    return __dynamic_instantiation(prefix="strategies", module_name=strategy_name, optional_parameter=input_data.copy())
 
 
-def __init_filter(filter_name: str) -> Filters or dict:
-    filters = {
-        'Boll_Gold_Cross': BollGoldCross(),
-        'Boll_Up': BollUp(),
-        'DZX_1B': DZX1B(),
-        'MA_Simple': MASimple(),
-        'MA_Up_Trend': MAUpTrend(),
-        'Price_Threshold': PriceThreshold(price_threshold=1),
-        'Volume_Threshold': VolumeThreshold(volume_threshold=10 ** 7),
-        'Triple_Cross': TripleCross(),
-        'Quant_Breakthrough': QuantBreakthrough()
-    }
-    # Default return simplest MA Stock Filter
-    if filter_name == 'all':
-        return filters.values()
-    return filters.get(filter_name, MASimple())
+def __init_filter(filter_list: list) -> list:
+    """
+    Return a list of filters instances using a list of filter names.
+    If 'all' is specified, all available filters will be returned
+    :param filter_list: a list of filter names (in strings)
+    :return: a list of filters
+    """
+    if "all" in filter_list:
+        filter_list = [Path(file_name).name[:-3] for file_name in glob.glob("./filters/*.py") if
+                       "__init__" not in file_name and "Filters" not in file_name]
+
+    return [__dynamic_instantiation(prefix="filters", module_name=filter_name) for filter_name in filter_list]
 
 
-def init_backtesting():
+def init_backtesting(strategy_name: str):
     start_date = datetime(2019, 3, 20).date()
     end_date = datetime(2021, 3, 23).date()
     stock_list = data_engine.YahooFinanceInterface.get_top_30_hsi_constituents()
     bt = Backtesting(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
-    strategy = KDJMACDClose(input_data=bt.get_backtesting_init_data(), observation=100)
+    strategy = __dynamic_instantiation(prefix="strategies", module_name=strategy_name,
+                                       optional_parameter=bt.get_backtesting_init_data())
     bt.init_strategy(strategy)
     bt.calculate_return()
     # bt.create_tear_sheet()
@@ -139,7 +126,7 @@ def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, str
 
 
 def init_stock_filter(filter_list: list) -> list:
-    filters = [__init_filter(input_filter) for input_filter in filter_list]
+    filters = __init_filter(filter_list)
     stock_filter = StockFilter(stock_filters=filters)
     return stock_filter.get_filtered_equity_pools()
 
@@ -152,13 +139,15 @@ def main():
     parser.add_argument("-fu", "--force_update",
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
     parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
-    parser.add_argument("-b", "--backtesting", help="Backtesting strategy", action="store_true")
 
     # Retrieve file names for all strategies as the argument option
     strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                      "__init__" not in file_name and "Strategies" not in file_name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute HFT using Pre-defined Strategy")
+
+    parser.add_argument("-b", "--backtesting", type=str, choices=strategy_list,
+                        help="Backtesting a Pre-defined Strategy")
 
     # Retrieve file names for all strategies as the argument option
     filter_list = [Path(file_name).name[:-3] for file_name in glob.glob("./filters/*.py") if
@@ -212,10 +201,9 @@ def main():
         if args.filter:
             stock_list.extend(filtered_stock_list)
         # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
-
         init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
     if args.backtesting:
-        init_backtesting()
+        init_backtesting(args.backtesting)
 
     futu_trade.display_quota()
 
