@@ -7,7 +7,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 ################################################################################
-## Form generated from reading UI file 'mainOYFdNk.ui'
+## Form generated from reading UI file 'mainxXlgmt.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.0.3
 ##
@@ -19,7 +19,6 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 from .resources_rc import *
-
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -646,6 +645,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_4.addWidget(self.toggleButton)
 
+
         self.verticalMenuLayout.addWidget(self.toggleBox)
 
         self.topMenu = QFrame(self.leftMenuFrame)
@@ -688,7 +688,8 @@ class Ui_MainWindow(object):
         self.btn_stock_trading.setFont(font)
         self.btn_stock_trading.setCursor(QCursor(Qt.PointingHandCursor))
         self.btn_stock_trading.setLayoutDirection(Qt.LeftToRight)
-        self.btn_stock_trading.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-file.png);")
+        self.btn_stock_trading.setAutoFillBackground(False)
+        self.btn_stock_trading.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-transfer.png);")
 
         self.verticalLayout_8.addWidget(self.btn_stock_trading)
 
@@ -716,6 +717,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_8.addWidget(self.btn_exit)
 
+
         self.verticalMenuLayout.addWidget(self.topMenu, 0, Qt.AlignTop)
 
         self.bottomMenu = QFrame(self.leftMenuFrame)
@@ -738,9 +740,12 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_9.addWidget(self.toggleLeftBox)
 
+
         self.verticalMenuLayout.addWidget(self.bottomMenu, 0, Qt.AlignBottom)
 
+
         self.verticalLayout_3.addWidget(self.leftMenuFrame)
+
 
         self.appLayout.addWidget(self.leftMenuBg)
 
@@ -796,7 +801,9 @@ class Ui_MainWindow(object):
 
         self.extraTopLayout.addWidget(self.extraCloseColumnBtn, 0, 2, 1, 1)
 
+
         self.verticalLayout_5.addLayout(self.extraTopLayout)
+
 
         self.extraColumLayout.addWidget(self.extraTopBg)
 
@@ -852,6 +859,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_11.addWidget(self.btn_more)
 
+
         self.verticalLayout_12.addWidget(self.extraTopMenu, 0, Qt.AlignTop)
 
         self.extraCenter = QFrame(self.extraContent)
@@ -869,6 +877,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_10.addWidget(self.textEdit)
 
+
         self.verticalLayout_12.addWidget(self.extraCenter)
 
         self.extraBottom = QFrame(self.extraContent)
@@ -878,7 +887,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_12.addWidget(self.extraBottom)
 
+
         self.extraColumLayout.addWidget(self.extraContent)
+
 
         self.appLayout.addWidget(self.extraLeftBox)
 
@@ -925,6 +936,7 @@ class Ui_MainWindow(object):
         self.titleRightInfo.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignVCenter)
 
         self.horizontalLayout_3.addWidget(self.titleRightInfo)
+
 
         self.horizontalLayout.addWidget(self.leftBox)
 
@@ -990,7 +1002,9 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_2.addWidget(self.closeAppBtn)
 
+
         self.horizontalLayout.addWidget(self.rightButtons, 0, Qt.AlignRight)
+
 
         self.verticalLayout_2.addWidget(self.contentTopBg)
 
@@ -1067,6 +1081,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_18.addWidget(self.labelBoxBlenderInstalation)
 
+
         self.verticalLayout_17.addWidget(self.frame_title_wid_1)
 
         self.frame_content_wid_1 = QFrame(self.frame_div_content_1)
@@ -1105,11 +1120,15 @@ class Ui_MainWindow(object):
 
         self.gridLayout.addWidget(self.labelVersion_3, 1, 0, 1, 2)
 
+
         self.horizontalLayout_9.addLayout(self.gridLayout)
+
 
         self.verticalLayout_17.addWidget(self.frame_content_wid_1)
 
+
         self.verticalLayout_16.addWidget(self.frame_div_content_1)
+
 
         self.verticalLayout.addWidget(self.row_1)
 
@@ -1164,7 +1183,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 218, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 359, 218))
         self.scrollAreaWidgetContents.setStyleSheet(u" QScrollBar:vertical {\n"
                                                     "	border: none;\n"
                                                     "    background: rgb(52, 59, 72);\n"
@@ -1225,7 +1244,9 @@ class Ui_MainWindow(object):
 
         self.gridLayout_2.addWidget(self.horizontalSlider, 2, 0, 1, 2)
 
+
         self.verticalLayout_19.addLayout(self.gridLayout_2)
+
 
         self.verticalLayout.addWidget(self.row_2)
 
@@ -1315,7 +1336,7 @@ class Ui_MainWindow(object):
         palette.setBrush(QPalette.Active, QPalette.Window, brush1)
         # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette.setBrush(QPalette.Active, QPalette.PlaceholderText, brush)
-        # endif
+        #endif
         palette.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
         palette.setBrush(QPalette.Inactive, QPalette.Button, brush1)
         palette.setBrush(QPalette.Inactive, QPalette.Text, brush)
@@ -1324,9 +1345,9 @@ class Ui_MainWindow(object):
         brush3.setStyle(Qt.NoBrush)
         palette.setBrush(QPalette.Inactive, QPalette.Base, brush3)
         palette.setBrush(QPalette.Inactive, QPalette.Window, brush1)
-        # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette.setBrush(QPalette.Inactive, QPalette.PlaceholderText, brush)
-        # endif
+        #endif
         palette.setBrush(QPalette.Disabled, QPalette.WindowText, brush)
         palette.setBrush(QPalette.Disabled, QPalette.Button, brush1)
         palette.setBrush(QPalette.Disabled, QPalette.Text, brush)
@@ -1335,9 +1356,9 @@ class Ui_MainWindow(object):
         brush4.setStyle(Qt.NoBrush)
         palette.setBrush(QPalette.Disabled, QPalette.Base, brush4)
         palette.setBrush(QPalette.Disabled, QPalette.Window, brush1)
-        # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette.setBrush(QPalette.Disabled, QPalette.PlaceholderText, brush)
-        # endif
+        #endif
         self.tableWidget.setPalette(palette)
         self.tableWidget.setFrameShape(QFrame.NoFrame)
         self.tableWidget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -1359,6 +1380,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_12.addWidget(self.tableWidget)
 
+
         self.verticalLayout.addWidget(self.row_3)
 
         self.stackedWidget.addWidget(self.widgets)
@@ -1371,186 +1393,36 @@ class Ui_MainWindow(object):
         font5.setItalic(False)
         font5.setStrikeOut(False)
         self.stock_trading.setFont(font5)
+        self.verticalLayout_25 = QVBoxLayout(self.stock_trading)
+        self.verticalLayout_25.setObjectName(u"verticalLayout_25")
+        self.verticalLayout_23 = QVBoxLayout()
+        self.verticalLayout_23.setObjectName(u"verticalLayout_23")
+        self.verticalLayout_23.setContentsMargins(9, 9, 9, 9)
         self.stockTradingTitle = QLabel(self.stock_trading)
         self.stockTradingTitle.setObjectName(u"stockTradingTitle")
-        self.stockTradingTitle.setGeometry(QRect(20, 10, 431, 31))
         self.stockTradingTitle.setFont(font)
-        self.stock_trading_display = QFrame(self.stock_trading)
-        self.stock_trading_display.setObjectName(u"stock_trading_display")
-        self.stock_trading_display.setGeometry(QRect(570, 50, 591, 231))
-        self.stock_trading_display.setMinimumSize(QSize(0, 150))
-        self.stock_trading_display.setFrameShape(QFrame.StyledPanel)
-        self.stock_trading_display.setFrameShadow(QFrame.Raised)
-        self.horizontalLayout_15 = QHBoxLayout(self.stock_trading_display)
-        self.horizontalLayout_15.setSpacing(0)
-        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
-        self.stockTradingTable = QTableWidget(self.stock_trading_display)
-        if (self.stockTradingTable.columnCount() < 4):
-            self.stockTradingTable.setColumnCount(4)
-        __qtablewidgetitem24 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(0, __qtablewidgetitem24)
-        __qtablewidgetitem25 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(1, __qtablewidgetitem25)
-        __qtablewidgetitem26 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(2, __qtablewidgetitem26)
-        __qtablewidgetitem27 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(3, __qtablewidgetitem27)
-        if (self.stockTradingTable.rowCount() < 16):
-            self.stockTradingTable.setRowCount(16)
-        __qtablewidgetitem28 = QTableWidgetItem()
-        __qtablewidgetitem28.setFont(font4);
-        self.stockTradingTable.setVerticalHeaderItem(0, __qtablewidgetitem28)
-        __qtablewidgetitem29 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(1, __qtablewidgetitem29)
-        __qtablewidgetitem30 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(2, __qtablewidgetitem30)
-        __qtablewidgetitem31 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(3, __qtablewidgetitem31)
-        __qtablewidgetitem32 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(4, __qtablewidgetitem32)
-        __qtablewidgetitem33 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(5, __qtablewidgetitem33)
-        __qtablewidgetitem34 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(6, __qtablewidgetitem34)
-        __qtablewidgetitem35 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(7, __qtablewidgetitem35)
-        __qtablewidgetitem36 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(8, __qtablewidgetitem36)
-        __qtablewidgetitem37 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(9, __qtablewidgetitem37)
-        __qtablewidgetitem38 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(10, __qtablewidgetitem38)
-        __qtablewidgetitem39 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(11, __qtablewidgetitem39)
-        __qtablewidgetitem40 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(12, __qtablewidgetitem40)
-        __qtablewidgetitem41 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(13, __qtablewidgetitem41)
-        __qtablewidgetitem42 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(14, __qtablewidgetitem42)
-        __qtablewidgetitem43 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(15, __qtablewidgetitem43)
-        __qtablewidgetitem44 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 0, __qtablewidgetitem44)
-        __qtablewidgetitem45 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 1, __qtablewidgetitem45)
-        __qtablewidgetitem46 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 2, __qtablewidgetitem46)
-        __qtablewidgetitem47 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 3, __qtablewidgetitem47)
-        self.stockTradingTable.setObjectName(u"stockTradingTable")
-        sizePolicy3.setHeightForWidth(self.stockTradingTable.sizePolicy().hasHeightForWidth())
-        self.stockTradingTable.setSizePolicy(sizePolicy3)
-        palette1 = QPalette()
-        palette1.setBrush(QPalette.Active, QPalette.WindowText, brush)
-        palette1.setBrush(QPalette.Active, QPalette.Button, brush1)
-        palette1.setBrush(QPalette.Active, QPalette.Text, brush)
-        palette1.setBrush(QPalette.Active, QPalette.ButtonText, brush)
-        brush5 = QBrush(QColor(0, 0, 0, 255))
-        brush5.setStyle(Qt.NoBrush)
-        palette1.setBrush(QPalette.Active, QPalette.Base, brush5)
-        palette1.setBrush(QPalette.Active, QPalette.Window, brush1)
-        # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette1.setBrush(QPalette.Active, QPalette.PlaceholderText, brush)
-        # endif
-        palette1.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
-        palette1.setBrush(QPalette.Inactive, QPalette.Button, brush1)
-        palette1.setBrush(QPalette.Inactive, QPalette.Text, brush)
-        palette1.setBrush(QPalette.Inactive, QPalette.ButtonText, brush)
-        brush6 = QBrush(QColor(0, 0, 0, 255))
-        brush6.setStyle(Qt.NoBrush)
-        palette1.setBrush(QPalette.Inactive, QPalette.Base, brush6)
-        palette1.setBrush(QPalette.Inactive, QPalette.Window, brush1)
-        # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette1.setBrush(QPalette.Inactive, QPalette.PlaceholderText, brush)
-        # endif
-        palette1.setBrush(QPalette.Disabled, QPalette.WindowText, brush)
-        palette1.setBrush(QPalette.Disabled, QPalette.Button, brush1)
-        palette1.setBrush(QPalette.Disabled, QPalette.Text, brush)
-        palette1.setBrush(QPalette.Disabled, QPalette.ButtonText, brush)
-        brush7 = QBrush(QColor(0, 0, 0, 255))
-        brush7.setStyle(Qt.NoBrush)
-        palette1.setBrush(QPalette.Disabled, QPalette.Base, brush7)
-        palette1.setBrush(QPalette.Disabled, QPalette.Window, brush1)
-        # if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette1.setBrush(QPalette.Disabled, QPalette.PlaceholderText, brush)
-        # endif
-        self.stockTradingTable.setPalette(palette1)
-        self.stockTradingTable.setFrameShape(QFrame.NoFrame)
-        self.stockTradingTable.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.stockTradingTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.stockTradingTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        self.stockTradingTable.setSelectionMode(QAbstractItemView.SingleSelection)
-        self.stockTradingTable.setSelectionBehavior(QAbstractItemView.SelectRows)
-        self.stockTradingTable.setShowGrid(True)
-        self.stockTradingTable.setGridStyle(Qt.SolidLine)
-        self.stockTradingTable.setSortingEnabled(False)
-        self.stockTradingTable.horizontalHeader().setVisible(False)
-        self.stockTradingTable.horizontalHeader().setCascadingSectionResizes(True)
-        self.stockTradingTable.horizontalHeader().setDefaultSectionSize(200)
-        self.stockTradingTable.horizontalHeader().setStretchLastSection(True)
-        self.stockTradingTable.verticalHeader().setVisible(False)
-        self.stockTradingTable.verticalHeader().setCascadingSectionResizes(False)
-        self.stockTradingTable.verticalHeader().setHighlightSections(False)
-        self.stockTradingTable.verticalHeader().setStretchLastSection(True)
 
-        self.horizontalLayout_15.addWidget(self.stockTradingTable)
+        self.verticalLayout_23.addWidget(self.stockTradingTitle)
 
-        self.widget = QWidget(self.stock_trading)
-        self.widget.setObjectName(u"widget")
-        self.widget.setGeometry(QRect(20, 170, 541, 112))
-        self.verticalLayout_21 = QVBoxLayout(self.widget)
-        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
-        self.verticalLayout_21.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.horizontalLayout_6.setContentsMargins(9, 9, 9, 9)
-        self.label = QLabel(self.widget)
-        self.label.setObjectName(u"label")
-        self.label.setFont(font5)
+        self.verticalLayout_25.addLayout(self.verticalLayout_23)
 
-        self.horizontalLayout_6.addWidget(self.label)
-
-        self.stockTradingStrategyList = QComboBox(self.widget)
-        self.stockTradingStrategyList.setObjectName(u"stockTradingStrategyList")
-
-        self.horizontalLayout_6.addWidget(self.stockTradingStrategyList)
-
-        self.verticalLayout_21.addLayout(self.horizontalLayout_6)
-
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalLayout_7.setContentsMargins(9, 9, 9, 9)
-        self.label_3 = QLabel(self.widget)
-        self.label_3.setObjectName(u"label_3")
-
-        self.horizontalLayout_7.addWidget(self.label_3)
-
-        self.stockTradingInterval = QComboBox(self.widget)
-        self.stockTradingInterval.setObjectName(u"stockTradingInterval")
-
-        self.horizontalLayout_7.addWidget(self.stockTradingInterval)
-
-        self.verticalLayout_21.addLayout(self.horizontalLayout_7)
-
-        self.widget1 = QWidget(self.stock_trading)
-        self.widget1.setObjectName(u"widget1")
-        self.widget1.setGeometry(QRect(19, 60, 541, 104))
-        self.verticalLayout_20 = QVBoxLayout(self.widget1)
+        self.horizontalLayout_13 = QHBoxLayout()
+        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
+        self.verticalLayout_22 = QVBoxLayout()
+        self.verticalLayout_22.setObjectName(u"verticalLayout_22")
+        self.verticalLayout_20 = QVBoxLayout()
         self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-        self.verticalLayout_20.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_8 = QHBoxLayout()
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.horizontalLayout_8.setContentsMargins(9, 9, 9, 9)
-        self.stockTradingConfigText = QLineEdit(self.widget1)
-        self.stockTradingConfigText.setObjectName(u"stockTradingConfigText")
-        self.stockTradingConfigText.setMinimumSize(QSize(0, 30))
-        self.stockTradingConfigText.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_3 = QLineEdit(self.stock_trading)
+        self.lineEdit_3.setObjectName(u"lineEdit_3")
+        self.lineEdit_3.setMinimumSize(QSize(0, 30))
+        self.lineEdit_3.setStyleSheet(u"background-color: rgb(33, 37, 43);")
 
-        self.horizontalLayout_8.addWidget(self.stockTradingConfigText)
+        self.horizontalLayout_8.addWidget(self.lineEdit_3)
 
-        self.stockTradingConfigButton = QPushButton(self.widget1)
+        self.stockTradingConfigButton = QPushButton(self.stock_trading)
         self.stockTradingConfigButton.setObjectName(u"stockTradingConfigButton")
         self.stockTradingConfigButton.setMinimumSize(QSize(150, 30))
         self.stockTradingConfigButton.setFont(font)
@@ -1568,31 +1440,156 @@ class Ui_MainWindow(object):
         self.horizontalLayout_10 = QHBoxLayout()
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
         self.horizontalLayout_10.setContentsMargins(9, 9, 9, 9)
-        self.stockTradingStrategyMapText = QLineEdit(self.widget1)
-        self.stockTradingStrategyMapText.setObjectName(u"stockTradingStrategyMapText")
-        self.stockTradingStrategyMapText.setMinimumSize(QSize(0, 30))
-        self.stockTradingStrategyMapText.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_4 = QLineEdit(self.stock_trading)
+        self.lineEdit_4.setObjectName(u"lineEdit_4")
+        self.lineEdit_4.setMinimumSize(QSize(0, 30))
+        self.lineEdit_4.setStyleSheet(u"background-color: rgb(33, 37, 43);")
 
-        self.horizontalLayout_10.addWidget(self.stockTradingStrategyMapText)
+        self.horizontalLayout_10.addWidget(self.lineEdit_4)
 
-        self.stockTradingStrategyMapButton = QPushButton(self.widget1)
-        self.stockTradingStrategyMapButton.setObjectName(u"stockTradingStrategyMapButton")
-        self.stockTradingStrategyMapButton.setMinimumSize(QSize(150, 30))
-        self.stockTradingStrategyMapButton.setFont(font)
-        self.stockTradingStrategyMapButton.setCursor(QCursor(Qt.PointingHandCursor))
-        self.stockTradingStrategyMapButton.setStyleSheet(u"background-color: rgb(52, 59, 72);")
-        self.stockTradingStrategyMapButton.setIcon(icon4)
+        self.stockTradingMapButton = QPushButton(self.stock_trading)
+        self.stockTradingMapButton.setObjectName(u"stockTradingMapButton")
+        self.stockTradingMapButton.setMinimumSize(QSize(150, 30))
+        self.stockTradingMapButton.setFont(font)
+        self.stockTradingMapButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.stockTradingMapButton.setStyleSheet(u"background-color: rgb(52, 59, 72);")
+        self.stockTradingMapButton.setIcon(icon4)
 
-        self.horizontalLayout_10.addWidget(self.stockTradingStrategyMapButton)
+        self.horizontalLayout_10.addWidget(self.stockTradingMapButton)
 
         self.horizontalLayout_10.setStretch(0, 3)
         self.horizontalLayout_10.setStretch(1, 1)
 
         self.verticalLayout_20.addLayout(self.horizontalLayout_10)
 
+        self.verticalLayout_22.addLayout(self.verticalLayout_20)
+
+        self.verticalLayout_21 = QVBoxLayout()
+        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(9, 9, 9, 9)
+        self.label = QLabel(self.stock_trading)
+        self.label.setObjectName(u"label")
+        self.label.setFont(font5)
+
+        self.horizontalLayout_6.addWidget(self.label)
+
+        self.stockTradingStrategyList = QComboBox(self.stock_trading)
+        self.stockTradingStrategyList.setObjectName(u"stockTradingStrategyList")
+
+        self.horizontalLayout_6.addWidget(self.stockTradingStrategyList)
+
+        self.verticalLayout_21.addLayout(self.horizontalLayout_6)
+
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(9, 9, 9, 9)
+        self.label_3 = QLabel(self.stock_trading)
+        self.label_3.setObjectName(u"label_3")
+
+        self.horizontalLayout_7.addWidget(self.label_3)
+
+        self.stockTradingInterval = QComboBox(self.stock_trading)
+        self.stockTradingInterval.setObjectName(u"stockTradingInterval")
+
+        self.horizontalLayout_7.addWidget(self.stockTradingInterval)
+
+        self.verticalLayout_21.addLayout(self.horizontalLayout_7)
+
+        self.verticalLayout_22.addLayout(self.verticalLayout_21)
+
+        self.horizontalLayout_13.addLayout(self.verticalLayout_22)
+
+        self.stock_trading_display = QFrame(self.stock_trading)
+        self.stock_trading_display.setObjectName(u"stock_trading_display")
+        self.stock_trading_display.setMinimumSize(QSize(0, 150))
+        self.stock_trading_display.setFrameShape(QFrame.StyledPanel)
+        self.stock_trading_display.setFrameShadow(QFrame.Raised)
+        self.horizontalLayout_15 = QHBoxLayout(self.stock_trading_display)
+        self.horizontalLayout_15.setSpacing(0)
+        self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
+        self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
+        self.stockTradingTable = QTableWidget(self.stock_trading_display)
+        self.stockTradingTable.setObjectName(u"stockTradingTable")
+        sizePolicy3.setHeightForWidth(self.stockTradingTable.sizePolicy().hasHeightForWidth())
+        self.stockTradingTable.setSizePolicy(sizePolicy3)
+        palette1 = QPalette()
+        palette1.setBrush(QPalette.Active, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Active, QPalette.Button, brush1)
+        palette1.setBrush(QPalette.Active, QPalette.Text, brush)
+        palette1.setBrush(QPalette.Active, QPalette.ButtonText, brush)
+        brush5 = QBrush(QColor(0, 0, 0, 255))
+        brush5.setStyle(Qt.NoBrush)
+        palette1.setBrush(QPalette.Active, QPalette.Base, brush5)
+        palette1.setBrush(QPalette.Active, QPalette.Window, brush1)
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+        palette1.setBrush(QPalette.Active, QPalette.PlaceholderText, brush)
+        #endif
+        palette1.setBrush(QPalette.Inactive, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Inactive, QPalette.Button, brush1)
+        palette1.setBrush(QPalette.Inactive, QPalette.Text, brush)
+        palette1.setBrush(QPalette.Inactive, QPalette.ButtonText, brush)
+        brush6 = QBrush(QColor(0, 0, 0, 255))
+        brush6.setStyle(Qt.NoBrush)
+        palette1.setBrush(QPalette.Inactive, QPalette.Base, brush6)
+        palette1.setBrush(QPalette.Inactive, QPalette.Window, brush1)
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+        palette1.setBrush(QPalette.Inactive, QPalette.PlaceholderText, brush)
+        #endif
+        palette1.setBrush(QPalette.Disabled, QPalette.WindowText, brush)
+        palette1.setBrush(QPalette.Disabled, QPalette.Button, brush1)
+        palette1.setBrush(QPalette.Disabled, QPalette.Text, brush)
+        palette1.setBrush(QPalette.Disabled, QPalette.ButtonText, brush)
+        brush7 = QBrush(QColor(0, 0, 0, 255))
+        brush7.setStyle(Qt.NoBrush)
+        palette1.setBrush(QPalette.Disabled, QPalette.Base, brush7)
+        palette1.setBrush(QPalette.Disabled, QPalette.Window, brush1)
+        #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
+        palette1.setBrush(QPalette.Disabled, QPalette.PlaceholderText, brush)
+        #endif
+        self.stockTradingTable.setPalette(palette1)
+        self.stockTradingTable.setFrameShape(QFrame.NoFrame)
+        self.stockTradingTable.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.stockTradingTable.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
+        self.stockTradingTable.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.stockTradingTable.setAlternatingRowColors(False)
+        self.stockTradingTable.setSelectionMode(QAbstractItemView.SingleSelection)
+        self.stockTradingTable.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.stockTradingTable.setShowGrid(True)
+        self.stockTradingTable.setGridStyle(Qt.SolidLine)
+        self.stockTradingTable.setSortingEnabled(False)
+        self.stockTradingTable.horizontalHeader().setVisible(True)
+        self.stockTradingTable.horizontalHeader().setCascadingSectionResizes(True)
+        self.stockTradingTable.horizontalHeader().setDefaultSectionSize(200)
+        self.stockTradingTable.horizontalHeader().setStretchLastSection(True)
+        self.stockTradingTable.verticalHeader().setVisible(False)
+        self.stockTradingTable.verticalHeader().setCascadingSectionResizes(False)
+        self.stockTradingTable.verticalHeader().setHighlightSections(False)
+        self.stockTradingTable.verticalHeader().setStretchLastSection(True)
+
+        self.horizontalLayout_15.addWidget(self.stockTradingTable)
+
+        self.horizontalLayout_13.addWidget(self.stock_trading_display)
+
+        self.horizontalLayout_13.setStretch(0, 1)
+        self.horizontalLayout_13.setStretch(1, 1)
+
+        self.verticalLayout_25.addLayout(self.horizontalLayout_13)
+
+        self.verticalLayout_24 = QVBoxLayout()
+        self.verticalLayout_24.setObjectName(u"verticalLayout_24")
+        self.tableView = QTableView(self.stock_trading)
+        self.tableView.setObjectName(u"tableView")
+
+        self.verticalLayout_24.addWidget(self.tableView)
+
+        self.verticalLayout_25.addLayout(self.verticalLayout_24)
+
         self.stackedWidget.addWidget(self.stock_trading)
 
         self.verticalLayout_15.addWidget(self.stackedWidget)
+
 
         self.horizontalLayout_4.addWidget(self.pagesContainer)
 
@@ -1666,11 +1663,15 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_14.addWidget(self.btn_logout)
 
+
         self.verticalLayout_13.addWidget(self.topMenus, 0, Qt.AlignTop)
+
 
         self.verticalLayout_7.addWidget(self.contentSettings)
 
+
         self.horizontalLayout_4.addWidget(self.extraRightBox)
+
 
         self.verticalLayout_6.addWidget(self.content)
 
@@ -1711,11 +1712,15 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.frame_size_grip)
 
+
         self.verticalLayout_6.addWidget(self.bottomBar)
+
 
         self.verticalLayout_2.addWidget(self.contentBottom)
 
+
         self.appLayout.addWidget(self.contentBox)
+
 
         self.gridLayout_3.addWidget(self.bgApp, 0, 0, 1, 1)
 
@@ -1725,8 +1730,8 @@ class Ui_MainWindow(object):
 
         self.stackedWidget.setCurrentIndex(2)
 
-        QMetaObject.connectSlotsByName(MainWindow)
 
+        QMetaObject.connectSlotsByName(MainWindow)
     # setupUi
 
     def retranslateUi(self, MainWindow):
@@ -1754,16 +1759,17 @@ class Ui_MainWindow(object):
                                                          "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
                                                          "p, li { white-space: pre-wrap; }\n"
                                                          "</style></head><body style=\" font-family:'Segoe UI'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">PyDracula</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#ffffff;\">An interface created using Python and PySide (support for PyQt), and with colors based on the Dracula theme created by Zeno Rocha.</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-inde"
-                                                         "nt:0; text-indent:0px;\"><span style=\" color:#ffffff;\">MIT License</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#bd93f9;\">Created by: Wanderson M. Pimenta</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Convert UI</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; color:#ffffff;\">pyside6-uic main.ui &gt; ui_main.py</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Convert QRC</span></p>\n"
-                                                         "<p align=\"center\" "
-                                                         "style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; color:#ffffff;\">pyside6-rcc resources.qrc -o resources_rc.py</span></p></body></html>",
+                                                         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">FUTU ALGO</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; color:#ffffff;\">An Algorithmic Trading soltuion developed based on FutuOpenD and FutuOpenAPI, and can be used for backtesting, stock screening and high-frequency trading.</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-botto"
+                                                         "m:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#ffffff;\">Apache-2.0 License</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#bd93f9;\">Created by: Bill Chan</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Author Info</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Website: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan.com</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\""
+                                                         "><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Email: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan@hotmail.com</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">To Contribute</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/billpwchan/futu_algo\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; text-decoration: underline; color:#ffffff;\">GitHub Repository</span></a></p></body></html>",
                                                          None))
         self.titleRightInfo.setText(
             QCoreApplication.translate("MainWindow", u"FUTU ALGO - Your First Step to Algorithmic Trading", None))
@@ -1777,11 +1783,11 @@ class Ui_MainWindow(object):
         self.minimizeAppBtn.setText("")
         # if QT_CONFIG(tooltip)
         self.maximizeRestoreAppBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Maximize", None))
-        # endif // QT_CONFIG(tooltip)
+        #endif // QT_CONFIG(tooltip)
         self.maximizeRestoreAppBtn.setText("")
-        # if QT_CONFIG(tooltip)
+        #if QT_CONFIG(tooltip)
         self.closeAppBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Close", None))
-        # endif // QT_CONFIG(tooltip)
+        #endif // QT_CONFIG(tooltip)
         self.closeAppBtn.setText("")
         self.labelBoxBlenderInstalation.setText(QCoreApplication.translate("MainWindow", u"FILE BOX", None))
         self.lineEdit.setText("")
@@ -1852,69 +1858,15 @@ class Ui_MainWindow(object):
         self.stockTradingTitle.setText(QCoreApplication.translate("MainWindow",
                                                                   u"<html><head/><body><p><span style=\" font-size:18pt; font-weight:700; color:#aaaaff;\">HIGH-FREQUENCY TRADING PORTAL</span></p></body></html>",
                                                                   None))
-        ___qtablewidgetitem24 = self.stockTradingTable.horizontalHeaderItem(0)
-        ___qtablewidgetitem24.setText(QCoreApplication.translate("MainWindow", u"0", None));
-        ___qtablewidgetitem25 = self.stockTradingTable.horizontalHeaderItem(1)
-        ___qtablewidgetitem25.setText(QCoreApplication.translate("MainWindow", u"1", None));
-        ___qtablewidgetitem26 = self.stockTradingTable.horizontalHeaderItem(2)
-        ___qtablewidgetitem26.setText(QCoreApplication.translate("MainWindow", u"2", None));
-        ___qtablewidgetitem27 = self.stockTradingTable.horizontalHeaderItem(3)
-        ___qtablewidgetitem27.setText(QCoreApplication.translate("MainWindow", u"3", None));
-        ___qtablewidgetitem28 = self.stockTradingTable.verticalHeaderItem(0)
-        ___qtablewidgetitem28.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem29 = self.stockTradingTable.verticalHeaderItem(1)
-        ___qtablewidgetitem29.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem30 = self.stockTradingTable.verticalHeaderItem(2)
-        ___qtablewidgetitem30.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem31 = self.stockTradingTable.verticalHeaderItem(3)
-        ___qtablewidgetitem31.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem32 = self.stockTradingTable.verticalHeaderItem(4)
-        ___qtablewidgetitem32.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem33 = self.stockTradingTable.verticalHeaderItem(5)
-        ___qtablewidgetitem33.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem34 = self.stockTradingTable.verticalHeaderItem(6)
-        ___qtablewidgetitem34.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem35 = self.stockTradingTable.verticalHeaderItem(7)
-        ___qtablewidgetitem35.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem36 = self.stockTradingTable.verticalHeaderItem(8)
-        ___qtablewidgetitem36.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem37 = self.stockTradingTable.verticalHeaderItem(9)
-        ___qtablewidgetitem37.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem38 = self.stockTradingTable.verticalHeaderItem(10)
-        ___qtablewidgetitem38.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem39 = self.stockTradingTable.verticalHeaderItem(11)
-        ___qtablewidgetitem39.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem40 = self.stockTradingTable.verticalHeaderItem(12)
-        ___qtablewidgetitem40.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem41 = self.stockTradingTable.verticalHeaderItem(13)
-        ___qtablewidgetitem41.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem42 = self.stockTradingTable.verticalHeaderItem(14)
-        ___qtablewidgetitem42.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-        ___qtablewidgetitem43 = self.stockTradingTable.verticalHeaderItem(15)
-        ___qtablewidgetitem43.setText(QCoreApplication.translate("MainWindow", u"New Row", None));
-
-        __sortingEnabled1 = self.stockTradingTable.isSortingEnabled()
-        self.stockTradingTable.setSortingEnabled(False)
-        ___qtablewidgetitem44 = self.stockTradingTable.item(0, 0)
-        ___qtablewidgetitem44.setText(QCoreApplication.translate("MainWindow", u"Test", None));
-        ___qtablewidgetitem45 = self.stockTradingTable.item(0, 1)
-        ___qtablewidgetitem45.setText(QCoreApplication.translate("MainWindow", u"Text", None));
-        ___qtablewidgetitem46 = self.stockTradingTable.item(0, 2)
-        ___qtablewidgetitem46.setText(QCoreApplication.translate("MainWindow", u"Cell", None));
-        ___qtablewidgetitem47 = self.stockTradingTable.item(0, 3)
-        ___qtablewidgetitem47.setText(QCoreApplication.translate("MainWindow", u"Line", None));
-        self.stockTradingTable.setSortingEnabled(__sortingEnabled1)
-
+        self.lineEdit_3.setText("")
+        self.lineEdit_3.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select config.ini", None))
+        self.stockTradingConfigButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
+        self.lineEdit_4.setText("")
+        self.lineEdit_4.setPlaceholderText(
+            QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
+        self.stockTradingMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Default Trading Strategy", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Default Trading Interval", None))
-        self.stockTradingConfigText.setText("")
-        self.stockTradingConfigText.setPlaceholderText(
-            QCoreApplication.translate("MainWindow", u"Select config.ini", None))
-        self.stockTradingConfigButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
-        self.stockTradingStrategyMapText.setText("")
-        self.stockTradingStrategyMapText.setPlaceholderText(
-            QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
-        self.stockTradingStrategyMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))

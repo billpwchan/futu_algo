@@ -19,7 +19,10 @@
 # https://doc.qt.io/qtforpython/licenses.html
 #
 # ///////////////////////////////////////////////////////////////
+import configparser
 import glob
+import json
+import os
 import sys
 import platform
 
@@ -27,6 +30,7 @@ import platform
 # ///////////////////////////////////////////////////////////////
 from pathlib import Path
 
+from engines.data_engine import HKEXInterface
 from modules import *
 from widgets import *
 
@@ -118,15 +122,53 @@ class MainWindow(QMainWindow):
         widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
 
     def __initialize_values(self):
-        # Retrieve file names for all strategies as the argument option
+        # Initialize Config Parser
+        config = configparser.ConfigParser()
+        config.read("config.ini")
+
+        # Stock Trading ComboBox
         strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                          "__init__" not in file_name and "Strategies" not in file_name]
         self.ui.stockTradingStrategyList.clear()
         self.ui.stockTradingStrategyList.addItems(strategy_list)
 
+        # Stock Trading ComboBox
         time_interval_list = ["1M", "3M", "5M", "15M", "30M", "60M", "DAY", "WEEK", "MON", "QUARTER", "YEAR"]
         self.ui.stockTradingInterval.clear()
         self.ui.stockTradingInterval.addItems(time_interval_list)
+
+        # Stock Trading Table - Stock List
+        stock_list = json.loads(config.get('TradePreference', 'StockList'))
+        if not stock_list:
+            # Directly get list of stock codes from the data folder. Easier.
+            stock_list = [str(f.path).replace('./data/', '') for f in os.scandir("./data/") if f.is_dir()]
+            stock_list = stock_list[:-1]
+
+        # Stock Trading Clear Table
+        self.ui.stockTradingTable.clearContents()
+        self.ui.stockTradingTable.setRowCount(0)
+
+        equity_info_full = HKEXInterface.get_equity_info_full()
+        assert equity_info_full
+        headers = equity_info_full[0].keys()
+        self.ui.stockTradingTable.setColumnCount(len(headers))
+        self.ui.stockTradingTable.setHorizontalHeaderLabels(headers)
+
+        for stock in equity_info_full:
+            if stock["Stock Code"] in stock_list:
+                row_number = self.ui.stockTradingTable.rowCount()
+                self.ui.stockTradingTable.insertRow(row_number)
+                for column_number, column_name in enumerate(headers):
+                    self.ui.stockTradingTable.setItem(row_number, column_number, QTableWidgetItem(stock[column_name]))
+
+        self.ui.stockTradingTable.resizeColumnsToContents()
+
+        self.ui.stockTradingConfigButton.clicked.connect(lambda: self.__openFile(filters='Config files (*.ini)'))
+
+    def __openFile(self, filters: str):
+        path = QFileDialog.getOpenFileName(self, 'Open file', '', filters)
+        if path != ('', ''):
+            print("File path : " + path[0])
 
     def buttonClick(self):
         # GET BUTTON CLICKED

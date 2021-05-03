@@ -13,7 +13,7 @@
 
 ## Highlights
 
-- **Supported Platforms and Markets**: Futu_algo is a algorithmtic trading solution developed based on FutuOpenD and
+- **Supported Platforms and Markets**: Futu_algo is a algorithmic trading solution developed based on FutuOpenD and
   FutuOpenAPI. Fully support FutuNiuNiu and FutuMooMoo users in Hong Kong stock market. *(More market support is coming
   soon)*
 - **Historical K-Line Data**: Allow users to automatically downloading historical data for your interested stocks into

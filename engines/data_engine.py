@@ -312,6 +312,17 @@ class HKEXInterface:
         return [('HK.' + item) for item in input_csv[input_csv['Category'] == 'Equity']['Stock Code'].tolist()]
 
     @staticmethod
+    def get_equity_info_full() -> list:
+        """
+            Return Full List of Equity dict in Futu Stock Code Format including Basic Info
+            E.g., {"Stock Code": HK.00001, "Name of Securities": "CKH HOLDINGS", "Board Lot": 500}
+        """
+        input_csv = HKEXInterface.get_security_df_full()
+        return [{"Stock Code": f'HK.{row["Stock Code"]}', "Name of Securities": row["Name of Securities"],
+                 "Board Lot": row["Board Lot"]} for index, row in
+                input_csv[input_csv['Category'] == 'Equity'].iterrows()]
+
+    @staticmethod
     def get_board_lot_full() -> dict:
         """
             Return Full Dict of the Board Lot Size (Minimum Trading Unit) for each stock E.g. {'HK.00001': 500}
