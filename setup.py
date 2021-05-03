@@ -4,15 +4,28 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-from setuptools import setup
+import sys
+import os
+from cx_Freeze import setup, Executable
 
+# ADD FILES
+files = ['icon.ico', 'themes/']
+
+# TARGET
+target = Executable(
+    script="main.py",
+    base="Win32GUI",
+    icon="icon.ico"
+)
+
+# SETUP CX FREEZE
 setup(
     name='Futu_Algo',
-    version='0.2.0',
-    packages=['test', 'engines', 'filters', 'handlers', 'strategies'],
-    url='https://github.com/billpwchan/futu_algo',
-    license='Apache License 2.0',
+    version="1.0",
+    description="FuTu Algorithmic Trading Tool for Everyone!",
     author='Bill Chan',
     author_email='billpwchan@hotmail.com',
-    description=''
+    options={'build_exe': {'include_files': files}},
+    executables=[target]
+
 )
