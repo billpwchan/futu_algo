@@ -33,10 +33,76 @@ from pathlib import Path
 from engines.data_engine import HKEXInterface
 from modules import *
 from widgets import *
+from modules.ui_splash_screen import Ui_SplashScreen
 
 # SET AS GLOBAL WIDGETS
 # ///////////////////////////////////////////////////////////////
 widgets = None
+
+# GLOBALS
+counter = 0
+
+
+class SplashScreen(QMainWindow):
+    def __init__(self):
+        QMainWindow.__init__(self)
+        self.ui = Ui_SplashScreen()
+        self.ui.setupUi(self)
+
+        # REMOVE TITLE BAR
+        self.setWindowFlag(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        # IMPORT CIRCULAR PROGRESS
+        self.progress = CircularProgress()
+        self.progress.width = 270
+        self.progress.height = 270
+        self.progress.value = 0
+        self.progress.setFixedSize(self.progress.width, self.progress.height)
+        self.progress.move(15, 15)
+        self.progress.font_size = 40
+        self.progress.add_shadow(True)
+        self.progress.progress_width = 5
+        self.progress.bg_color = QColor(68, 71, 90, 140)
+        self.progress.setParent(self.ui.centralwidget)
+        self.progress.show()
+
+        # ADD DROP SHADOW
+        self.shadow = QGraphicsDropShadowEffect(self)
+        self.shadow.setBlurRadius(15)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(0)
+        self.shadow.setColor(QColor(0, 0, 0, 80))
+        self.setGraphicsEffect(self.shadow)
+
+        # QTIMER
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.update)
+        self.timer.start(10)
+
+        self.show()
+
+    # UPDATE PROGRESS BAR
+    def update(self):
+        global counter
+
+        # SET VALUE TO PROGRESS BAR
+        self.progress.set_value(counter)
+
+        # CLOSE SPLASH SCREEN AND OPEN MAIN APP
+        if counter >= 100:
+            # STOP TIMER
+            self.timer.stop()
+
+            # SHOW MAIN WINDOW
+            self.main = MainWindow()
+            self.main.show()
+
+            # CLOSE SPLASH SCREEN
+            self.close()
+
+        # INCREASE COUNTER
+        counter += 1
 
 
 class MainWindow(QMainWindow):
@@ -217,5 +283,5 @@ class MainWindow(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon("icon.ico"))
-    window = MainWindow()
+    window = SplashScreen()
     sys.exit(app.exec_())

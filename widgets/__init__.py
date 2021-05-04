@@ -21,3 +21,4 @@
 # ///////////////////////////////////////////////////////////////
 
 from .custom_grips import CustomGrip
+from .circular_progress import CircularProgress
