@@ -7,7 +7,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 ################################################################################
-## Form generated from reading UI file 'mainBZrvwQ.ui'
+## Form generated from reading UI file 'mainGDmozZ.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.0.3
 ##
@@ -701,7 +701,7 @@ class Ui_MainWindow(object):
         self.btn_settings.setFont(font)
         self.btn_settings.setCursor(QCursor(Qt.PointingHandCursor))
         self.btn_settings.setLayoutDirection(Qt.LeftToRight)
-        self.btn_settings.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-settings.png)")
+        self.btn_settings.setStyleSheet(u"background-image:url(:/icons/images/icons/cil-settings.png);")
 
         self.verticalLayout_8.addWidget(self.btn_settings)
 
@@ -1567,7 +1567,7 @@ class Ui_MainWindow(object):
         self.stockTradingTable.setShowGrid(True)
         self.stockTradingTable.setGridStyle(Qt.SolidLine)
         self.stockTradingTable.setSortingEnabled(False)
-        self.stockTradingTable.horizontalHeader().setVisible(True)
+        self.stockTradingTable.horizontalHeader().setVisible(False)
         self.stockTradingTable.horizontalHeader().setCascadingSectionResizes(True)
         self.stockTradingTable.horizontalHeader().setDefaultSectionSize(200)
         self.stockTradingTable.horizontalHeader().setStretchLastSection(True)
@@ -1592,6 +1592,7 @@ class Ui_MainWindow(object):
         self.tableView.setObjectName(u"tableView")
 
         self.verticalLayout_24.addWidget(self.tableView)
+
 
         self.verticalLayout_25.addLayout(self.verticalLayout_24)
 
@@ -1659,6 +1660,7 @@ class Ui_MainWindow(object):
         self.stackedWidget.addWidget(self.settings)
 
         self.verticalLayout_15.addWidget(self.stackedWidget)
+
 
         self.horizontalLayout_4.addWidget(self.pagesContainer)
 
@@ -1813,7 +1815,9 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_6.addWidget(self.bottomBar)
 
+
         self.verticalLayout_2.addWidget(self.contentBottom)
+
 
         self.appLayout.addWidget(self.contentBox)
 

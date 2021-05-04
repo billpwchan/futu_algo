@@ -988,8 +988,8 @@
                                                                             <enum>Qt::LeftToRight</enum>
                                                                         </property>
                                                                         <property name="styleSheet">
-                                                                            <string notr="true">background-image:
-                                                                                url(:/icons/images/icons/cil-settings.png)
+                                                                            <string notr="true">
+                                                                                background-image:url(:/icons/images/icons/cil-settings.png);
                                                                             </string>
                                                                         </property>
                                                                         <property name="text">
@@ -4523,7 +4523,7 @@
                                                                                                                         <attribute
                                                                                                                                 name="horizontalHeaderVisible">
                                                                                                                             <bool>
-                                                                                                                                true
+                                                                                                                                false
                                                                                                                             </bool>
                                                                                                                         </attribute>
                                                                                                                         <attribute
