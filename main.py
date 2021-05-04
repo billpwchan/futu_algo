@@ -15,6 +15,10 @@ import platform
 # ///////////////////////////////////////////////////////////////
 from pathlib import Path
 
+import yaml
+from PySide6 import QtGui
+from PySide6.QtWidgets import QMessageBox
+
 from engines.data_engine import HKEXInterface
 from modules import *
 from widgets import *
@@ -29,6 +33,9 @@ widgets = None
 counter = 0
 GITHUB_LINK = "https://github.com/billpwchan/futu_algo"
 LINKEDIN_LINK = "https://www.linkedin.com/in/billpwchan1998/"
+
+config = None
+stock_strategy_map = None
 
 
 class SplashScreen(QMainWindow):
@@ -118,7 +125,6 @@ class MainWindow(QMainWindow):
 
         # Initialize COMBOBOX SET VALUES
         self.__initialize_global_values()
-        self.__initialize_values()
 
         # TOGGLE MENU
         # ///////////////////////////////////////////////////////////////
@@ -183,10 +189,27 @@ class MainWindow(QMainWindow):
         self.ui.bottomBarGithubButton.clicked.connect(lambda: self.__open_url(GITHUB_LINK))
         self.ui.bottomBarLinkedInButton.clicked.connect(lambda: self.__open_url(LINKEDIN_LINK))
 
-    def __initialize_values(self):
-        # Initialize Config Parser
-        config = configparser.ConfigParser()
-        config.read("config.ini")
+        def setConfigFile():
+            # Initialize Config File
+            global config
+            config = configparser.ConfigParser()
+            file_path = self.__openFile(filters='Config files (*.ini)')
+            self.ui.settingsConfigLabel.setText(file_path)
+            config.read(file_path)
+
+        def setStrategyMapFile():
+            file_path = self.__openFile(filters='YAML files (*.yml)')
+            self.ui.settingsMapLabel.setText(file_path)
+            global stock_strategy_map
+            with open(file_path, 'r') as infile:
+                stock_strategy_map = yaml.safe_load(infile)
+
+        self.ui.settingsConfigButton.clicked.connect(setConfigFile)
+        self.ui.settingsMapButton.clicked.connect(setStrategyMapFile)
+
+    def __initialize_stock_trading_values(self):
+        global config
+        global stock_strategy_map
 
         # Stock Trading ComboBox
         strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
@@ -215,6 +238,9 @@ class MainWindow(QMainWindow):
         headers = equity_info_full[0].keys()
         self.ui.stockTradingTable.setColumnCount(len(headers))
         self.ui.stockTradingTable.setHorizontalHeaderLabels(headers)
+        # Bug from https://stackoverflow.com/questions/16619458/qt-table-widget-vertical-horizontal-header-becoming-invisible
+        self.ui.stockTradingTable.horizontalHeader().setVisible(True)
+        self.ui.stockTradingTable.verticalHeader().setVisible(False)
 
         for stock in equity_info_full:
             if stock["Stock Code"] in stock_list:
@@ -225,18 +251,33 @@ class MainWindow(QMainWindow):
 
         self.ui.stockTradingTable.resizeColumnsToContents()
 
-        self.ui.settingsConfigButton.clicked.connect(lambda: self.__openFile(filters='Config files (*.ini)'))
-        self.ui.settingsMapButton.clicked.connect(lambda: self.__openFile(filters='YAML files (*.yml)'))
-
     def __openFile(self, filters: str):
         path = QFileDialog.getOpenFileName(self, 'Open file', '', filters)
         if path != ('', ''):
-            print("File path : " + path[0])
+            return path[0]
 
     def buttonClick(self):
         # GET BUTTON CLICKED
         btn = self.sender()
         btnName = btn.objectName()
+
+        # SHOW SETTINGS PAGE
+        if btnName == "btn_settings":
+            widgets.stackedWidget.setCurrentWidget(widgets.settings)  # SET PAGE
+            UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
+            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
+            return
+
+        if config is None or stock_strategy_map is None:
+            msgBox = QMessageBox()
+            msgBox.setWindowTitle("MISSING TRADING CONFIGURATION")
+            msgBox.setWindowIcon(QtGui.QIcon("icon.ico"))
+            msgBox.setIcon(QMessageBox.Warning)
+            msgBox.setStyleSheet("color: rgb(255, 255, 255);")
+            msgBox.setStyleSheet("background-color: rgb(40, 44, 52);")
+            msgBox.setText("Please specify Configuration File and Stock Strategy Mapping file in the Settings Page!")
+            msgBox.exec_()
+            return
 
         # SHOW HOME PAGE
         if btnName == "btn_home":
@@ -252,18 +293,10 @@ class MainWindow(QMainWindow):
 
         # SHOW STOCK TRADING PAGE
         if btnName == "btn_stock_trading":
+            self.__initialize_stock_trading_values()
             widgets.stackedWidget.setCurrentWidget(widgets.stock_trading)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
-
-        # SHOW SETTINGS PAGE
-        if btnName == "btn_settings":
-            widgets.stackedWidget.setCurrentWidget(widgets.settings)  # SET PAGE
-            UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
-            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
-
-        # PRINT BTN NAME
-        print(f'Button "{btnName}" pressed!')
 
     def resizeEvent(self, event):
         # Update Size Grips
