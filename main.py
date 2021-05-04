@@ -4,21 +4,6 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-# ///////////////////////////////////////////////////////////////
-#
-
-# PROJECT MADE WITH: Qt Designer and PySide6
-# V: 1.0.0
-#
-# This project can be used freely for all uses, as long as they maintain the
-# respective credits only in the Python scripts, any information in the visual
-# interface (GUI) can be modified without any implication.
-#
-# There are limitations on Qt licenses if you want to use your products
-# commercially, I recommend reading them on the official website:
-# https://doc.qt.io/qtforpython/licenses.html
-#
-# ///////////////////////////////////////////////////////////////
 import configparser
 import glob
 import json
@@ -34,6 +19,7 @@ from engines.data_engine import HKEXInterface
 from modules import *
 from widgets import *
 from modules.ui_splash_screen import Ui_SplashScreen
+import webbrowser as webbrowser
 
 # SET AS GLOBAL WIDGETS
 # ///////////////////////////////////////////////////////////////
@@ -41,6 +27,8 @@ widgets = None
 
 # GLOBALS
 counter = 0
+GITHUB_LINK = "https://github.com/billpwchan/futu_algo"
+LINKEDIN_LINK = "https://www.linkedin.com/in/billpwchan1998/"
 
 
 class SplashScreen(QMainWindow):
@@ -129,6 +117,7 @@ class MainWindow(QMainWindow):
         widgets.titleRightInfo.setText(description)
 
         # Initialize COMBOBOX SET VALUES
+        self.__initialize_global_values()
         self.__initialize_values()
 
         # TOGGLE MENU
@@ -150,7 +139,7 @@ class MainWindow(QMainWindow):
         widgets.btn_home.clicked.connect(self.buttonClick)
         widgets.btn_widgets.clicked.connect(self.buttonClick)
         widgets.btn_stock_trading.clicked.connect(self.buttonClick)
-        widgets.btn_save.clicked.connect(self.buttonClick)
+        widgets.btn_settings.clicked.connect(self.buttonClick)
 
         # EXTRA LEFT BOX
         def openCloseLeftBox():
@@ -172,7 +161,7 @@ class MainWindow(QMainWindow):
         # SET CUSTOM THEME
         # ///////////////////////////////////////////////////////////////
         useCustomTheme = False
-        themeFile = "themes\py_dracula_light.qss"
+        themeFile = "themes\py_dracula_dark.qss"
 
         # SET THEME AND HACKS
         if useCustomTheme:
@@ -186,6 +175,13 @@ class MainWindow(QMainWindow):
         # ///////////////////////////////////////////////////////////////
         widgets.stackedWidget.setCurrentWidget(widgets.home)
         widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
+
+    def __open_url(self, url):
+        webbrowser.open(url)
+
+    def __initialize_global_values(self):
+        self.ui.bottomBarGithubButton.clicked.connect(lambda: self.__open_url(GITHUB_LINK))
+        self.ui.bottomBarLinkedInButton.clicked.connect(lambda: self.__open_url(LINKEDIN_LINK))
 
     def __initialize_values(self):
         # Initialize Config Parser
@@ -229,7 +225,8 @@ class MainWindow(QMainWindow):
 
         self.ui.stockTradingTable.resizeColumnsToContents()
 
-        self.ui.stockTradingConfigButton.clicked.connect(lambda: self.__openFile(filters='Config files (*.ini)'))
+        self.ui.settingsConfigButton.clicked.connect(lambda: self.__openFile(filters='Config files (*.ini)'))
+        self.ui.settingsMapButton.clicked.connect(lambda: self.__openFile(filters='YAML files (*.yml)'))
 
     def __openFile(self, filters: str):
         path = QFileDialog.getOpenFileName(self, 'Open file', '', filters)
@@ -253,14 +250,17 @@ class MainWindow(QMainWindow):
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
 
-        # SHOW NEW PAGE
+        # SHOW STOCK TRADING PAGE
         if btnName == "btn_stock_trading":
             widgets.stackedWidget.setCurrentWidget(widgets.stock_trading)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
 
-        if btnName == "btn_save":
-            print("Save BTN clicked!")
+        # SHOW SETTINGS PAGE
+        if btnName == "btn_settings":
+            widgets.stackedWidget.setCurrentWidget(widgets.settings)  # SET PAGE
+            UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
+            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
 
         # PRINT BTN NAME
         print(f'Button "{btnName}" pressed!')

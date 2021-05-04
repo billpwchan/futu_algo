@@ -8,7 +8,7 @@
                 <x>0</x>
                 <y>0</y>
                 <width>1280</width>
-                <height>720</height>
+                <height>734</height>
             </rect>
         </property>
         <property name="minimumSize">
@@ -948,17 +948,17 @@
                                                                             <bool>false</bool>
                                                                         </property>
                                                                         <property name="styleSheet">
-                                                                            <string notr="true">background-image:
-                                                                                url(:/icons/images/icons/cil-transfer.png);
+                                                                            <string notr="true">
+                                                                                background-image:url(:/icons/images/icons/cil-transfer.png);
                                                                             </string>
                                                                         </property>
                                                                         <property name="text">
-                                                                            <string>New</string>
+                                                                            <string>Stock Trading</string>
                                                                         </property>
                                                                     </widget>
                                                                 </item>
                                                                 <item>
-                                                                    <widget class="QPushButton" name="btn_save">
+                                                                    <widget class="QPushButton" name="btn_settings">
                                                                         <property name="sizePolicy">
                                                                             <sizepolicy hsizetype="Expanding"
                                                                                         vsizetype="Fixed">
@@ -989,11 +989,11 @@
                                                                         </property>
                                                                         <property name="styleSheet">
                                                                             <string notr="true">background-image:
-                                                                                url(:/icons/images/icons/cil-save.png)
+                                                                                url(:/icons/images/icons/cil-settings.png)
                                                                             </string>
                                                                         </property>
                                                                         <property name="text">
-                                                                            <string>Save</string>
+                                                                            <string>Settings</string>
                                                                         </property>
                                                                     </widget>
                                                                 </item>
@@ -1096,11 +1096,11 @@
                                                                         </property>
                                                                         <property name="styleSheet">
                                                                             <string notr="true">background-image:
-                                                                                url(:/icons/images/icons/icon_settings.png);
+                                                                                url(:/icons/images/icons/cil-speech.png);
                                                                             </string>
                                                                         </property>
                                                                         <property name="text">
-                                                                            <string>Left Box</string>
+                                                                            <string>Info</string>
                                                                         </property>
                                                                     </widget>
                                                                 </item>
@@ -1488,10 +1488,10 @@
                                                                                 style=&quot; font-family:'Segoe UI';
                                                                                 font-size:10pt; font-weight:400;
                                                                                 font-style:normal;&quot;&gt;
-                                                                                &lt;p style=&quot; margin-top:0px;
-                                                                                margin-bottom:0px; margin-left:0px;
-                                                                                margin-right:0px; -qt-block-indent:0;
-                                                                                text-indent:0px;&quot;&gt;&lt;span
+                                                                                &lt;p align=&quot;center&quot; style=&quot;
+                                                                                margin-top:0px; margin-bottom:0px;
+                                                                                margin-left:0px; margin-right:0px;
+                                                                                -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span
                                                                                 style=&quot; font-size:12pt;
                                                                                 font-weight:600; color:#ff79c6;&quot;&gt;FUTU
                                                                                 ALGO&lt;/span&gt;&lt;/p&gt;
@@ -1516,8 +1516,9 @@
                                                                                 margin-top:12px; margin-bottom:12px;
                                                                                 margin-left:0px; margin-right:0px;
                                                                                 -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span
-                                                                                style=&quot; color:#bd93f9;&quot;&gt;Created
-                                                                                by: Bill Chan&lt;/span&gt;&lt;/p&gt;
+                                                                                style=&quot; font-size:9pt;
+                                                                                color:#bd93f9;&quot;&gt;Created by: Bill
+                                                                                Chan&lt;/span&gt;&lt;/p&gt;
                                                                                 &lt;p align=&quot;center&quot; style=&quot;
                                                                                 margin-top:12px; margin-bottom:12px;
                                                                                 margin-left:0px; margin-right:0px;
@@ -3700,6 +3701,12 @@
                                                                                                                                         <string/>
                                                                                                                                     </property>
                                                                                                                                     <property
+                                                                                                                                            name="readOnly">
+                                                                                                                                        <bool>
+                                                                                                                                            true
+                                                                                                                                        </bool>
+                                                                                                                                    </property>
+                                                                                                                                    <property
                                                                                                                                             name="placeholderText">
                                                                                                                                         <string>
                                                                                                                                             Select
@@ -3828,6 +3835,12 @@
                                                                                                                                     <property
                                                                                                                                             name="text">
                                                                                                                                         <string/>
+                                                                                                                                    </property>
+                                                                                                                                    <property
+                                                                                                                                            name="readOnly">
+                                                                                                                                        <bool>
+                                                                                                                                            true
+                                                                                                                                        </bool>
                                                                                                                                     </property>
                                                                                                                                     <property
                                                                                                                                             name="placeholderText">
@@ -4573,6 +4586,287 @@
                                                                                             </item>
                                                                                         </layout>
                                                                                     </widget>
+                                                                                    <widget class="QWidget"
+                                                                                            name="settings">
+                                                                                        <widget class="QWidget"
+                                                                                                name="layoutWidget">
+                                                                                            <property name="geometry">
+                                                                                                <rect>
+                                                                                                    <x>160</x>
+                                                                                                    <y>150</y>
+                                                                                                    <width>296</width>
+                                                                                                    <height>104</height>
+                                                                                                </rect>
+                                                                                            </property>
+                                                                                            <layout class="QVBoxLayout"
+                                                                                                    name="verticalLayout_26">
+                                                                                                <item>
+                                                                                                    <layout class="QHBoxLayout"
+                                                                                                            name="horizontalLayout_14"
+                                                                                                            stretch="3,1">
+                                                                                                        <property
+                                                                                                                name="leftMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="topMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="rightMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="bottomMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <item>
+                                                                                                            <widget class="QLineEdit"
+                                                                                                                    name="lineEdit_5">
+                                                                                                                <property
+                                                                                                                        name="minimumSize">
+                                                                                                                    <size>
+                                                                                                                        <width>
+                                                                                                                            0
+                                                                                                                        </width>
+                                                                                                                        <height>
+                                                                                                                            30
+                                                                                                                        </height>
+                                                                                                                    </size>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="styleSheet">
+                                                                                                                    <string notr="true">
+                                                                                                                        background-color:
+                                                                                                                        rgb(33,
+                                                                                                                        37,
+                                                                                                                        43);
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="text">
+                                                                                                                    <string/>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="readOnly">
+                                                                                                                    <bool>
+                                                                                                                        true
+                                                                                                                    </bool>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="placeholderText">
+                                                                                                                    <string>
+                                                                                                                        Select
+                                                                                                                        config.ini
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                            </widget>
+                                                                                                        </item>
+                                                                                                        <item>
+                                                                                                            <widget class="QPushButton"
+                                                                                                                    name="settingsConfigButton">
+                                                                                                                <property
+                                                                                                                        name="minimumSize">
+                                                                                                                    <size>
+                                                                                                                        <width>
+                                                                                                                            150
+                                                                                                                        </width>
+                                                                                                                        <height>
+                                                                                                                            30
+                                                                                                                        </height>
+                                                                                                                    </size>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="font">
+                                                                                                                    <font>
+                                                                                                                        <family>
+                                                                                                                            Segoe
+                                                                                                                            UI
+                                                                                                                        </family>
+                                                                                                                        <pointsize>
+                                                                                                                            10
+                                                                                                                        </pointsize>
+                                                                                                                        <italic>
+                                                                                                                            false
+                                                                                                                        </italic>
+                                                                                                                        <bold>
+                                                                                                                            false
+                                                                                                                        </bold>
+                                                                                                                    </font>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="cursor">
+                                                                                                                    <cursorShape>
+                                                                                                                        PointingHandCursor
+                                                                                                                    </cursorShape>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="styleSheet">
+                                                                                                                    <string notr="true">
+                                                                                                                        background-color:
+                                                                                                                        rgb(52,
+                                                                                                                        59,
+                                                                                                                        72);
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="text">
+                                                                                                                    <string>
+                                                                                                                        Open
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="icon">
+                                                                                                                    <iconset
+                                                                                                                            resource="resources.qrc">
+                                                                                                                        <normaloff>
+                                                                                                                            :/icons/images/icons/cil-folder-open.png</normaloff>
+                                                                                                                        :/icons/images/icons/cil-folder-open.png
+                                                                                                                    </iconset>
+                                                                                                                </property>
+                                                                                                            </widget>
+                                                                                                        </item>
+                                                                                                    </layout>
+                                                                                                </item>
+                                                                                                <item>
+                                                                                                    <layout class="QHBoxLayout"
+                                                                                                            name="horizontalLayout_16"
+                                                                                                            stretch="3,1">
+                                                                                                        <property
+                                                                                                                name="leftMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="topMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="rightMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <property
+                                                                                                                name="bottomMargin">
+                                                                                                            <number>9
+                                                                                                            </number>
+                                                                                                        </property>
+                                                                                                        <item>
+                                                                                                            <widget class="QLineEdit"
+                                                                                                                    name="lineEdit_6">
+                                                                                                                <property
+                                                                                                                        name="minimumSize">
+                                                                                                                    <size>
+                                                                                                                        <width>
+                                                                                                                            0
+                                                                                                                        </width>
+                                                                                                                        <height>
+                                                                                                                            30
+                                                                                                                        </height>
+                                                                                                                    </size>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="styleSheet">
+                                                                                                                    <string notr="true">
+                                                                                                                        background-color:
+                                                                                                                        rgb(33,
+                                                                                                                        37,
+                                                                                                                        43);
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="text">
+                                                                                                                    <string/>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="readOnly">
+                                                                                                                    <bool>
+                                                                                                                        true
+                                                                                                                    </bool>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="placeholderText">
+                                                                                                                    <string>
+                                                                                                                        Select
+                                                                                                                        stock_strategy_map.yml
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                            </widget>
+                                                                                                        </item>
+                                                                                                        <item>
+                                                                                                            <widget class="QPushButton"
+                                                                                                                    name="settingsMapButton">
+                                                                                                                <property
+                                                                                                                        name="minimumSize">
+                                                                                                                    <size>
+                                                                                                                        <width>
+                                                                                                                            150
+                                                                                                                        </width>
+                                                                                                                        <height>
+                                                                                                                            30
+                                                                                                                        </height>
+                                                                                                                    </size>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="font">
+                                                                                                                    <font>
+                                                                                                                        <family>
+                                                                                                                            Segoe
+                                                                                                                            UI
+                                                                                                                        </family>
+                                                                                                                        <pointsize>
+                                                                                                                            10
+                                                                                                                        </pointsize>
+                                                                                                                        <italic>
+                                                                                                                            false
+                                                                                                                        </italic>
+                                                                                                                        <bold>
+                                                                                                                            false
+                                                                                                                        </bold>
+                                                                                                                    </font>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="cursor">
+                                                                                                                    <cursorShape>
+                                                                                                                        PointingHandCursor
+                                                                                                                    </cursorShape>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="styleSheet">
+                                                                                                                    <string notr="true">
+                                                                                                                        background-color:
+                                                                                                                        rgb(52,
+                                                                                                                        59,
+                                                                                                                        72);
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="text">
+                                                                                                                    <string>
+                                                                                                                        Open
+                                                                                                                    </string>
+                                                                                                                </property>
+                                                                                                                <property
+                                                                                                                        name="icon">
+                                                                                                                    <iconset
+                                                                                                                            resource="resources.qrc">
+                                                                                                                        <normaloff>
+                                                                                                                            :/icons/images/icons/cil-folder-open.png</normaloff>
+                                                                                                                        :/icons/images/icons/cil-folder-open.png
+                                                                                                                    </iconset>
+                                                                                                                </property>
+                                                                                                            </widget>
+                                                                                                        </item>
+                                                                                                    </layout>
+                                                                                                </item>
+                                                                                            </layout>
+                                                                                        </widget>
+                                                                                    </widget>
                                                                                 </widget>
                                                                             </item>
                                                                         </layout>
@@ -4948,10 +5242,8 @@
                                                             <property name="frameShadow">
                                                                 <enum>QFrame::Raised</enum>
                                                             </property>
-                                                            <layout class="QHBoxLayout" name="horizontalLayout_5">
-                                                                <property name="spacing">
-                                                                    <number>0</number>
-                                                                </property>
+                                                            <layout class="QHBoxLayout" name="horizontalLayout_5"
+                                                                    stretch="1,1,1,20,0">
                                                                 <property name="leftMargin">
                                                                     <number>0</number>
                                                                 </property>
@@ -4987,6 +5279,88 @@
                                                                             <set>
                                                                                 Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter
                                                                             </set>
+                                                                        </property>
+                                                                    </widget>
+                                                                </item>
+                                                                <item>
+                                                                    <widget class="QPushButton"
+                                                                            name="bottomBarGithubButton">
+                                                                        <property name="enabled">
+                                                                            <bool>true</bool>
+                                                                        </property>
+                                                                        <property name="font">
+                                                                            <font>
+                                                                                <family>Segoe UI</family>
+                                                                                <pointsize>10</pointsize>
+                                                                                <italic>false</italic>
+                                                                                <bold>false</bold>
+                                                                            </font>
+                                                                        </property>
+                                                                        <property name="cursor">
+                                                                            <cursorShape>PointingHandCursor
+                                                                            </cursorShape>
+                                                                        </property>
+                                                                        <property name="styleSheet">
+                                                                            <string notr="true">background-color:
+                                                                                transparent
+                                                                            </string>
+                                                                        </property>
+                                                                        <property name="text">
+                                                                            <string/>
+                                                                        </property>
+                                                                        <property name="icon">
+                                                                            <iconset resource="resources.qrc">
+                                                                                <normaloff>
+                                                                                    :/icons/images/icons/GitHub-Mark-Light-120px-plus.png</normaloff>
+                                                                                :/icons/images/icons/GitHub-Mark-Light-120px-plus.png
+                                                                            </iconset>
+                                                                        </property>
+                                                                        <property name="iconSize">
+                                                                            <size>
+                                                                                <width>15</width>
+                                                                                <height>15</height>
+                                                                            </size>
+                                                                        </property>
+                                                                    </widget>
+                                                                </item>
+                                                                <item>
+                                                                    <widget class="QPushButton"
+                                                                            name="bottomBarLinkedInButton">
+                                                                        <property name="enabled">
+                                                                            <bool>true</bool>
+                                                                        </property>
+                                                                        <property name="font">
+                                                                            <font>
+                                                                                <family>Segoe UI</family>
+                                                                                <pointsize>10</pointsize>
+                                                                                <italic>false</italic>
+                                                                                <bold>false</bold>
+                                                                            </font>
+                                                                        </property>
+                                                                        <property name="cursor">
+                                                                            <cursorShape>PointingHandCursor
+                                                                            </cursorShape>
+                                                                        </property>
+                                                                        <property name="styleSheet">
+                                                                            <string notr="true">background-color:
+                                                                                transparent;
+                                                                            </string>
+                                                                        </property>
+                                                                        <property name="text">
+                                                                            <string/>
+                                                                        </property>
+                                                                        <property name="icon">
+                                                                            <iconset resource="resources.qrc">
+                                                                                <normaloff>
+                                                                                    :/icons/images/icons/LI-Logo.png</normaloff>
+                                                                                :/icons/images/icons/LI-Logo.png
+                                                                            </iconset>
+                                                                        </property>
+                                                                        <property name="iconSize">
+                                                                            <size>
+                                                                                <width>50</width>
+                                                                                <height>16</height>
+                                                                            </size>
                                                                         </property>
                                                                     </widget>
                                                                 </item>

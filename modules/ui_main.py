@@ -7,7 +7,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 ################################################################################
-## Form generated from reading UI file 'mainxXlgmt.ui'
+## Form generated from reading UI file 'mainBZrvwQ.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.0.3
 ##
@@ -24,7 +24,7 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
-        MainWindow.resize(1280, 720)
+        MainWindow.resize(1280, 734)
         MainWindow.setMinimumSize(QSize(940, 560))
         self.styleSheet = QWidget(MainWindow)
         self.styleSheet.setObjectName(u"styleSheet")
@@ -689,21 +689,21 @@ class Ui_MainWindow(object):
         self.btn_stock_trading.setCursor(QCursor(Qt.PointingHandCursor))
         self.btn_stock_trading.setLayoutDirection(Qt.LeftToRight)
         self.btn_stock_trading.setAutoFillBackground(False)
-        self.btn_stock_trading.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-transfer.png);")
+        self.btn_stock_trading.setStyleSheet(u"background-image:url(:/icons/images/icons/cil-transfer.png);")
 
         self.verticalLayout_8.addWidget(self.btn_stock_trading)
 
-        self.btn_save = QPushButton(self.topMenu)
-        self.btn_save.setObjectName(u"btn_save")
-        sizePolicy.setHeightForWidth(self.btn_save.sizePolicy().hasHeightForWidth())
-        self.btn_save.setSizePolicy(sizePolicy)
-        self.btn_save.setMinimumSize(QSize(0, 45))
-        self.btn_save.setFont(font)
-        self.btn_save.setCursor(QCursor(Qt.PointingHandCursor))
-        self.btn_save.setLayoutDirection(Qt.LeftToRight)
-        self.btn_save.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-save.png)")
+        self.btn_settings = QPushButton(self.topMenu)
+        self.btn_settings.setObjectName(u"btn_settings")
+        sizePolicy.setHeightForWidth(self.btn_settings.sizePolicy().hasHeightForWidth())
+        self.btn_settings.setSizePolicy(sizePolicy)
+        self.btn_settings.setMinimumSize(QSize(0, 45))
+        self.btn_settings.setFont(font)
+        self.btn_settings.setCursor(QCursor(Qt.PointingHandCursor))
+        self.btn_settings.setLayoutDirection(Qt.LeftToRight)
+        self.btn_settings.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-settings.png)")
 
-        self.verticalLayout_8.addWidget(self.btn_save)
+        self.verticalLayout_8.addWidget(self.btn_settings)
 
         self.btn_exit = QPushButton(self.topMenu)
         self.btn_exit.setObjectName(u"btn_exit")
@@ -736,7 +736,7 @@ class Ui_MainWindow(object):
         self.toggleLeftBox.setFont(font)
         self.toggleLeftBox.setCursor(QCursor(Qt.PointingHandCursor))
         self.toggleLeftBox.setLayoutDirection(Qt.LeftToRight)
-        self.toggleLeftBox.setStyleSheet(u"background-image: url(:/icons/images/icons/icon_settings.png);")
+        self.toggleLeftBox.setStyleSheet(u"background-image: url(:/icons/images/icons/cil-speech.png);")
 
         self.verticalLayout_9.addWidget(self.toggleLeftBox)
 
@@ -1404,6 +1404,7 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_23.addWidget(self.stockTradingTitle)
 
+
         self.verticalLayout_25.addLayout(self.verticalLayout_23)
 
         self.horizontalLayout_13 = QHBoxLayout()
@@ -1419,6 +1420,7 @@ class Ui_MainWindow(object):
         self.lineEdit_3.setObjectName(u"lineEdit_3")
         self.lineEdit_3.setMinimumSize(QSize(0, 30))
         self.lineEdit_3.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_3.setReadOnly(True)
 
         self.horizontalLayout_8.addWidget(self.lineEdit_3)
 
@@ -1444,6 +1446,7 @@ class Ui_MainWindow(object):
         self.lineEdit_4.setObjectName(u"lineEdit_4")
         self.lineEdit_4.setMinimumSize(QSize(0, 30))
         self.lineEdit_4.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_4.setReadOnly(True)
 
         self.horizontalLayout_10.addWidget(self.lineEdit_4)
 
@@ -1461,6 +1464,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_10.setStretch(1, 1)
 
         self.verticalLayout_20.addLayout(self.horizontalLayout_10)
+
 
         self.verticalLayout_22.addLayout(self.verticalLayout_20)
 
@@ -1480,6 +1484,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_6.addWidget(self.stockTradingStrategyList)
 
+
         self.verticalLayout_21.addLayout(self.horizontalLayout_6)
 
         self.horizontalLayout_7 = QHBoxLayout()
@@ -1495,9 +1500,12 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_7.addWidget(self.stockTradingInterval)
 
+
         self.verticalLayout_21.addLayout(self.horizontalLayout_7)
 
+
         self.verticalLayout_22.addLayout(self.verticalLayout_21)
+
 
         self.horizontalLayout_13.addLayout(self.verticalLayout_22)
 
@@ -1570,6 +1578,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_15.addWidget(self.stockTradingTable)
 
+
         self.horizontalLayout_13.addWidget(self.stock_trading_display)
 
         self.horizontalLayout_13.setStretch(0, 1)
@@ -1587,9 +1596,69 @@ class Ui_MainWindow(object):
         self.verticalLayout_25.addLayout(self.verticalLayout_24)
 
         self.stackedWidget.addWidget(self.stock_trading)
+        self.settings = QWidget()
+        self.settings.setObjectName(u"settings")
+        self.layoutWidget = QWidget(self.settings)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(160, 150, 296, 104))
+        self.verticalLayout_26 = QVBoxLayout(self.layoutWidget)
+        self.verticalLayout_26.setObjectName(u"verticalLayout_26")
+        self.verticalLayout_26.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_14 = QHBoxLayout()
+        self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.horizontalLayout_14.setContentsMargins(9, 9, 9, 9)
+        self.lineEdit_5 = QLineEdit(self.layoutWidget)
+        self.lineEdit_5.setObjectName(u"lineEdit_5")
+        self.lineEdit_5.setMinimumSize(QSize(0, 30))
+        self.lineEdit_5.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_5.setReadOnly(True)
+
+        self.horizontalLayout_14.addWidget(self.lineEdit_5)
+
+        self.settingsConfigButton = QPushButton(self.layoutWidget)
+        self.settingsConfigButton.setObjectName(u"settingsConfigButton")
+        self.settingsConfigButton.setMinimumSize(QSize(150, 30))
+        self.settingsConfigButton.setFont(font)
+        self.settingsConfigButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.settingsConfigButton.setStyleSheet(u"background-color: rgb(52, 59, 72);")
+        self.settingsConfigButton.setIcon(icon4)
+
+        self.horizontalLayout_14.addWidget(self.settingsConfigButton)
+
+        self.horizontalLayout_14.setStretch(0, 3)
+        self.horizontalLayout_14.setStretch(1, 1)
+
+        self.verticalLayout_26.addLayout(self.horizontalLayout_14)
+
+        self.horizontalLayout_16 = QHBoxLayout()
+        self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
+        self.horizontalLayout_16.setContentsMargins(9, 9, 9, 9)
+        self.lineEdit_6 = QLineEdit(self.layoutWidget)
+        self.lineEdit_6.setObjectName(u"lineEdit_6")
+        self.lineEdit_6.setMinimumSize(QSize(0, 30))
+        self.lineEdit_6.setStyleSheet(u"background-color: rgb(33, 37, 43);")
+        self.lineEdit_6.setReadOnly(True)
+
+        self.horizontalLayout_16.addWidget(self.lineEdit_6)
+
+        self.settingsMapButton = QPushButton(self.layoutWidget)
+        self.settingsMapButton.setObjectName(u"settingsMapButton")
+        self.settingsMapButton.setMinimumSize(QSize(150, 30))
+        self.settingsMapButton.setFont(font)
+        self.settingsMapButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.settingsMapButton.setStyleSheet(u"background-color: rgb(52, 59, 72);")
+        self.settingsMapButton.setIcon(icon4)
+
+        self.horizontalLayout_16.addWidget(self.settingsMapButton)
+
+        self.horizontalLayout_16.setStretch(0, 3)
+        self.horizontalLayout_16.setStretch(1, 1)
+
+        self.verticalLayout_26.addLayout(self.horizontalLayout_16)
+
+        self.stackedWidget.addWidget(self.settings)
 
         self.verticalLayout_15.addWidget(self.stackedWidget)
-
 
         self.horizontalLayout_4.addWidget(self.pagesContainer)
 
@@ -1682,7 +1751,6 @@ class Ui_MainWindow(object):
         self.bottomBar.setFrameShape(QFrame.NoFrame)
         self.bottomBar.setFrameShadow(QFrame.Raised)
         self.horizontalLayout_5 = QHBoxLayout(self.bottomBar)
-        self.horizontalLayout_5.setSpacing(0)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.creditsLabel = QLabel(self.bottomBar)
@@ -1696,6 +1764,32 @@ class Ui_MainWindow(object):
         self.creditsLabel.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignVCenter)
 
         self.horizontalLayout_5.addWidget(self.creditsLabel)
+
+        self.bottomBarGithubButton = QPushButton(self.bottomBar)
+        self.bottomBarGithubButton.setObjectName(u"bottomBarGithubButton")
+        self.bottomBarGithubButton.setEnabled(True)
+        self.bottomBarGithubButton.setFont(font)
+        self.bottomBarGithubButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.bottomBarGithubButton.setStyleSheet(u"background-color: transparent")
+        icon6 = QIcon()
+        icon6.addFile(u":/icons/images/icons/GitHub-Mark-Light-120px-plus.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.bottomBarGithubButton.setIcon(icon6)
+        self.bottomBarGithubButton.setIconSize(QSize(15, 15))
+
+        self.horizontalLayout_5.addWidget(self.bottomBarGithubButton)
+
+        self.bottomBarLinkedInButton = QPushButton(self.bottomBar)
+        self.bottomBarLinkedInButton.setObjectName(u"bottomBarLinkedInButton")
+        self.bottomBarLinkedInButton.setEnabled(True)
+        self.bottomBarLinkedInButton.setFont(font)
+        self.bottomBarLinkedInButton.setCursor(QCursor(Qt.PointingHandCursor))
+        self.bottomBarLinkedInButton.setStyleSheet(u"background-color: transparent;")
+        icon7 = QIcon()
+        icon7.addFile(u":/icons/images/icons/LI-Logo.png", QSize(), QIcon.Normal, QIcon.Off)
+        self.bottomBarLinkedInButton.setIcon(icon7)
+        self.bottomBarLinkedInButton.setIconSize(QSize(50, 16))
+
+        self.horizontalLayout_5.addWidget(self.bottomBarLinkedInButton)
 
         self.version = QLabel(self.bottomBar)
         self.version.setObjectName(u"version")
@@ -1712,12 +1806,14 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_5.addWidget(self.frame_size_grip)
 
+        self.horizontalLayout_5.setStretch(0, 1)
+        self.horizontalLayout_5.setStretch(1, 1)
+        self.horizontalLayout_5.setStretch(2, 1)
+        self.horizontalLayout_5.setStretch(3, 20)
 
         self.verticalLayout_6.addWidget(self.bottomBar)
 
-
         self.verticalLayout_2.addWidget(self.contentBottom)
-
 
         self.appLayout.addWidget(self.contentBox)
 
@@ -1742,10 +1838,10 @@ class Ui_MainWindow(object):
         self.toggleButton.setText(QCoreApplication.translate("MainWindow", u"Hide", None))
         self.btn_home.setText(QCoreApplication.translate("MainWindow", u"Home", None))
         self.btn_widgets.setText(QCoreApplication.translate("MainWindow", u"Widgets", None))
-        self.btn_stock_trading.setText(QCoreApplication.translate("MainWindow", u"New", None))
-        self.btn_save.setText(QCoreApplication.translate("MainWindow", u"Save", None))
+        self.btn_stock_trading.setText(QCoreApplication.translate("MainWindow", u"Stock Trading", None))
+        self.btn_settings.setText(QCoreApplication.translate("MainWindow", u"Settings", None))
         self.btn_exit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
-        self.toggleLeftBox.setText(QCoreApplication.translate("MainWindow", u"Left Box", None))
+        self.toggleLeftBox.setText(QCoreApplication.translate("MainWindow", u"Info", None))
         self.extraLabel.setText(QCoreApplication.translate("MainWindow", u"Left Box", None))
         # if QT_CONFIG(tooltip)
         self.extraCloseColumnBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Close left box", None))
@@ -1759,15 +1855,15 @@ class Ui_MainWindow(object):
                                                          "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
                                                          "p, li { white-space: pre-wrap; }\n"
                                                          "</style></head><body style=\" font-family:'Segoe UI'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-                                                         "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">FUTU ALGO</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">FUTU ALGO</span></p>\n"
                                                          "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; color:#ffffff;\">An Algorithmic Trading soltuion developed based on FutuOpenD and FutuOpenAPI, and can be used for backtesting, stock screening and high-frequency trading.</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-botto"
-                                                         "m:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#ffffff;\">Apache-2.0 License</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#bd93f9;\">Created by: Bill Chan</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:1"
+                                                         "2px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#ffffff;\">Apache-2.0 License</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; color:#bd93f9;\">Created by: Bill Chan</span></p>\n"
                                                          "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Author Info</span></p>\n"
                                                          "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Website: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan.com</span></p>\n"
-                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\""
-                                                         "><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Email: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan@hotmail.com</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-bl"
+                                                         "ock-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Email: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan@hotmail.com</span></p>\n"
                                                          "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">To Contribute</span></p>\n"
                                                          "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/billpwchan/futu_algo\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; text-decoration: underline; color:#ffffff;\">GitHub Repository</span></a></p></body></html>",
                                                          None))
@@ -1867,10 +1963,19 @@ class Ui_MainWindow(object):
         self.stockTradingMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.label.setText(QCoreApplication.translate("MainWindow", u"Default Trading Strategy", None))
         self.label_3.setText(QCoreApplication.translate("MainWindow", u"Default Trading Interval", None))
+        self.lineEdit_5.setText("")
+        self.lineEdit_5.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select config.ini", None))
+        self.settingsConfigButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
+        self.lineEdit_6.setText("")
+        self.lineEdit_6.setPlaceholderText(
+            QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
+        self.settingsMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))
         self.creditsLabel.setText(
             QCoreApplication.translate("MainWindow", u"By: Bill Chan <billpwchan@hotmail.com>", None))
+        self.bottomBarGithubButton.setText("")
+        self.bottomBarLinkedInButton.setText("")
         self.version.setText(QCoreApplication.translate("MainWindow", u"v1.0.0", None))
     # retranslateUi
