@@ -28,16 +28,14 @@
   friends using the email subscription feature.
 - **Trading Strategy Editor**: Write your own trading strategy following a simple template (buy, sell, calculate
   technical indicators). Common strategies such as MACD and KDJ-based trading rules are provided as guidelines.
-
-## Issues
-
-- [x] ~~[ADX & RSI Trading Strategy Support](https://github.com/billpwchan/futu_algo/issues/1)~~
+- **GUI Support (Upcoming)**: Easy-to-use GUI for users to adjust their configurations, trading, downloading data and
+  filtering stocks within one application. No longer need to type any command for trading!
 
 ## Version Guidance
 
 | FutuAlgo Release | Futu OpenAPI Specification |
 |:-----------------|:---------------------------|
-| 0.0.2-alpha.x    | 4.0                        |
+| 0.0.2-alpha.x    | 5.3                        |
 
 ## Deployment
 
@@ -115,37 +113,39 @@ Create a folder named 'database' in the root folder, and execute the SQLite DDL 
 
 For **Windows**:
 
-    python main.py -u
+    python main_backend.py -u
 
 For **MacOS/Linux**:
 
-    python3 main.py -u
+    python3 main_backend.py -u
 
 ### 4. Enjoy :smile:
 
-## Usages
+## Command-line Interface Usages
 
 Update all `K_1M` and `K_DAY` interval historical K-line data
 
-    python main.py -u   /   python main.py --update
+    python main_backend.py -u   /   python main_backend.py --update
 
 **IMPORTANT NOTE:** This will not override existing historical data if the file exists.
 
 If you want to refresh all data, use the following command instead (WITH CAUTION!)
 
-    python main.py -fu  /   python main.py --force_update
+    python main_backend.py -fu  /   python main_backend.py --force_update
 
 Store all data from CSV to SQLite Database *(Currently the database isn't used for any feature)*
 
-    python main.py -d   /   python main.py --database
+    python main_backend.py -d   /   python main_backend.py --database
 
 Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 
-    python main.py -s MACD_Cross    /   python main.py --strategy MACD_Cross
+    python main_backend.py -s MACD_Cross    /   python main_backend.py --strategy MACD_Cross
 
 Execute Stock Filtering with Pre-defined Filtering Strategies
 
-    python main.py -f Volume_Threshold Price_Threshold   /   python main.py --filter Volume_Threshold Price_Threshold
+    python main_backend.py -f Volume_Threshold Price_Threshold   /   python main_backend.py --filter Volume_Threshold 
+
+Price_Threshold
 
 ## Future Plans
 
