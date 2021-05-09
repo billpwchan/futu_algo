@@ -586,7 +586,12 @@ class MainWindow(QMainWindow):
         self.ui.maximizeRestoreAppBtn.clicked.connect(lambda: self.maximize_restore())
 
         # CLOSE APPLICATION
-        self.ui.closeAppBtn.clicked.connect(lambda: self.close())
+        self.ui.closeAppBtn.clicked.connect(lambda: self.exit_app())
+
+    def exit_app(self):
+        global futu_trade
+        del futu_trade
+        self.close()
 
     def resize_grips(self):
         if Settings.ENABLE_CUSTOM_TITLE_BAR:
