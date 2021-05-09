@@ -5,7 +5,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 import time
 
-from futu import OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, TrdSide, OrderType, OrderStatus, ModifyOrderOp
+from futu import ModifyOrderOp, OpenHKTradeContext, OpenQuoteContext, OrderStatus, OrderType, RET_OK, TrdEnv, TrdSide
 
 from util import logger
 

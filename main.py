@@ -22,7 +22,6 @@ from PySide6.QtWidgets import QMessageBox
 from engines.data_engine import HKEXInterface
 from modules import *
 from widgets import *
-from modules.ui_splash_screen import Ui_SplashScreen
 import webbrowser as webbrowser
 
 # SET AS GLOBAL WIDGETS

@@ -7,13 +7,12 @@ import configparser
 import json
 import warnings
 from collections import ChainMap
-from datetime import date
-from datetime import timedelta, datetime
+from datetime import date, datetime, timedelta
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 
-from engines.data_engine import HKEXInterface, DataProcessingInterface
+from engines.data_engine import DataProcessingInterface, HKEXInterface
 from strategies.Strategies import Strategies
 from util import logger
 

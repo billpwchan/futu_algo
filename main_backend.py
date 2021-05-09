@@ -5,22 +5,12 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 import argparse
-import configparser
-import glob
 import importlib
-import json
-import os
-from datetime import datetime
 from multiprocessing import Process
-from pathlib import Path
 
 import yaml
-from futu import KLType, SubType
 
-from engines import trading_engine, data_engine, email_engine
-from engines.backtesting_engine import Backtesting
-from engines.data_engine import YahooFinanceInterface, DataProcessingInterface
-from engines.stock_filter_engine import StockFilter
+from engines import *
 from strategies.Strategies import Strategies
 
 
