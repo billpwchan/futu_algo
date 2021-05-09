@@ -143,9 +143,7 @@ Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 
 Execute Stock Filtering with Pre-defined Filtering Strategies
 
-    python main_backend.py -f Volume_Threshold Price_Threshold   /   python main_backend.py --filter Volume_Threshold 
-
-Price_Threshold
+    python main_backend.py -f Volume_Threshold Price_Threshold   /   python main_backend.py --filter Volume_Threshold Price_Threshold
 
 ## Future Plans
 
