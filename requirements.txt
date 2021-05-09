@@ -21,12 +21,13 @@ cx-freeze=6.6=pypi_0
 cx-logging=3.0=pypi_0
 decorator=5.0.6=pyhd3eb1b0_0
 defusedxml=0.7.1=pyhd3eb1b0_0
+docopt=0.6.2=pypi_0
 empyrical=0.5.5=pypi_0
 entrypoints=0.3=py38_0
 et_xmlfile=1.0.1=py_1001
 futu-api=5.2.1408=pypi_0
 html5lib=1.1=py_0
-humanize=3.2.0=pypi_0
+humanize=3.5.0=pyhd3eb1b0_0
 icu=58.2=ha925a31_3
 idna=2.10=pyhd3eb1b0_0
 importlib-metadata=4.0.1=pypi_0
@@ -80,6 +81,7 @@ pandocfilters=1.4.3=py38haa95532_1
 parso=0.8.2=pyhd3eb1b0_0
 pickleshare=0.7.5=pyhd3eb1b0_1003
 pip=21.1.1=pypi_0
+pipreqs=0.4.10=pypi_0
 prometheus_client=0.10.1=pyhd3eb1b0_0
 prompt-toolkit=3.0.17=pyh06a4308_0
 protobuf=3.5.1=pypi_0
@@ -134,6 +136,7 @@ win_inet_pton=1.1.0=py38haa95532_0
 wincertstore=0.2=py38_0
 winpty=0.4.3=4
 xlrd=2.0.1=pyhd3eb1b0_0
+yarg=0.1.9=pypi_0
 yfinance=0.1.55=pypi_0
 zeromq=4.3.3=ha925a31_3
 zipp=3.4.1=pyhd3eb1b0_0
