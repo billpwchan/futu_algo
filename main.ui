@@ -1848,7 +1848,7 @@ p, li { white-space: pre-wrap; }
                       <string notr="true">background: transparent;</string>
                      </property>
                      <property name="currentIndex">
-                      <number>0</number>
+                      <number>3</number>
                      </property>
                      <widget class="QWidget" name="home">
                       <property name="styleSheet">
@@ -2152,7 +2152,7 @@ background-repeat: no-repeat;</string>
                                 <rect>
                                  <x>0</x>
                                  <y>0</y>
-                                 <width>218</width>
+                                    <width>359</width>
                                  <height>218</height>
                                 </rect>
                                </property>
@@ -3333,19 +3333,43 @@ background-repeat: no-repeat;</string>
                             <property name="styleSheet">
                              <string notr="true">background-color: rgb(52, 59, 72);</string>
                             </property>
-                            <property name="text">
-                             <string>Open</string>
-                            </property>
-                            <property name="icon">
-                             <iconset resource="resources.qrc">
-                              <normaloff>:/icons/images/icons/cil-folder-open.png</normaloff>:/icons/images/icons/cil-folder-open.png</iconset>
-                            </property>
+                               <property name="text">
+                                   <string>Open</string>
+                               </property>
+                               <property name="icon">
+                                   <iconset resource="resources.qrc">
+                                       <normaloff>:/icons/images/icons/cil-folder-open.png</normaloff>
+                                       :/icons/images/icons/cil-folder-open.png
+                                   </iconset>
+                               </property>
                            </widget>
                           </item>
                          </layout>
                         </item>
                        </layout>
                       </widget>
+                         <widget class="QWidget" name="verticalLayoutWidget">
+                             <property name="geometry">
+                                 <rect>
+                                     <x>590</x>
+                                     <y>60</y>
+                                     <width>331</width>
+                                     <height>121</height>
+                                 </rect>
+                             </property>
+                             <layout class="QVBoxLayout" name="verticalLayout_27">
+                                 <item>
+                                     <widget class="QCheckBox" name="testing_checkbox">
+                                         <property name="text">
+                                             <string>CheckBox</string>
+                                         </property>
+                                         <property name="tristate">
+                                             <bool>false</bool>
+                                         </property>
+                                     </widget>
+                                 </item>
+                             </layout>
+                         </widget>
                      </widget>
                     </widget>
                    </item>

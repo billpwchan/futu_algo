@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
 
+#  Futu Algo: Algorithmic High-Frequency Trading Framework
+#  Copyright (c)  billpwchan - All Rights Reserved
+#  Unauthorized copying of this file, via any medium is strictly prohibited
+#  Proprietary and confidential
+#  Written by Bill Chan <billpwchan@hotmail.com>, 2021
+
 ################################################################################
-## Form generated from reading UI file 'mainqyZzMe.ui'
+## Form generated from reading UI file 'mainoOShja.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.0.3
 ##
@@ -1176,14 +1182,14 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 218, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 359, 218))
         self.scrollAreaWidgetContents.setStyleSheet(u" QScrollBar:vertical {\n"
-"	border: none;\n"
-"    background: rgb(52, 59, 72);\n"
-"    width: 14px;\n"
-"    margin: 21px 0 21px 0;\n"
-"	border-radius: 0px;\n"
-" }")
+                                                    "	border: none;\n"
+                                                    "    background: rgb(52, 59, 72);\n"
+                                                    "    width: 14px;\n"
+                                                    "    margin: 21px 0 21px 0;\n"
+                                                    "	border-radius: 0px;\n"
+                                                    " }")
         self.horizontalLayout_11 = QHBoxLayout(self.scrollAreaWidgetContents)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
         self.plainTextEdit = QPlainTextEdit(self.scrollAreaWidgetContents)
@@ -1635,10 +1641,21 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_26.addLayout(self.horizontalLayout_16)
 
+        self.verticalLayoutWidget = QWidget(self.settings)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(590, 60, 331, 121))
+        self.verticalLayout_27 = QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayout_27.setObjectName(u"verticalLayout_27")
+        self.verticalLayout_27.setContentsMargins(0, 0, 0, 0)
+        self.testing_checkbox = QCheckBox(self.verticalLayoutWidget)
+        self.testing_checkbox.setObjectName(u"testing_checkbox")
+        self.testing_checkbox.setTristate(False)
+
+        self.verticalLayout_27.addWidget(self.testing_checkbox)
+
         self.stackedWidget.addWidget(self.settings)
 
         self.verticalLayout_15.addWidget(self.stackedWidget)
-
 
         self.horizontalLayout_4.addWidget(self.pagesContainer)
 
@@ -1971,6 +1988,7 @@ class Ui_MainWindow(object):
         self.settingsMapLabel.setText("")
         self.settingsMapLabel.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
         self.settingsMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
+        self.testing_checkbox.setText(QCoreApplication.translate("MainWindow", u"CheckBox", None))
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))

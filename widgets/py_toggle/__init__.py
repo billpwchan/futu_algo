@@ -4,5 +4,4 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-
-from .circular_progress import CircularProgress
+from .py_toggle import PyToggle

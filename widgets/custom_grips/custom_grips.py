@@ -5,7 +5,6 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 
-
 from PySide6.QtCore import *
 from PySide6.QtGui import *
 from PySide6.QtWidgets import *

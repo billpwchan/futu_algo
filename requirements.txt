@@ -141,3 +141,12 @@ yfinance=0.1.55=pypi_0
 zeromq=4.3.3=ha925a31_3
 zipp=3.4.1=pyhd3eb1b0_0
 zlib=1.2.11=h62dcd97_4
+
+pandas~=1.2.0
+humanize~=3.5.0
+openpyxl~=3.0.5
+requests~=2.25.1
+yfinance~=0.1.55
+pyyaml~=5.4.1
+pyside6~=6.0.3
+numpy~=1.19.3

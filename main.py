@@ -12,7 +12,7 @@ import sys
 import platform
 
 # IMPORT / GUI AND MODULES AND WIDGETS
-# ///////////////////////////////////////////////////////////////
+
 from pathlib import Path
 
 import yaml
@@ -25,13 +25,15 @@ from widgets import *
 import webbrowser as webbrowser
 
 # SET AS GLOBAL WIDGETS
-# ///////////////////////////////////////////////////////////////
+
 widgets = None
 
 # GLOBALS
 counter = 0
 GITHUB_LINK = "https://github.com/billpwchan/futu_algo"
 LINKEDIN_LINK = "https://www.linkedin.com/in/billpwchan1998/"
+APP_TITLE = "FUTU ALGO - Trading Solution"
+APP_DESCRIPTION = "FUTU ALGO - Your First Step to Algorithmic Trading"
 
 config = None
 stock_strategy_map = None
@@ -104,41 +106,33 @@ class MainWindow(QMainWindow):
         QMainWindow.__init__(self)
 
         # SET AS GLOBAL WIDGETS
-        # ///////////////////////////////////////////////////////////////
+
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         global widgets
         widgets = self.ui
 
         # USE CUSTOM TITLE BAR | USE AS "False" FOR MAC OR LINUX
-        # ///////////////////////////////////////////////////////////////
         Settings.ENABLE_CUSTOM_TITLE_BAR = True
 
-        # APP NAME
-        # ///////////////////////////////////////////////////////////////
-        title = "FUTU ALGO - Trading Solution"
-        description = "FUTU ALGO - Your First Step to Algorithmic Trading"
         # APPLY TEXTS
-        self.setWindowTitle(title)
-        widgets.titleRightInfo.setText(description)
+        self.setWindowTitle(APP_TITLE)
+        widgets.titleRightInfo.setText(APP_DESCRIPTION)
 
         # Initialize COMBOBOX SET VALUES
         self.__initialize_global_values()
 
+        # Add Custom Checkbox
+        # widgets.verticalLayout_27.addWidget(PyToggle(), Qt.AlignCenter, Qt.AlignCenter)
+
         # TOGGLE MENU
-        # ///////////////////////////////////////////////////////////////
         widgets.toggleButton.clicked.connect(lambda: UIFunctions.toggleMenu(self, True))
 
         # SET UI DEFINITIONS
-        # ///////////////////////////////////////////////////////////////
         UIFunctions.uiDefinitions(self)
 
         # QTableWidget PARAMETERS
-        # ///////////////////////////////////////////////////////////////
         widgets.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
-
-        # BUTTONS CLICK
-        # ///////////////////////////////////////////////////////////////
 
         # LEFT MENUS
         widgets.btn_home.clicked.connect(self.buttonClick)
@@ -160,11 +154,9 @@ class MainWindow(QMainWindow):
         widgets.settingsTopBtn.clicked.connect(openCloseRightBox)
 
         # SHOW APP
-        # ///////////////////////////////////////////////////////////////
         self.show()
 
         # SET CUSTOM THEME
-        # ///////////////////////////////////////////////////////////////
         useCustomTheme = False
         themeFile = "themes\py_dracula_dark.qss"
 
@@ -177,7 +169,6 @@ class MainWindow(QMainWindow):
             AppFunctions.setThemeHack(self)
 
         # SET HOME PAGE AND SELECT MENU
-        # ///////////////////////////////////////////////////////////////
         widgets.stackedWidget.setCurrentWidget(widgets.home)
         widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
 
