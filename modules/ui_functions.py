@@ -10,6 +10,7 @@
 from main import *
 
 # GLOBALS
+from modules import Settings
 
 GLOBAL_STATE = False
 GLOBAL_TITLE_BAR = True

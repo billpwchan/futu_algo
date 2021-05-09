@@ -21,12 +21,9 @@ from PySide6.QtWidgets import QMessageBox
 
 from engines.data_engine import HKEXInterface
 from modules import *
+from modules import Settings
 from widgets import *
 import webbrowser as webbrowser
-
-# SET AS GLOBAL WIDGETS
-
-widgets = None
 
 # GLOBALS
 counter = 0
@@ -34,6 +31,7 @@ GITHUB_LINK = "https://github.com/billpwchan/futu_algo"
 LINKEDIN_LINK = "https://www.linkedin.com/in/billpwchan1998/"
 APP_TITLE = "FUTU ALGO - Trading Solution"
 APP_DESCRIPTION = "FUTU ALGO - Your First Step to Algorithmic Trading"
+APP_LOGO_SMALL = "./images/images/PyDracula.png"
 
 config = None
 stock_strategy_map = None
@@ -109,49 +107,49 @@ class MainWindow(QMainWindow):
 
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
-        global widgets
-        widgets = self.ui
+
+        self.ui = self.ui
 
         # USE CUSTOM TITLE BAR | USE AS "False" FOR MAC OR LINUX
         Settings.ENABLE_CUSTOM_TITLE_BAR = True
 
         # APPLY TEXTS
         self.setWindowTitle(APP_TITLE)
-        widgets.titleRightInfo.setText(APP_DESCRIPTION)
+        self.ui.titleRightInfo.setText(APP_DESCRIPTION)
 
         # Initialize COMBOBOX SET VALUES
         self.__initialize_global_values()
 
         # Add Custom Checkbox
-        # widgets.verticalLayout_27.addWidget(PyToggle(), Qt.AlignCenter, Qt.AlignCenter)
+        # self.ui.verticalLayout_27.addWidget(PyToggle(), Qt.AlignCenter, Qt.AlignCenter)
 
         # TOGGLE MENU
-        widgets.toggleButton.clicked.connect(lambda: UIFunctions.toggleMenu(self, True))
+        self.ui.toggleButton.clicked.connect(lambda: UIFunctions.toggleMenu(self, True))
 
         # SET UI DEFINITIONS
         UIFunctions.uiDefinitions(self)
 
         # QTableWidget PARAMETERS
-        widgets.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.ui.tableWidget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         # LEFT MENUS
-        widgets.btn_home.clicked.connect(self.buttonClick)
-        widgets.btn_widgets.clicked.connect(self.buttonClick)
-        widgets.btn_stock_trading.clicked.connect(self.buttonClick)
-        widgets.btn_settings.clicked.connect(self.buttonClick)
+        self.ui.btn_home.clicked.connect(self.buttonClick)
+        self.ui.btn_widgets.clicked.connect(self.buttonClick)
+        self.ui.btn_stock_trading.clicked.connect(self.buttonClick)
+        self.ui.btn_settings.clicked.connect(self.buttonClick)
 
         # EXTRA LEFT BOX
         def openCloseLeftBox():
             UIFunctions.toggleLeftBox(self, True)
 
-        widgets.toggleLeftBox.clicked.connect(openCloseLeftBox)
-        widgets.extraCloseColumnBtn.clicked.connect(openCloseLeftBox)
+        self.ui.toggleLeftBox.clicked.connect(openCloseLeftBox)
+        self.ui.extraCloseColumnBtn.clicked.connect(openCloseLeftBox)
 
         # EXTRA RIGHT BOX
         def openCloseRightBox():
             UIFunctions.toggleRightBox(self, True)
 
-        widgets.settingsTopBtn.clicked.connect(openCloseRightBox)
+        self.ui.settingsTopBtn.clicked.connect(openCloseRightBox)
 
         # SHOW APP
         self.show()
@@ -169,8 +167,8 @@ class MainWindow(QMainWindow):
             AppFunctions.setThemeHack(self)
 
         # SET HOME PAGE AND SELECT MENU
-        widgets.stackedWidget.setCurrentWidget(widgets.home)
-        widgets.btn_home.setStyleSheet(UIFunctions.selectMenu(widgets.btn_home.styleSheet()))
+        self.ui.stackedWidget.setCurrentWidget(self.ui.home)
+        self.ui.btn_home.setStyleSheet(UIFunctions.selectMenu(self.ui.btn_home.styleSheet()))
 
     def __open_url(self, url):
         webbrowser.open(url)
@@ -246,47 +244,57 @@ class MainWindow(QMainWindow):
         if path != ('', ''):
             return path[0]
 
+    @staticmethod
+    def __create_message_box(title, text) -> QMessageBox:
+        msgBox = QMessageBox()
+        msgBox.setWindowTitle(title)
+        msgBox.setWindowIcon(QtGui.QIcon(APP_LOGO_SMALL))
+        msgBox.setIconPixmap(QtGui.QPixmap(APP_LOGO_SMALL))
+        msgBox.setStyleSheet(Settings.MESSAGEBOX_STYLESHEET)
+        msgBox.setText(text)
+        msgBox.setStandardButtons(QMessageBox.Ok)
+        msgBox.setWindowFlag(Qt.FramelessWindowHint)
+        return msgBox
+
     def buttonClick(self):
         # GET BUTTON CLICKED
         btn = self.sender()
         btnName = btn.objectName()
 
+        # SHOW HOME PAGE
+        if btnName == "btn_home":
+            self.ui.stackedWidget.setCurrentWidget(self.ui.home)
+            UIFunctions.resetStyle(self, btnName)
+            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
+            return
+
         # SHOW SETTINGS PAGE
         if btnName == "btn_settings":
-            widgets.stackedWidget.setCurrentWidget(widgets.settings)  # SET PAGE
+            self.ui.stackedWidget.setCurrentWidget(self.ui.settings)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
             return
 
         if config is None or stock_strategy_map is None:
-            msgBox = QMessageBox()
-            msgBox.setWindowTitle("MISSING TRADING CONFIGURATION")
-            msgBox.setWindowIcon(QtGui.QIcon("icon.ico"))
-            msgBox.setIcon(QMessageBox.Warning)
-            msgBox.setStyleSheet("color: rgb(255, 255, 255);")
-            msgBox.setStyleSheet("background-color: rgb(40, 44, 52);")
-            msgBox.setText("Please specify Configuration File and Stock Strategy Mapping file in the Settings Page!")
+            msgBox = self.__create_message_box("MISSING TRADING CONFIGURATION",
+                                               "Please specify Configuration File and Stock Mapping first. ")
             msgBox.exec_()
             return
 
-        # SHOW HOME PAGE
-        if btnName == "btn_home":
-            widgets.stackedWidget.setCurrentWidget(widgets.home)
-            UIFunctions.resetStyle(self, btnName)
-            btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
-
         # SHOW WIDGETS PAGE
         if btnName == "btn_widgets":
-            widgets.stackedWidget.setCurrentWidget(widgets.widgets)
+            self.ui.stackedWidget.setCurrentWidget(self.ui.widgets)
             UIFunctions.resetStyle(self, btnName)
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))
+            return
 
         # SHOW STOCK TRADING PAGE
         if btnName == "btn_stock_trading":
             self.__initialize_stock_trading_values()
-            widgets.stackedWidget.setCurrentWidget(widgets.stock_trading)  # SET PAGE
+            self.ui.stackedWidget.setCurrentWidget(self.ui.stock_trading)  # SET PAGE
             UIFunctions.resetStyle(self, btnName)  # RESET ANOTHERS BUTTONS SELECTED
             btn.setStyleSheet(UIFunctions.selectMenu(btn.styleSheet()))  # SELECT MENU
+            return
 
     def resizeEvent(self, event):
         # Update Size Grips
