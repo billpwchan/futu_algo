@@ -7,7 +7,7 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 ################################################################################
-## Form generated from reading UI file 'mainPUHvoM.ui'
+## Form generated from reading UI file 'mainlchlyF.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.0.3
 ##
@@ -30,7 +30,6 @@ class Ui_MainWindow(object):
         self.styleSheet.setObjectName(u"styleSheet")
         font = QFont()
         font.setFamily(u"Segoe UI")
-        font.setPointSize(10)
         font.setBold(False)
         font.setItalic(False)
         self.styleSheet.setFont(font)
@@ -45,6 +44,8 @@ class Ui_MainWindow(object):
             "QWidget {\n"
             "    color: rgb(221, 221, 221);\n"
             "    font: 10pt \"Segoe UI\";\n"
+            "    font-weight: 100;\n"
+            "    font-size: 14px;\n"
             "}\n"
             "\n"
             "/* /////////////////////////////////////////////////////////////////////////////////////////////////\n"
@@ -63,9 +64,9 @@ class Ui_MainWindow(object):
             "    margin: 0px;\n"
             "}\n"
             "\n"
-            "/* /////////////////////////////////////////////////////////////////////////////////////////////////\n"
-            "Bg"
-            " App */\n"
+            "/* /////////////////////////////////////////////////////"
+            "////////////////////////////////////////////\n"
+            "Bg App */\n"
             "#bgApp {\n"
             "    background-color: rgb(40, 44, 52);\n"
             "    border: 1px solid rgb(44, 49, 58);\n"
@@ -101,11 +102,11 @@ class Ui_MainWindow(object):
             "    border-left: 22px solid transparent;\n"
             "    background-color: transparent;\n"
             "    text-align: left;\n"
-            "    padding-left: 44px;\n"
+            "    p"
+            "adding-left: 44px;\n"
             "}\n"
             "\n"
-            "#topMenu .QPushBu"
-            "tton:hover {\n"
+            "#topMenu .QPushButton:hover {\n"
             "    background-color: rgb(40, 44, 52);\n"
             "}\n"
             "\n"
@@ -143,9 +144,9 @@ class Ui_MainWindow(object):
             "    background-repeat: no-repeat;\n"
             "    border: none;\n"
             "    border-left: 20px solid transparent;\n"
-            "    background-color: rgb(37, 41, 48);\n"
-            "    text-"
-            "align: left;\n"
+            " "
+            "   background-color: rgb(37, 41, 48);\n"
+            "    text-align: left;\n"
             "    padding-left: 44px;\n"
             "    color: rgb(113, 126, 149);\n"
             "}\n"
@@ -188,10 +189,10 @@ class Ui_MainWindow(object):
             "\n"
             "/* Btn Close */\n"
             "#extraCloseColumnBtn {\n"
-            "    background-color: rgba(255, 255, 255, 0);\n"
+            "    background-color: rgba(255, 255, 255, 0);"
+            "\n"
             "    border: none;\n"
             "    border-radius: 5px;\n"
-            ""
             "}\n"
             "\n"
             "#extraCloseColumnBtn:hover {\n"
@@ -231,8 +232,8 @@ class Ui_MainWindow(object):
             "    color: rgb(255, 255, 255);\n"
             "}\n"
             "\n"
-            "/* /////////////////////////////////////////////////////////////////////////////"
-            "////////////////////\n"
+            "/* //////////////////////"
+            "///////////////////////////////////////////////////////////////////////////\n"
             "Content App */\n"
             "#contentTopBg {\n"
             "    background-color: rgb(33, 37, 43);\n"
@@ -276,9 +277,9 @@ class Ui_MainWindow(object):
             "}\n"
             "\n"
             "#bottomBar QLabel {\n"
-            "    font-size: 11px;\n"
+            "  "
+            "  font-size: 11px;\n"
             "    color: rgb(113, 126, 149);\n"
-            ""
             "    padding-left: 10px;\n"
             "    padding-right: 10px;\n"
             "    padding-bottom: 2px;\n"
@@ -312,12 +313,12 @@ class Ui_MainWindow(object):
             "    padding: 10px;\n"
             "    border-radius: 5px;\n"
             "    gridline-color: rgb(44, 49, 58);\n"
-            "    border-bottom: 1px solid rgb(44, 49, 60);\n"
+            "    border-bottom: 1px solid rgb("
+            "44, 49, 60);\n"
             "}\n"
             "\n"
             "QTableWidget::item {\n"
-            "    b"
-            "order-color: rgb(44, 49, 60);\n"
+            "    border-color: rgb(44, 49, 60);\n"
             "    padding-left: 5px;\n"
             "    padding-right: 5px;\n"
             "    gridline-color: rgb(44, 49, 60);\n"
@@ -352,8 +353,8 @@ class Ui_MainWindow(object):
             "    border: 1px solid rgb(44, 49, 60);\n"
             "}\n"
             "\n"
-            "/* /////////////////////////////////////////////////////////////////////////////////////////////////\n"
-            ""
+            "/* ///////////////////////////////////////////"
+            "//////////////////////////////////////////////////////\n"
             "LineEdit */\n"
             "QLineEdit {\n"
             "    background-color: rgb(33, 37, 43);\n"
@@ -391,11 +392,11 @@ class Ui_MainWindow(object):
             "}\n"
             "\n"
             "QPlainTextEdit:hover {\n"
+            ""
             "    border: 2px solid rgb(64, 71, 88);\n"
             "}\n"
             "\n"
-            "QPla"
-            "inTextEdit:focus {\n"
+            "QPlainTextEdit:focus {\n"
             "    border: 2px solid rgb(91, 101, 124);\n"
             "}\n"
             "\n"
@@ -410,7 +411,7 @@ class Ui_MainWindow(object):
             "}\n"
             "\n"
             "QScrollBar::handle:horizontal {\n"
-"    background: rgb(189, 147, 249);\n"
+            "    background: rgb(189, 147, 249);\n"
             "    min-width: 25px;\n"
             "    border-radius: 4px\n"
             "}\n"
@@ -430,9 +431,9 @@ class Ui_MainWindow(object):
             "    background: rgb(55, 63, 77);\n"
             "    width: 20px;\n"
             "    border-top-left-radius: 4px;\n"
-            "    border-bottom-left-radius: 4px;\n"
-            "    subcontrol-position: left;"
-            "\n"
+            "    border-b"
+            "ottom-left-radius: 4px;\n"
+            "    subcontrol-position: left;\n"
             "    subcontrol-origin: margin;\n"
             "}\n"
             "\n"
@@ -473,9 +474,9 @@ class Ui_MainWindow(object):
             "QScrollBar::sub-line:vertical {\n"
             "    border: none;\n"
             "    background: rgb(55, 63, 77);\n"
-            "    height: 20px;\n"
+            " "
+            "   height: 20px;\n"
             "    border-top-left-radius: 4px;\n"
-            ""
             "    border-top-right-radius: 4px;\n"
             "    subcontrol-position: top;\n"
             "    subcontrol-origin: margin;\n"
@@ -511,8 +512,8 @@ class Ui_MainWindow(object):
             "    background-image: url(:/icons/images/icons/cil-check-alt.png);\n"
             "}\n"
             "\n"
-            "/* /////////////////////////////////////////////////////////////////////////////////"
-            "////////////////\n"
+            "/* ///////////////////////"
+            "//////////////////////////////////////////////////////////////////////////\n"
             "RadioButton */\n"
             "QRadioButton::indicator {\n"
             "    border: 3px solid rgb(52, 59, 72);\n"
@@ -548,10 +549,10 @@ class Ui_MainWindow(object):
             "QComboBox::drop-down {\n"
             "    subcontrol-origin: padding;\n"
             "    subcontrol-position: top right;\n"
-            "    width: 25px;\n"
+            "    width: 2"
+            "5px;\n"
             "    border-left-width: 3px;\n"
-            "    border-left-c"
-            "olor: rgba(39, 44, 54, 150);\n"
+            "    border-left-color: rgba(39, 44, 54, 150);\n"
             "    border-left-style: solid;\n"
             "    border-top-right-radius: 3px;\n"
             "    border-bottom-right-radius: 3px;\n"
@@ -582,11 +583,11 @@ class Ui_MainWindow(object):
             "\n"
             "QSlider::handle:horizontal {\n"
             "    background-color: rgb(189, 147, 249);\n"
-            "    border: none;\n"
+            "    border:"
+            " none;\n"
             "    height: 10px;\n"
             "    width: 10px;\n"
-            "    "
-            "margin: 0px;\n"
+            "    margin: 0px;\n"
             "    border-radius: 5px;\n"
             "}\n"
             "\n"
@@ -598,9 +599,9 @@ class Ui_MainWindow(object):
             "    background-color: rgb(255, 121, 198);\n"
             "}\n"
             "\n"
-"QSlider::groove:vertical {\n"
-"    border-radius: 5px;\n"
-"    width: 10px;\n"
+            "QSlider::groove:vertical {\n"
+            "    border-radius: 5px;\n"
+            "    width: 10px;\n"
             "    margin: 0px;\n"
             "    background-color: rgb(52, 59, 72);\n"
             "}\n"
@@ -613,7 +614,7 @@ class Ui_MainWindow(object):
             "    background-color: rgb(189, 147, 249);\n"
             "    border: none;\n"
             "    height: 10px;\n"
-"    width: 10px;\n"
+            "    width: 10px;\n"
             "    margin: 0px;\n"
             "    border-radius: 5px;\n"
             "}\n"
@@ -626,10 +627,10 @@ class Ui_MainWindow(object):
             "    background-color: rgb(255, 121, 198);\n"
             "}\n"
             "\n"
-            "/* /////////////////////////////////////////////////////////////////////////////////////////////////\n"
+            "/* ////////////////////////////////////////////////////////////////////////////"
+            "/////////////////////\n"
             "CommandLinkButton */\n"
-            "QComman"
-            "dLinkButton {\n"
+            "QCommandLinkButton {\n"
             "    color: rgb(255, 121, 198);\n"
             "    border-radius: 5px;\n"
             "    padding: 5px;\n"
@@ -665,9 +666,9 @@ class Ui_MainWindow(object):
             "}\n"
             "\n"
             "QMessageBox {\n"
-            "    font-family: 'Segoe UI', 'Open Sans', sans-serif;\n"
             "    "
-            "color: hsl(220, 50%, 90%);\n"
+            "font-family: 'Segoe UI', 'Open Sans', sans-serif;\n"
+            "    color: hsl(220, 50%, 90%);\n"
             "    background: hsl(220, 25%, 10%);\n"
             "}\n"
             "\n"
@@ -1118,7 +1119,6 @@ class Ui_MainWindow(object):
         self.maximizeRestoreAppBtn.setMaximumSize(QSize(28, 28))
         font3 = QFont()
         font3.setFamily(u"Segoe UI")
-        font3.setPointSize(10)
         font3.setBold(False)
         font3.setItalic(False)
         font3.setStyleStrategy(QFont.PreferDefault)
@@ -1322,7 +1322,7 @@ class Ui_MainWindow(object):
         self.scrollArea.setWidgetResizable(True)
         self.scrollAreaWidgetContents = QWidget()
         self.scrollAreaWidgetContents.setObjectName(u"scrollAreaWidgetContents")
-        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 359, 218))
+        self.scrollAreaWidgetContents.setGeometry(QRect(0, 0, 218, 218))
         self.scrollAreaWidgetContents.setStyleSheet(u" QScrollBar:vertical {\n"
                                                     "	border: none;\n"
                                                     "    background: rgb(52, 59, 72);\n"
@@ -1527,77 +1527,182 @@ class Ui_MainWindow(object):
         self.stock_trading.setObjectName(u"stock_trading")
         font5 = QFont()
         font5.setFamily(u"Segoe UI")
-        font5.setPointSize(10)
         font5.setBold(False)
         font5.setItalic(False)
         font5.setStrikeOut(False)
         self.stock_trading.setFont(font5)
-        self.verticalLayout_25 = QVBoxLayout(self.stock_trading)
-        self.verticalLayout_25.setObjectName(u"verticalLayout_25")
-        self.verticalLayout_23 = QVBoxLayout()
+        self.tableView = QTableView(self.stock_trading)
+        self.tableView.setObjectName(u"tableView")
+        self.tableView.setGeometry(QRect(330, 400, 256, 192))
+        self.gridLayoutWidget = QWidget(self.stock_trading)
+        self.gridLayoutWidget.setObjectName(u"gridLayoutWidget")
+        self.gridLayoutWidget.setGeometry(QRect(10, 80, 446, 186))
+        self.gridLayout_4 = QGridLayout(self.gridLayoutWidget)
+        self.gridLayout_4.setObjectName(u"gridLayout_4")
+        self.gridLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.stockTradingBuyingPowerLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingBuyingPowerLabel.setObjectName(u"stockTradingBuyingPowerLabel")
+        self.stockTradingBuyingPowerLabel.setFont(font)
+        self.stockTradingBuyingPowerLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                        "font-size: 14px;\n"
+                                                        "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingBuyingPowerLabel, 4, 0, 1, 1)
+
+        self.stockTradingLMVValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingLMVValue.setObjectName(u"stockTradingLMVValue")
+        self.stockTradingLMVValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingLMVValue, 5, 1, 1, 1)
+
+        self.stockTradingBuyingPowerValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingBuyingPowerValue.setObjectName(u"stockTradingBuyingPowerValue")
+        self.stockTradingBuyingPowerValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingBuyingPowerValue, 4, 1, 1, 1)
+
+        self.stockTradingCashLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingCashLabel.setObjectName(u"stockTradingCashLabel")
+        self.stockTradingCashLabel.setFont(font)
+        self.stockTradingCashLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                 "font-size: 14px;\n"
+                                                 "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingCashLabel, 3, 2, 1, 1)
+
+        self.stockTradingSecuritiesValueValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingSecuritiesValueValue.setObjectName(u"stockTradingSecuritiesValueValue")
+        self.stockTradingSecuritiesValueValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingSecuritiesValueValue, 3, 1, 1, 1)
+
+        self.stockTradingShortSellPowerLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingShortSellPowerLabel.setObjectName(u"stockTradingShortSellPowerLabel")
+        self.stockTradingShortSellPowerLabel.setFont(font)
+        self.stockTradingShortSellPowerLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                           "font-size: 14px;\n"
+                                                           "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingShortSellPowerLabel, 4, 2, 1, 1)
+
+        self.stockTradingNetAssetLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingNetAssetLabel.setObjectName(u"stockTradingNetAssetLabel")
+        self.stockTradingNetAssetLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                     "font-size: 14px;\n"
+                                                     "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingNetAssetLabel, 1, 0, 1, 1)
+
+        self.stockTradingShortSellPowerValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingShortSellPowerValue.setObjectName(u"stockTradingShortSellPowerValue")
+        self.stockTradingShortSellPowerValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingShortSellPowerValue, 4, 3, 1, 1)
+
+        self.stockTradingSecuritiesValueLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingSecuritiesValueLabel.setObjectName(u"stockTradingSecuritiesValueLabel")
+        self.stockTradingSecuritiesValueLabel.setFont(font)
+        self.stockTradingSecuritiesValueLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                            "font-size: 14px;\n"
+                                                            "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingSecuritiesValueLabel, 3, 0, 1, 1)
+
+        self.stockTradingLMVLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingLMVLabel.setObjectName(u"stockTradingLMVLabel")
+        self.stockTradingLMVLabel.setFont(font)
+        self.stockTradingLMVLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                "font-size: 14px;\n"
+                                                "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingLMVLabel, 5, 0, 1, 1)
+
+        self.stockTradingAvailableBalanceValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingAvailableBalanceValue.setObjectName(u"stockTradingAvailableBalanceValue")
+        self.stockTradingAvailableBalanceValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingAvailableBalanceValue, 6, 1, 1, 1)
+
+        self.stockTradingMaxWithdrawlLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingMaxWithdrawlLabel.setObjectName(u"stockTradingMaxWithdrawlLabel")
+        self.stockTradingMaxWithdrawlLabel.setFont(font)
+        self.stockTradingMaxWithdrawlLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                         "font-size: 14px;\n"
+                                                         "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingMaxWithdrawlLabel, 6, 2, 1, 1)
+
+        self.stockTradingSMVLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingSMVLabel.setObjectName(u"stockTradingSMVLabel")
+        self.stockTradingSMVLabel.setFont(font)
+        self.stockTradingSMVLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                "font-size: 14px;\n"
+                                                "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingSMVLabel, 5, 2, 1, 1)
+
+        self.stockTradingCashValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingCashValue.setObjectName(u"stockTradingCashValue")
+        self.stockTradingCashValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingCashValue, 3, 3, 1, 1)
+
+        self.stockTradingSMVValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingSMVValue.setObjectName(u"stockTradingSMVValue")
+        self.stockTradingSMVValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingSMVValue, 5, 3, 1, 1)
+
+        self.stockTradingAvailableBalanceLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingAvailableBalanceLabel.setObjectName(u"stockTradingAvailableBalanceLabel")
+        self.stockTradingAvailableBalanceLabel.setFont(font)
+        self.stockTradingAvailableBalanceLabel.setStyleSheet(u"font-weight: 100;\n"
+                                                             "font-size: 14px;\n"
+                                                             "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingAvailableBalanceLabel, 6, 0, 1, 1)
+
+        self.stockTradingMaxWithdrawlValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingMaxWithdrawlValue.setObjectName(u"stockTradingMaxWithdrawlValue")
+        self.stockTradingMaxWithdrawlValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingMaxWithdrawlValue, 6, 3, 1, 1)
+
+        self.stockTradingNetAssetValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingNetAssetValue.setObjectName(u"stockTradingNetAssetValue")
+        self.stockTradingNetAssetValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingNetAssetValue, 2, 0, 1, 1)
+
+        self.stockTradingPLLabel = QLabel(self.gridLayoutWidget)
+        self.stockTradingPLLabel.setObjectName(u"stockTradingPLLabel")
+        self.stockTradingPLLabel.setStyleSheet(u"font-weight: 100;\n"
+                                               "font-size: 14px;\n"
+                                               "color: #fafafa;")
+
+        self.gridLayout_4.addWidget(self.stockTradingPLLabel, 1, 2, 1, 1)
+
+        self.stockTradingPLValue = QLabel(self.gridLayoutWidget)
+        self.stockTradingPLValue.setObjectName(u"stockTradingPLValue")
+        self.stockTradingPLValue.setStyleSheet(u"font: 300 10pt \"Dubai Light\";")
+
+        self.gridLayout_4.addWidget(self.stockTradingPLValue, 2, 2, 1, 1)
+
+        self.layoutWidget = QWidget(self.stock_trading)
+        self.layoutWidget.setObjectName(u"layoutWidget")
+        self.layoutWidget.setGeometry(QRect(0, 0, 438, 50))
+        self.verticalLayout_23 = QVBoxLayout(self.layoutWidget)
         self.verticalLayout_23.setObjectName(u"verticalLayout_23")
         self.verticalLayout_23.setContentsMargins(9, 9, 9, 9)
-        self.stockTradingTitle = QLabel(self.stock_trading)
+        self.stockTradingTitle = QLabel(self.layoutWidget)
         self.stockTradingTitle.setObjectName(u"stockTradingTitle")
         self.stockTradingTitle.setFont(font)
 
         self.verticalLayout_23.addWidget(self.stockTradingTitle)
 
-
-        self.verticalLayout_25.addLayout(self.verticalLayout_23)
-
-        self.horizontalLayout_13 = QHBoxLayout()
-        self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.verticalLayout_22 = QVBoxLayout()
-        self.verticalLayout_22.setObjectName(u"verticalLayout_22")
-        self.verticalLayout_20 = QVBoxLayout()
-        self.verticalLayout_20.setObjectName(u"verticalLayout_20")
-
-        self.verticalLayout_22.addLayout(self.verticalLayout_20)
-
-        self.verticalLayout_21 = QVBoxLayout()
-        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
-        self.horizontalLayout_6 = QHBoxLayout()
-        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
-        self.horizontalLayout_6.setContentsMargins(9, 9, 9, 9)
-        self.label = QLabel(self.stock_trading)
-        self.label.setObjectName(u"label")
-        self.label.setFont(font5)
-
-        self.horizontalLayout_6.addWidget(self.label)
-
-        self.stockTradingStrategyList = QComboBox(self.stock_trading)
-        self.stockTradingStrategyList.setObjectName(u"stockTradingStrategyList")
-
-        self.horizontalLayout_6.addWidget(self.stockTradingStrategyList)
-
-
-        self.verticalLayout_21.addLayout(self.horizontalLayout_6)
-
-        self.horizontalLayout_7 = QHBoxLayout()
-        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
-        self.horizontalLayout_7.setContentsMargins(9, 9, 9, 9)
-        self.label_3 = QLabel(self.stock_trading)
-        self.label_3.setObjectName(u"label_3")
-
-        self.horizontalLayout_7.addWidget(self.label_3)
-
-        self.stockTradingInterval = QComboBox(self.stock_trading)
-        self.stockTradingInterval.setObjectName(u"stockTradingInterval")
-
-        self.horizontalLayout_7.addWidget(self.stockTradingInterval)
-
-
-        self.verticalLayout_21.addLayout(self.horizontalLayout_7)
-
-
-        self.verticalLayout_22.addLayout(self.verticalLayout_21)
-
-
-        self.horizontalLayout_13.addLayout(self.verticalLayout_22)
-
         self.stock_trading_display = QFrame(self.stock_trading)
         self.stock_trading_display.setObjectName(u"stock_trading_display")
+        self.stock_trading_display.setGeometry(QRect(593, 70, 577, 265))
         self.stock_trading_display.setMinimumSize(QSize(0, 150))
         self.stock_trading_display.setFrameShape(QFrame.StyledPanel)
         self.stock_trading_display.setFrameShadow(QFrame.Raised)
@@ -1606,40 +1711,6 @@ class Ui_MainWindow(object):
         self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
         self.horizontalLayout_15.setContentsMargins(0, 0, 0, 0)
         self.stockTradingTable = QTableWidget(self.stock_trading_display)
-        if (self.stockTradingTable.columnCount() < 3):
-            self.stockTradingTable.setColumnCount(3)
-        __qtablewidgetitem24 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(0, __qtablewidgetitem24)
-        __qtablewidgetitem25 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(1, __qtablewidgetitem25)
-        __qtablewidgetitem26 = QTableWidgetItem()
-        self.stockTradingTable.setHorizontalHeaderItem(2, __qtablewidgetitem26)
-        if (self.stockTradingTable.rowCount() < 3):
-            self.stockTradingTable.setRowCount(3)
-        __qtablewidgetitem27 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(0, __qtablewidgetitem27)
-        __qtablewidgetitem28 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(1, __qtablewidgetitem28)
-        __qtablewidgetitem29 = QTableWidgetItem()
-        self.stockTradingTable.setVerticalHeaderItem(2, __qtablewidgetitem29)
-        __qtablewidgetitem30 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 0, __qtablewidgetitem30)
-        __qtablewidgetitem31 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 1, __qtablewidgetitem31)
-        __qtablewidgetitem32 = QTableWidgetItem()
-        self.stockTradingTable.setItem(0, 2, __qtablewidgetitem32)
-        __qtablewidgetitem33 = QTableWidgetItem()
-        self.stockTradingTable.setItem(1, 0, __qtablewidgetitem33)
-        __qtablewidgetitem34 = QTableWidgetItem()
-        self.stockTradingTable.setItem(1, 1, __qtablewidgetitem34)
-        __qtablewidgetitem35 = QTableWidgetItem()
-        self.stockTradingTable.setItem(1, 2, __qtablewidgetitem35)
-        __qtablewidgetitem36 = QTableWidgetItem()
-        self.stockTradingTable.setItem(2, 0, __qtablewidgetitem36)
-        __qtablewidgetitem37 = QTableWidgetItem()
-        self.stockTradingTable.setItem(2, 1, __qtablewidgetitem37)
-        __qtablewidgetitem38 = QTableWidgetItem()
-        self.stockTradingTable.setItem(2, 2, __qtablewidgetitem38)
         self.stockTradingTable.setObjectName(u"stockTradingTable")
         sizePolicy3.setHeightForWidth(self.stockTradingTable.sizePolicy().hasHeightForWidth())
         self.stockTradingTable.setSizePolicy(sizePolicy3)
@@ -1699,40 +1770,59 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_15.addWidget(self.stockTradingTable)
 
+        self.layoutWidget1 = QWidget(self.stock_trading)
+        self.layoutWidget1.setObjectName(u"layoutWidget1")
+        self.layoutWidget1.setGeometry(QRect(10, 270, 258, 114))
+        self.verticalLayout_21 = QVBoxLayout(self.layoutWidget1)
+        self.verticalLayout_21.setObjectName(u"verticalLayout_21")
+        self.verticalLayout_21.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_6 = QHBoxLayout()
+        self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(9, 9, 9, 9)
+        self.stockTradingStrategyListLabel = QLabel(self.layoutWidget1)
+        self.stockTradingStrategyListLabel.setObjectName(u"stockTradingStrategyListLabel")
+        self.stockTradingStrategyListLabel.setFont(font5)
 
-        self.horizontalLayout_13.addWidget(self.stock_trading_display)
+        self.horizontalLayout_6.addWidget(self.stockTradingStrategyListLabel)
 
-        self.horizontalLayout_13.setStretch(0, 1)
-        self.horizontalLayout_13.setStretch(1, 1)
+        self.stockTradingStrategyListValue = QComboBox(self.layoutWidget1)
+        self.stockTradingStrategyListValue.setObjectName(u"stockTradingStrategyListValue")
 
-        self.verticalLayout_25.addLayout(self.horizontalLayout_13)
+        self.horizontalLayout_6.addWidget(self.stockTradingStrategyListValue)
 
-        self.verticalLayout_24 = QVBoxLayout()
-        self.verticalLayout_24.setObjectName(u"verticalLayout_24")
-        self.tableView = QTableView(self.stock_trading)
-        self.tableView.setObjectName(u"tableView")
+        self.verticalLayout_21.addLayout(self.horizontalLayout_6)
 
-        self.verticalLayout_24.addWidget(self.tableView)
+        self.horizontalLayout_7 = QHBoxLayout()
+        self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(9, 9, 9, 9)
+        self.stockTradingIntervalLabel = QLabel(self.layoutWidget1)
+        self.stockTradingIntervalLabel.setObjectName(u"stockTradingIntervalLabel")
 
+        self.horizontalLayout_7.addWidget(self.stockTradingIntervalLabel)
 
-        self.verticalLayout_25.addLayout(self.verticalLayout_24)
+        self.stockTradingIntervalValue = QComboBox(self.layoutWidget1)
+        self.stockTradingIntervalValue.setObjectName(u"stockTradingIntervalValue")
 
-        self.verticalLayout_25.setStretch(0, 1)
-        self.verticalLayout_25.setStretch(1, 5)
-        self.verticalLayout_25.setStretch(2, 5)
+        self.horizontalLayout_7.addWidget(self.stockTradingIntervalValue)
+
+        self.verticalLayout_21.addLayout(self.horizontalLayout_7)
+
         self.stackedWidget.addWidget(self.stock_trading)
+        self.stock_data = QWidget()
+        self.stock_data.setObjectName(u"stock_data")
+        self.stackedWidget.addWidget(self.stock_data)
         self.settings = QWidget()
         self.settings.setObjectName(u"settings")
-        self.layoutWidget = QWidget(self.settings)
-        self.layoutWidget.setObjectName(u"layoutWidget")
-        self.layoutWidget.setGeometry(QRect(10, 40, 471, 151))
-        self.verticalLayout_26 = QVBoxLayout(self.layoutWidget)
+        self.layoutWidget2 = QWidget(self.settings)
+        self.layoutWidget2.setObjectName(u"layoutWidget2")
+        self.layoutWidget2.setGeometry(QRect(10, 40, 471, 151))
+        self.verticalLayout_26 = QVBoxLayout(self.layoutWidget2)
         self.verticalLayout_26.setObjectName(u"verticalLayout_26")
         self.verticalLayout_26.setContentsMargins(0, 0, 0, 0)
         self.horizontalLayout_14 = QHBoxLayout()
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
         self.horizontalLayout_14.setContentsMargins(9, 9, 9, 9)
-        self.settingsConfigLabel = QLineEdit(self.layoutWidget)
+        self.settingsConfigLabel = QLineEdit(self.layoutWidget2)
         self.settingsConfigLabel.setObjectName(u"settingsConfigLabel")
         self.settingsConfigLabel.setMinimumSize(QSize(0, 30))
         self.settingsConfigLabel.setStyleSheet(u"background-color: rgb(33, 37, 43);")
@@ -1740,7 +1830,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_14.addWidget(self.settingsConfigLabel)
 
-        self.settingsConfigButton = QPushButton(self.layoutWidget)
+        self.settingsConfigButton = QPushButton(self.layoutWidget2)
         self.settingsConfigButton.setObjectName(u"settingsConfigButton")
         self.settingsConfigButton.setMinimumSize(QSize(150, 30))
         self.settingsConfigButton.setFont(font)
@@ -1758,7 +1848,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_16 = QHBoxLayout()
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
         self.horizontalLayout_16.setContentsMargins(9, 9, 9, 9)
-        self.settingsMapLabel = QLineEdit(self.layoutWidget)
+        self.settingsMapLabel = QLineEdit(self.layoutWidget2)
         self.settingsMapLabel.setObjectName(u"settingsMapLabel")
         self.settingsMapLabel.setMinimumSize(QSize(0, 30))
         self.settingsMapLabel.setStyleSheet(u"background-color: rgb(33, 37, 43);")
@@ -1766,7 +1856,7 @@ class Ui_MainWindow(object):
 
         self.horizontalLayout_16.addWidget(self.settingsMapLabel)
 
-        self.settingsMapButton = QPushButton(self.layoutWidget)
+        self.settingsMapButton = QPushButton(self.layoutWidget2)
         self.settingsMapButton.setObjectName(u"settingsMapButton")
         self.settingsMapButton.setMinimumSize(QSize(150, 30))
         self.settingsMapButton.setFont(font)
@@ -1888,12 +1978,8 @@ class Ui_MainWindow(object):
         self.creditsLabel = QLabel(self.bottomBar)
         self.creditsLabel.setObjectName(u"creditsLabel")
         self.creditsLabel.setMaximumSize(QSize(220, 16))
-        font6 = QFont()
-        font6.setFamily(u"Segoe UI")
-        font6.setBold(False)
-        font6.setItalic(False)
-        self.creditsLabel.setFont(font6)
-        self.creditsLabel.setAlignment(Qt.AlignLeading|Qt.AlignLeft|Qt.AlignVCenter)
+        self.creditsLabel.setFont(font)
+        self.creditsLabel.setAlignment(Qt.AlignLeading | Qt.AlignLeft | Qt.AlignVCenter)
 
         self.horizontalLayout_5.addWidget(self.creditsLabel)
 
@@ -1956,7 +2042,7 @@ class Ui_MainWindow(object):
 
         self.retranslateUi(MainWindow)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -1981,21 +2067,23 @@ class Ui_MainWindow(object):
         self.btn_share.setText(QCoreApplication.translate("MainWindow", u"Share", None))
         self.btn_adjustments.setText(QCoreApplication.translate("MainWindow", u"Adjustments", None))
         self.btn_more.setText(QCoreApplication.translate("MainWindow", u"More", None))
-        self.textEdit.setHtml(QCoreApplication.translate("MainWindow", u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
-"<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
-"p, li { white-space: pre-wrap; }\n"
-"</style></head><body style=\" font-family:'Segoe UI'; font-size:10pt; font-weight:400; font-style:normal;\">\n"
-"<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">FUTU ALGO</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; color:#ffffff;\">An Algorithmic Trading soltuion developed based on FutuOpenD and FutuOpenAPI, and can be used for backtesting, stock screening and high-frequency trading.</span></p>\n"
-"<p align=\"center\" style=\" margin-top:1"
-                        "2px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" color:#ffffff;\">Apache-2.0 License</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; color:#bd93f9;\">Created by: Bill Chan</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Author Info</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Website: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan.com</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-bl"
-                        "ock-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Email: </span><span style=\" font-size:9pt; color:#ffffff;\">billpwchan@hotmail.com</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">To Contribute</span></p>\n"
-"<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/billpwchan/futu_algo\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; text-decoration: underline; color:#ffffff;\">GitHub Repository</span></a></p></body></html>", None))
+        self.textEdit.setHtml(QCoreApplication.translate("MainWindow",
+                                                         u"<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+                                                         "<html><head><meta name=\"qrichtext\" content=\"1\" /><meta charset=\"utf-8\" /><style type=\"text/css\">\n"
+                                                         "p, li { white-space: pre-wrap; }\n"
+                                                         "</style></head><body style=\" font-family:'Segoe UI'; font-size:14px; font-weight:100; font-style:normal;\">\n"
+                                                         "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">FUTU ALGO</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; font-weight:400; color:#ffffff;\">An Algorithmic Trading soltuion developed based on FutuOpenD and FutuOpenAPI, and can be used for backtesting, stock screening and high-frequency trading.</span></p>\n"
+                                                         "<p align=\"center\" styl"
+                                                         "e=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:10pt; font-weight:400; color:#ffffff;\">Apache-2.0 License</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:400; color:#bd93f9;\">Created by: Bill Chan</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">Author Info</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Website: </span><span style=\" font-size:9pt; font-weight:400; color:#ffffff;\">billpwchan.com</span></p>\n"
+                                                         "<p align=\"center\" sty"
+                                                         "le=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:700; color:#ffffff;\">Email: </span><span style=\" font-size:9pt; font-weight:400; color:#ffffff;\">billpwchan@hotmail.com</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:12pt; font-weight:600; color:#ff79c6;\">To Contribute</span></p>\n"
+                                                         "<p align=\"center\" style=\" margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><a href=\"https://github.com/billpwchan/futu_algo\"><span style=\" font-family:'Microsoft JhengHei UI'; font-size:9pt; font-weight:400; text-decoration: underline; color:#ffffff;\">GitHub Repository</span></a></p></body></html>",
+                                                         None))
         self.titleRightInfo.setText(QCoreApplication.translate("MainWindow", u"FUTU ALGO - Your First Step to Algorithmic Trading", None))
 #if QT_CONFIG(tooltip)
         self.settingsTopBtn.setToolTip(QCoreApplication.translate("MainWindow", u"Settings", None))
@@ -2079,54 +2167,49 @@ class Ui_MainWindow(object):
         ___qtablewidgetitem23.setText(QCoreApplication.translate("MainWindow", u"Line", None));
         self.tableWidget.setSortingEnabled(__sortingEnabled)
 
-        self.stockTradingTitle.setText(QCoreApplication.translate("MainWindow", u"<html><head/><body><p><span style=\" font-size:18pt; font-weight:700; color:#aaaaff;\">HIGH-FREQUENCY TRADING PORTAL</span></p></body></html>", None))
-        self.label.setText(QCoreApplication.translate("MainWindow", u"Default Trading Strategy", None))
-        self.label_3.setText(QCoreApplication.translate("MainWindow", u"Default Trading Interval", None))
-        ___qtablewidgetitem24 = self.stockTradingTable.horizontalHeaderItem(0)
-        ___qtablewidgetitem24.setText(QCoreApplication.translate("MainWindow", u"Column 1", None));
-        ___qtablewidgetitem25 = self.stockTradingTable.horizontalHeaderItem(1)
-        ___qtablewidgetitem25.setText(QCoreApplication.translate("MainWindow", u"Column 2", None));
-        ___qtablewidgetitem26 = self.stockTradingTable.horizontalHeaderItem(2)
-        ___qtablewidgetitem26.setText(QCoreApplication.translate("MainWindow", u"Column 3", None));
-        ___qtablewidgetitem27 = self.stockTradingTable.verticalHeaderItem(0)
-        ___qtablewidgetitem27.setText(QCoreApplication.translate("MainWindow", u"Row 1", None));
-        ___qtablewidgetitem28 = self.stockTradingTable.verticalHeaderItem(1)
-        ___qtablewidgetitem28.setText(QCoreApplication.translate("MainWindow", u"Row 2", None));
-        ___qtablewidgetitem29 = self.stockTradingTable.verticalHeaderItem(2)
-        ___qtablewidgetitem29.setText(QCoreApplication.translate("MainWindow", u"Row 3", None));
-
-        __sortingEnabled1 = self.stockTradingTable.isSortingEnabled()
-        self.stockTradingTable.setSortingEnabled(False)
-        ___qtablewidgetitem30 = self.stockTradingTable.item(0, 0)
-        ___qtablewidgetitem30.setText(QCoreApplication.translate("MainWindow", u"1", None));
-        ___qtablewidgetitem31 = self.stockTradingTable.item(0, 1)
-        ___qtablewidgetitem31.setText(QCoreApplication.translate("MainWindow", u"2", None));
-        ___qtablewidgetitem32 = self.stockTradingTable.item(0, 2)
-        ___qtablewidgetitem32.setText(QCoreApplication.translate("MainWindow", u"3", None));
-        ___qtablewidgetitem33 = self.stockTradingTable.item(1, 0)
-        ___qtablewidgetitem33.setText(QCoreApplication.translate("MainWindow", u"4", None));
-        ___qtablewidgetitem34 = self.stockTradingTable.item(1, 1)
-        ___qtablewidgetitem34.setText(QCoreApplication.translate("MainWindow", u"5", None));
-        ___qtablewidgetitem35 = self.stockTradingTable.item(1, 2)
-        ___qtablewidgetitem35.setText(QCoreApplication.translate("MainWindow", u"6", None));
-        ___qtablewidgetitem36 = self.stockTradingTable.item(2, 0)
-        ___qtablewidgetitem36.setText(QCoreApplication.translate("MainWindow", u"7", None));
-        ___qtablewidgetitem37 = self.stockTradingTable.item(2, 1)
-        ___qtablewidgetitem37.setText(QCoreApplication.translate("MainWindow", u"8", None));
-        ___qtablewidgetitem38 = self.stockTradingTable.item(2, 2)
-        ___qtablewidgetitem38.setText(QCoreApplication.translate("MainWindow", u"9", None));
-        self.stockTradingTable.setSortingEnabled(__sortingEnabled1)
-
+        self.stockTradingBuyingPowerLabel.setText(QCoreApplication.translate("MainWindow", u"Buying Power", None))
+        self.stockTradingLMVValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingBuyingPowerValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingCashLabel.setText(QCoreApplication.translate("MainWindow", u"Cash", None))
+        self.stockTradingSecuritiesValueValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingShortSellPowerLabel.setText(
+            QCoreApplication.translate("MainWindow", u"Short Sell Power", None))
+        self.stockTradingNetAssetLabel.setText(QCoreApplication.translate("MainWindow", u"Net Asset (HKD)", None))
+        self.stockTradingShortSellPowerValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingSecuritiesValueLabel.setText(
+            QCoreApplication.translate("MainWindow", u"Securities Value", None))
+        self.stockTradingLMVLabel.setText(QCoreApplication.translate("MainWindow", u"LMV", None))
+        self.stockTradingAvailableBalanceValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingMaxWithdrawlLabel.setText(QCoreApplication.translate("MainWindow", u"Max Withdrawl", None))
+        self.stockTradingSMVLabel.setText(QCoreApplication.translate("MainWindow", u"SMV", None))
+        self.stockTradingCashValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingSMVValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingAvailableBalanceLabel.setText(
+            QCoreApplication.translate("MainWindow", u"Available Balance", None))
+        self.stockTradingMaxWithdrawlValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingNetAssetValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingPLLabel.setText(QCoreApplication.translate("MainWindow", u"Today's P/L", None))
+        self.stockTradingPLValue.setText(QCoreApplication.translate("MainWindow", u"0.0", None))
+        self.stockTradingTitle.setText(QCoreApplication.translate("MainWindow",
+                                                                  u"<html><head/><body><p><span style=\" font-size:18pt; font-weight:700; color:#aaaaff;\">HIGH-FREQUENCY TRADING PORTAL</span></p></body></html>",
+                                                                  None))
+        self.stockTradingStrategyListLabel.setText(
+            QCoreApplication.translate("MainWindow", u"Default Trading Strategy", None))
+        self.stockTradingIntervalLabel.setText(
+            QCoreApplication.translate("MainWindow", u"Default Trading Interval", None))
         self.settingsConfigLabel.setText("")
-        self.settingsConfigLabel.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select config.ini", None))
+        self.settingsConfigLabel.setPlaceholderText(
+            QCoreApplication.translate("MainWindow", u"Select config.ini", None))
         self.settingsConfigButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.settingsMapLabel.setText("")
-        self.settingsMapLabel.setPlaceholderText(QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
+        self.settingsMapLabel.setPlaceholderText(
+            QCoreApplication.translate("MainWindow", u"Select stock_strategy_map.yml", None))
         self.settingsMapButton.setText(QCoreApplication.translate("MainWindow", u"Open", None))
         self.btn_message.setText(QCoreApplication.translate("MainWindow", u"Message", None))
         self.btn_print.setText(QCoreApplication.translate("MainWindow", u"Print", None))
         self.btn_logout.setText(QCoreApplication.translate("MainWindow", u"Logout", None))
-        self.creditsLabel.setText(QCoreApplication.translate("MainWindow", u"By: Bill Chan <billpwchan@hotmail.com>", None))
+        self.creditsLabel.setText(
+            QCoreApplication.translate("MainWindow", u"By: Bill Chan <billpwchan@hotmail.com>", None))
         self.bottomBarGithubButton.setText("")
         self.bottomBarLinkedInButton.setText("")
         self.version.setText(QCoreApplication.translate("MainWindow", u"v1.0.0", None))

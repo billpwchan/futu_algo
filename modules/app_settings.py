@@ -4,7 +4,7 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-class Settings():
+class Settings:
     # APP SETTINGS
     ENABLE_CUSTOM_TITLE_BAR = True
     MENU_WIDTH = 240

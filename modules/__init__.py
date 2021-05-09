@@ -9,16 +9,10 @@ from PySide6.QtGui import *
 from PySide6.QtWidgets import *
 
 # GUI FILE
-from .ui_main import Ui_MainWindow
+from .ui_main import *
 
 # APP SETTINGS
-from .app_settings import Settings
-
-# IMPORT FUNCTIONS
-from .ui_functions import *
-
-# APP FUNCTIONS
-from .app_functions import *
+from .app_settings import *
 
 # SPLASH SCREEN
 from .ui_splash_screen import *
