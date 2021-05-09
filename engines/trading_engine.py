@@ -215,6 +215,36 @@ class FutuTrade:
 
         return output_list
 
+    def get_account_info(self) -> dict:
+        """
+        Query fund data such as net asset value, securities market value, cash, and purchasing power of trading accounts.
+        :return: dictionary for UI Info
+        """
+
+        self.__unlock_trade()
+
+        ret, data = self.trade_ctx.accinfo_query(trd_env=self.trd_env, acc_id=0, acc_index=0, refresh_cache=False,
+                                                 currency=Currency.HKD)
+        if ret == RET_OK:
+            self.default_logger.info(f"Received Account Info for Environment: {self.trd_env}")
+            # Retrieve the first row as the default account
+            data = data.iloc[0]
+            account_info = {
+                "Net Assets":         data["total_assets"],
+                "P/L":                data["realized_pl"],
+                "Securities Value":   data["market_val"],
+                "Cash":               data["cash"],
+                "Buying Power":       data["power"],
+                "Short Sell Power":   data["max_power_short"],
+                "LMV":                data["long_mv"],
+                "SMV":                data["short_mv"],
+                "Available Balance":  data["avl_withdrawal_cash"],
+                "Maximum Withdrawal": data["max_withdrawal"]
+            }
+            return {index: str(item) for index, item in account_info.items()}
+        else:
+            self.default_logger.error(f"Cannot Retrieve Account Info for {self.trd_env}")
+
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
         """
         Receive real-time K-Line data as initial technical indicators observations

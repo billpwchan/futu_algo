@@ -35,8 +35,16 @@ APP_TITLE = "FUTU ALGO - Trading Solution"
 APP_DESCRIPTION = "FUTU ALGO - Your First Step to Algorithmic Trading"
 APP_LOGO_SMALL = "./images/images/PyDracula.png"
 
-config = None
-stock_strategy_map = None
+# READ GLOBAL CONFIG FILE
+config = configparser.ConfigParser()
+config.read('config.ini')
+
+# READ GLOBAL STOCK STRATEGY MAP
+with open("stock_strategy_map.yml", 'r') as infile:
+    stock_strategy_map = yaml.safe_load(infile)
+
+# INITIATE FUTU_TRADE ENGINE
+futu_trade = trading_engine.FutuTrade()
 
 
 class SplashScreen(QMainWindow):
@@ -197,25 +205,24 @@ class MainWindow(QMainWindow):
         global config
         global stock_strategy_map
 
-        # Stock Trading ComboBox
+        # Stock Trading Strategy Config
         strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                          "__init__" not in file_name and "Strategies" not in file_name]
         self.ui.stockTradingStrategyListValue.clear()
         self.ui.stockTradingStrategyListValue.addItems(strategy_list)
 
-        # Stock Trading ComboBox
+        # Stock Trading Mapping Config
         time_interval_list = ["1M", "3M", "5M", "15M", "30M", "60M", "DAY", "WEEK", "MON", "QUARTER", "YEAR"]
         self.ui.stockTradingIntervalValue.clear()
         self.ui.stockTradingIntervalValue.addItems(time_interval_list)
 
-        # Stock Trading Table - Stock List
+        # Stock Trading Table - Stock List Display
         stock_list = json.loads(config.get('TradePreference', 'StockList'))
         if not stock_list:
             # Directly get list of stock codes from the data folder. Easier.
             stock_list = [str(f.path).replace('./data/', '') for f in os.scandir("./data/") if f.is_dir()]
             stock_list = stock_list[:-1]
 
-        # Stock Trading Clear Table
         self.ui.stockTradingTable.clearContents()
         self.ui.stockTradingTable.setRowCount(0)
 
@@ -236,6 +243,19 @@ class MainWindow(QMainWindow):
                     self.ui.stockTradingTable.setItem(row_number, column_number, QTableWidgetItem(stock[column_name]))
 
         self.ui.stockTradingTable.resizeColumnsToContents()
+
+        # Stock Trading Account Info Display
+        account_info = futu_trade.get_account_info()
+        self.ui.stockTradingNetAssetValue.setText(account_info['Net Assets'])
+        self.ui.stockTradingPLValue.setText(account_info['P/L'])
+        self.ui.stockTradingSecuritiesValueValue.setText(account_info['Securities Value'])
+        self.ui.stockTradingCashValue.setText(account_info['Cash'])
+        self.ui.stockTradingBuyingPowerValue.setText(account_info['Buying Power'])
+        self.ui.stockTradingShortSellPowerValue.setText(account_info['Short Sell Power'])
+        self.ui.stockTradingLMVValue.setText(account_info['LMV'])
+        self.ui.stockTradingSMVValue.setText(account_info['SMV'])
+        self.ui.stockTradingAvailableBalanceValue.setText(account_info['Available Balance'])
+        self.ui.stockTradingMaxWithdrawlValue.setText(account_info['Maximum Withdrawal'])
 
     def __setThemeHack(self):
         Settings.BTN_LEFT_BOX_COLOR = "background-color: #495474;"
@@ -338,7 +358,6 @@ class MainWindow(QMainWindow):
         if status == False:
             self.showMaximized()
             GLOBAL_STATE = True
-            self.ui.appMargins.setContentsMargins(0, 0, 0, 0)
             self.ui.maximizeRestoreAppBtn.setToolTip("Restore")
             self.ui.maximizeRestoreAppBtn.setIcon(QIcon(u":/icons/images/icons/icon_restore.png"))
             self.ui.frame_size_grip.hide()
@@ -350,7 +369,6 @@ class MainWindow(QMainWindow):
             GLOBAL_STATE = False
             self.showNormal()
             self.resize(self.width() + 1, self.height() + 1)
-            self.ui.appMargins.setContentsMargins(10, 10, 10, 10)
             self.ui.maximizeRestoreAppBtn.setToolTip("Maximize")
             self.ui.maximizeRestoreAppBtn.setIcon(QIcon(u":/icons/images/icons/icon_maximize.png"))
             self.ui.frame_size_grip.show()
