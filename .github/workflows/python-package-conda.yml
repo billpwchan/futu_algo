@@ -3,8 +3,8 @@ name: Python Package using Conda
 on: [push]
 
 jobs:
-  build-ubuntu:
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: window-latest
     strategy:
       max-parallel: 5
 
@@ -24,3 +24,6 @@ jobs:
     - name: Test with Python
       run: |
         python main_backend.py
+    - name: Build EXE file
+      run: |
+        python setup.py build
