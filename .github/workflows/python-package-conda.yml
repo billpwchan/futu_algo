@@ -20,7 +20,7 @@ jobs:
         echo $CONDA/bin >> $GITHUB_PATH
     - name: Install dependencies
       run: |
-        conda create --name futu_trade --file requirements.txt
+        conda env create -f environment.yml
     - name: Test with Python
       run: |
         python main_backend.py
