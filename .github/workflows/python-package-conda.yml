@@ -19,4 +19,5 @@ jobs:
           python-version: ${{ matrix.python-version }}
           conda-channels: anaconda, conda-forge
       - run: conda --version
-      - run: conda env update --name futu_trade --file environment.yml
+      - run: conda install pip -y
+      - run: conda install --file requirements.txt -y
