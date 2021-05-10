@@ -4,7 +4,7 @@ on: [push]
 
 defaults:
   run:
-    shell: bash
+    shell: cmd
     
 jobs:
   build:
