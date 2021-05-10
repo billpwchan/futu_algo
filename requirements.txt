@@ -21,6 +21,7 @@ html5lib=1.1=py_0
 humanize=3.5.0=pyhd3eb1b0_0
 idna=2.10=pyhd3eb1b0_0
 importlib-metadata=4.0.1=pypi_0
+importlib_metadata=3.10.0=hd3eb1b0_0
 intel-openmp=2021.2.0=haa95532_616
 jdcal=1.4.1=py_0
 joblib=1.0.0=pypi_0
@@ -47,6 +48,7 @@ pyopenssl=20.0.1=pyhd3eb1b0_1
 pypiwin32=223=pypi_0
 pyqt5-qt5=5.15.2=pypi_0
 pyqt5-sip=12.8.1=pypi_0
+pyqtgraph=0.12.1=pypi_0
 pyside6=6.0.3=pypi_0
 pysocks=1.7.1=py38haa95532_0
 python=3.8.8=hdbf39b2_5
@@ -58,7 +60,7 @@ requests=2.25.1=pyhd3eb1b0_0
 scikit-learn=0.24.1=pypi_0
 scipy=1.6.0=pypi_0
 seaborn=0.11.1=pypi_0
-setuptools=52.0.0=py38haa95532_0
+setuptools=56.2.0=pypi_0
 shiboken6=6.0.3=pypi_0
 simplejson=3.17.2=pypi_0
 six=1.15.0=py38haa95532_0
@@ -78,5 +80,7 @@ wheel=0.36.2=pyhd3eb1b0_0
 win_inet_pton=1.1.0=py38haa95532_0
 wincertstore=0.2=py38_0
 xlrd=2.0.1=pyhd3eb1b0_0
+yaml=0.2.5=he774522_0
 yarg=0.1.9=pypi_0
 yfinance=0.1.59=pypi_0
+zipp=3.4.1=pyhd3eb1b0_0

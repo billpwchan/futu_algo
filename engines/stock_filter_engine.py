@@ -3,21 +3,19 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-import configparser
 import json
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
-from engines import data_engine
-from engines.data_engine import HKEXInterface, YahooFinanceInterface
+from engines.data_engine import DatabaseInterface, HKEXInterface, YahooFinanceInterface
 from util import logger
+from util.global_vars import *
 
 
 class StockFilter:
     def __init__(self, stock_filters: list):
         self.default_logger = logger.get_logger("stock_filter")
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
+        self.config = config
         self.full_equity_list = HKEXInterface.get_equity_list_full()
         self.stock_filters = stock_filters
 
@@ -81,7 +79,7 @@ class StockFilter:
         #     filtered_stock_list.append(self.validate_stock_individual(stock_code))
 
         # Remove Redundant Records (If Exists)
-        database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+        database = DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
         database.delete_stock_pool_from_date(date.today().strftime("%Y-%m-%d"))
         database.commit()
         # Flatten Nested List

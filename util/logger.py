@@ -8,8 +8,11 @@ import datetime
 import logging
 import sys
 from logging.handlers import TimedRotatingFileHandler
+from pathlib import Path
 
 FORMATTER = logging.Formatter("%(asctime)s — %(name)s — %(levelname)s — %(message)s")
+
+Path("./log/").mkdir(parents=True, exist_ok=True)
 LOG_FILE = f"./log/futu_algo_{str(datetime.date.today())}.log"
 
 

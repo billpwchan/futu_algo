@@ -4,13 +4,13 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-import configparser
 import json
 
-from futu import StockQuoteHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv, RET_OK, RET_ERROR
+from futu import OpenHKTradeContext, OpenQuoteContext, RET_ERROR, RET_OK, StockQuoteHandlerBase, TrdEnv
 
 from engines.trading_util import TradingUtil
 from util import logger
+from util.global_vars import *
 
 
 class StockQuoteHandler(StockQuoteHandlerBase):
@@ -18,8 +18,7 @@ class StockQuoteHandler(StockQuoteHandlerBase):
                  strategy_map: dict = None, trd_env: TrdEnv = TrdEnv.SIMULATE):
         if strategy_map is None:
             strategy_map = {}
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
+        self.config = config
         self.default_logger = logger.get_logger('stock_quote')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx

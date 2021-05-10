@@ -5,7 +5,6 @@
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
 # the first step is always the same: import all necessary components:
-import configparser
 import smtplib
 import ssl
 from datetime import datetime
@@ -14,6 +13,7 @@ from email.mime.text import MIMEText
 from socket import gaierror
 
 from util import logger
+from util.global_vars import *
 
 
 class Email:
@@ -21,9 +21,7 @@ class Email:
         """
             Email Engine Constructor
         """
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
-
+        self.config = config
         self.port = self.config['Email'].get('Port')
         self.smtp_server = self.config['Email'].get('SmtpServer')
         self.sender = self.config['Email'].get('Sender')

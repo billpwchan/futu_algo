@@ -12,6 +12,7 @@ import yaml
 
 from engines import *
 from strategies.Strategies import Strategies
+from util.global_vars import *
 
 
 def __daily_update_filters():
@@ -152,13 +153,6 @@ def main():
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
     email_handler = email_engine.Email()
-
-    # Initialize Config Parser
-    config = configparser.ConfigParser()
-    config.read("config.ini")
-
-    with open('stock_strategy_map.yml', 'r') as infile:
-        stock_strategy_map = yaml.safe_load(infile)
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))

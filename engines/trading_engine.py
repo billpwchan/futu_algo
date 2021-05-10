@@ -4,7 +4,6 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
-import configparser
 import datetime
 import glob
 import itertools
@@ -17,6 +16,7 @@ from handlers.cur_kline_handler import CurKlineHandler
 from handlers.rt_data_handler import RTDataHandler
 from handlers.stock_quote_handler import StockQuoteHandler
 from util import logger
+from util.global_vars import *
 
 
 class FutuTrade:
@@ -24,8 +24,9 @@ class FutuTrade:
         """
             Futu Trading Engine Constructor
         """
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
+
+        self.config = config
+
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
         self.trade_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),

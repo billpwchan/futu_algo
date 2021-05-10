@@ -3,7 +3,6 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-import configparser
 import json
 import warnings
 from collections import ChainMap
@@ -15,6 +14,7 @@ import pandas as pd
 from engines.data_engine import DataProcessingInterface, HKEXInterface
 from strategies.Strategies import Strategies
 from util import logger
+from util.global_vars import *
 
 warnings.filterwarnings('ignore')
 
@@ -22,8 +22,7 @@ warnings.filterwarnings('ignore')
 class Backtesting:
     def __init__(self, stock_list: list, start_date: date, end_date: date, observation: int = 100):
         # Program-Related
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
+        self.config = config
         self.default_logger = logger.get_logger("backtesting")
 
         # Backtesting-Related

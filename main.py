@@ -4,25 +4,24 @@
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 
+
+from PySide6 import QtGui
+from PySide6.QtWidgets import QMessageBox
+import pyqtgraph as pg
+
+from engines import *
+from modules import *
+from widgets import *
+from util import *
+import webbrowser as webbrowser
+
 import configparser
 import glob
 import json
 import os
 import sys
 import platform
-
-# IMPORT / GUI AND MODULES AND WIDGETS
-
 from pathlib import Path
-
-import yaml
-from PySide6 import QtGui
-from PySide6.QtWidgets import QMessageBox
-
-from engines import *
-from modules import *
-from widgets import *
-import webbrowser as webbrowser
 
 # GLOBALS
 counter = 0
@@ -35,16 +34,10 @@ APP_TITLE = "FUTU ALGO - Trading Solution"
 APP_DESCRIPTION = "FUTU ALGO - Your First Step to Algorithmic Trading"
 APP_LOGO_SMALL = "./images/images/PyDracula.png"
 
-# READ GLOBAL CONFIG FILE
-config = configparser.ConfigParser()
-config.read('config.ini')
+# Initialization Connection
 
-# READ GLOBAL STOCK STRATEGY MAP
-with open("stock_strategy_map.yml", 'r') as infile:
-    stock_strategy_map = yaml.safe_load(infile)
-
-# INITIATE FUTU_TRADE ENGINE
 futu_trade = trading_engine.FutuTrade()
+email_handler = email_engine.Email()
 
 
 class SplashScreen(QMainWindow):
@@ -62,7 +55,8 @@ class SplashScreen(QMainWindow):
         self.progress.width = 270
         self.progress.height = 270
         self.progress.value = 0
-        self.progress.setFixedSize(self.progress.width, self.progress.height)
+        self.progress.setFixedWidth(self.progress.width)
+        self.progress.setFixedHeight(self.progress.height)
         self.progress.move(15, 15)
         self.progress.font_size = 40
         self.progress.add_shadow(True)
@@ -256,6 +250,10 @@ class MainWindow(QMainWindow):
         self.ui.stockTradingSMVValue.setText(account_info['SMV'])
         self.ui.stockTradingAvailableBalanceValue.setText(account_info['Available Balance'])
         self.ui.stockTradingMaxWithdrawlValue.setText(account_info['Maximum Withdrawal'])
+
+        # Stock Trading Chart
+        plot = pg.PlotWidget()
+        self.ui.stockTradingChart.addWidget(plot)
 
     def __setThemeHack(self):
         Settings.BTN_LEFT_BOX_COLOR = "background-color: #495474;"
@@ -603,6 +601,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon("icon.ico"))
+    app.setWindowIcon(QtGui.QIcon("icon.ico"))
     window = SplashScreen()
     sys.exit(app.exec_())

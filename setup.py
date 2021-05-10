@@ -7,15 +7,16 @@
 import sys
 import os
 from cx_Freeze import setup, Executable
-
+import pkg_resources
 # ADD FILES
-files = ['icon.ico', 'themes/']
+files = ['icon.ico', 'themes/', 'stock_strategy_map_template.yml', 'config_template.ini']
 
 # TARGET
 target = Executable(
     script="main.py",
     base="Win32GUI",
-    icon="icon.ico"
+    icon="icon.ico",
+    target_name="futu-algo.exe"
 )
 
 # SETUP CX FREEZE
@@ -27,5 +28,4 @@ setup(
     author_email='billpwchan@hotmail.com',
     options={'build_exe': {'include_files': files}},
     executables=[target]
-
 )

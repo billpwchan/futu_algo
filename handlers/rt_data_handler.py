@@ -11,6 +11,7 @@ from futu import RTDataHandlerBase, OpenQuoteContext, OpenHKTradeContext, TrdEnv
 
 from engines.trading_util import TradingUtil
 from util import logger
+from util.global_vars import *
 
 
 class RTDataHandler(RTDataHandlerBase):
@@ -18,8 +19,7 @@ class RTDataHandler(RTDataHandlerBase):
                  strategy_map: dict = None, trd_env: TrdEnv = TrdEnv.SIMULATE):
         if strategy_map is None:
             strategy_map = {}
-        self.config = configparser.ConfigParser()
-        self.config.read("config.ini")
+        self.config = config
         self.default_logger = logger.get_logger('rt_data')
         self.quote_ctx = quote_ctx
         self.trade_ctx = trade_ctx

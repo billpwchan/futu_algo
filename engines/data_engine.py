@@ -3,7 +3,6 @@
 #  Unauthorized copying of this file, via any medium is strictly prohibited
 #  Proprietary and confidential
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
-import configparser
 import csv
 import glob
 import json
@@ -20,10 +19,12 @@ import requests
 import yfinance as yf
 
 from util import logger
+from util.global_vars import *
 
 
 class DatabaseInterface:
     def __init__(self, database_path):
+        Path("./database/").mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(database_path)
         self.cur = self.conn.cursor()
 
@@ -67,8 +68,6 @@ class DatabaseInterface:
 
 
 class DataProcessingInterface:
-    config = configparser.ConfigParser()
-    config.read("config.ini")
     default_logger = logger.get_logger("data_processing")
 
     @staticmethod
@@ -118,15 +117,15 @@ class DataProcessingInterface:
             input_csv.index = pd.to_datetime(input_csv.index, infer_datetime_format=True)
             # Define Function List
             agg_list = {
-                "code": "first",
-                "open": "first",
-                "close": "last",
-                "high": "max",
-                "low": "min",
-                "pe_ratio": "last",
+                "code":          "first",
+                "open":          "first",
+                "close":         "last",
+                "high":          "max",
+                "low":           "min",
+                "pe_ratio":      "last",
                 "turnover_rate": "sum",
-                "volume": "sum",
-                "turnover": "sum",
+                "volume":        "sum",
+                "turnover":      "sum",
             }
             # Group from 09:31:00 with Freq = 5 Min
             minute_df = input_csv.groupby(pd.Grouper(freq=f'{custom_interval}Min', closed='left', offset='1min')).agg(
@@ -157,7 +156,7 @@ class DataProcessingInterface:
                 last_index = index
 
             minute_df.reset_index(inplace=True)
-            column_names = json.loads(DataProcessingInterface.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
+            column_names = json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
             minute_df = minute_df.reindex(columns=column_names)
 
             # Convert Timestamp type column to standard String format
@@ -246,15 +245,15 @@ class YahooFinanceInterface:
         output_dict = {}
         for stock_code in stock_list:
             stock_info = yf.Ticker(stock_code).info
-            output_dict[stock_code] = {'longName': stock_info.get('longName', 'N/A'),
-                                       'previousClose': f"{stock_info.get('currency', 'N/A')} {stock_info.get('previousClose', 'N/A')}",
-                                       'open': f"{stock_info.get('currency', 'N/A')} {stock_info.get('open', 'N/A')}",
-                                       'dayRange': f"{stock_info.get('currency', 'N/A')} {stock_info.get('dayLow', 'N/A')}-{stock_info.get('dayHigh', 'N/A')}",
-                                       'marketCap': f"{stock_info.get('currency', 'N/A')} {humanize.intword(stock_info.get('marketCap', 'N/A'))}",
-                                       'beta': f"{stock_info.get('beta', 'N/A')}",
-                                       'PE(Trailing/Forward)': f"{stock_info.get('trailingPE', 'N/A')} / {stock_info.get('forwardPE', 'N/A')}",
+            output_dict[stock_code] = {'longName':              stock_info.get('longName', 'N/A'),
+                                       'previousClose':         f"{stock_info.get('currency', 'N/A')} {stock_info.get('previousClose', 'N/A')}",
+                                       'open':                  f"{stock_info.get('currency', 'N/A')} {stock_info.get('open', 'N/A')}",
+                                       'dayRange':              f"{stock_info.get('currency', 'N/A')} {stock_info.get('dayLow', 'N/A')}-{stock_info.get('dayHigh', 'N/A')}",
+                                       'marketCap':             f"{stock_info.get('currency', 'N/A')} {humanize.intword(stock_info.get('marketCap', 'N/A'))}",
+                                       'beta':                  f"{stock_info.get('beta', 'N/A')}",
+                                       'PE(Trailing/Forward)':  f"{stock_info.get('trailingPE', 'N/A')} / {stock_info.get('forwardPE', 'N/A')}",
                                        'EPS(Trailing/Forward)': f"{stock_info.get('trailingEps', 'N/A')} / {stock_info.get('forwardEps', 'N/A')}",
-                                       'volume': humanize.intword(stock_info.get('volume', 'N/A'))}
+                                       'volume':                humanize.intword(stock_info.get('volume', 'N/A'))}
         return output_dict
 
     @staticmethod
@@ -319,7 +318,7 @@ class HKEXInterface:
         """
         input_csv = HKEXInterface.get_security_df_full()
         return [{"Stock Code": f'HK.{row["Stock Code"]}', "Name of Securities": row["Name of Securities"],
-                 "Board Lot": row["Board Lot"]} for index, row in
+                 "Board Lot":  row["Board Lot"]} for index, row in
                 input_csv[input_csv['Category'] == 'Equity'].iterrows()]
 
     @staticmethod
