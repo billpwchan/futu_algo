@@ -1,17 +1,13 @@
 name: Python Package using Conda
 
 on: [push]
-
-defaults:
-  run:
-    shell: cmd
     
 jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest]
+        os: [ubuntu-latest, windows-latest, macOS-latest]
         python-version: [3.6, 3.7, 3.8]
     name: Python ${{ matrix.python-version }} example
     steps:
@@ -24,4 +20,3 @@ jobs:
           conda-channels: anaconda, conda-forge
       - run: conda --version
       - run: conda install pip -y
-      - run: FOR /F "delims=~" %f in (requirements.txt) DO conda install --yes "%f" || pip install "%f"
