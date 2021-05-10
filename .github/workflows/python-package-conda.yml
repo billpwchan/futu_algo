@@ -3,23 +3,20 @@ name: Python Package using Conda
 on: [push]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build:
+    runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 5
-
+      matrix:
+        os: [windows-latest]
+        python-version: [3.6, 3.7, 3.8]
+    name: Python ${{ matrix.python-version }} example
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+      - name: Setup conda
+        uses: s-weigand/setup-conda@v1
         with:
-          python-version: 3.8
-      - name: Install dependencies
-        run: |
-          conda create --name futu_trade --file requirements.txt
-      - name: Test with Python
-        run: |
-          python main_backend.py
-      - name: Build EXE file
-        run: |
-          python setup.py build
+          update-conda: true
+          python-version: ${{ matrix.python-version }}
+          conda-channels: anaconda, conda-forge
+      - run: conda --version
+      - run: conda env create -f environment.yml
