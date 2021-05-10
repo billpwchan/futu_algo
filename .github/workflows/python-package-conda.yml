@@ -3,8 +3,8 @@ name: Python Package using Conda
 on: [push]
 
 jobs:
-  build-windows:
-    runs-on: windows-latest
+  build-ubuntu:
+    runs-on: ubuntu-latest
     strategy:
       max-parallel: 5
 
