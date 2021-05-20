@@ -1,7 +1,7 @@
 name: Python Package using Conda
 
 on: [push]
-
+    
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -19,4 +19,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           conda-channels: anaconda, conda-forge
       - run: conda --version
-      - run: conda env update --name futu_trade --file environment.yml
+      - run: conda install pip -y
