@@ -12,7 +12,7 @@ pyside6-rcc resources.qrc -o ./modules/resources_rc.py
 
 **Freeze Conda Environment**
 The best way to freeze the environment. Before freezing, better to clean unused packages in the environment.
-```python
+```bash
 conda clean --all --yes
 conda list -e > requirements.txt
 ```
@@ -20,6 +20,7 @@ conda list -e > requirements.txt
 **Freeze Required Dependencies**
 
 Update requirement.txt using the pipreqs library to generate pip-installed packages (NOT RECOMMENDED).
-```python
+
+```bash
 pipreqs ./ --encoding=utf-8 --force
 ```
