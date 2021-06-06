@@ -95,6 +95,8 @@ https://www.futunn.com/download/OpenAPI
 Please do make sure that you have at least a LV1 subscription level on your interested quotes. For details, please refer
 to https://openapi.futunn.com/futu-api-doc/qa/quote.html
 
+**MAKE SURE YOU LOGIN TO FUTU OPEND FIRST BEFORE STARTING FUTU_ALGO!**
+
 ### 3. Initialize SQLite Database
 
 Go to [SQLite official website](https://www.sqlite.org/quickstart.html) and follow the QuickStart instruction to install

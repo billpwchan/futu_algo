@@ -7,7 +7,10 @@
 import datetime
 import glob
 import itertools
+import platform
 from datetime import date
+from pathlib import Path
+import subprocess
 
 from futu import *
 
@@ -26,7 +29,7 @@ class FutuTrade:
         """
 
         self.config = config
-
+        self.__init_futu_client()
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
         self.trade_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
@@ -53,6 +56,13 @@ class FutuTrade:
         self.quote_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
         self.default_logger.info("Deleting Trade_CTX Connection")
         self.trade_ctx.close()  # 关闭当条连接，FutuOpenD会在1分钟后自动取消相应股票相应类型的订阅
+
+    def __init_futu_client(self):
+        os_type = platform.system()
+        if os_type == 'Windows':
+            home_dir = str(Path.home())
+            opend_dir = f'{home_dir}\AppData\Roaming\Futu\FutuOpenD\FutuOpenD.exe'
+            subprocess.Popen([opend_dir])
 
     def __unlock_trade(self):
         """
