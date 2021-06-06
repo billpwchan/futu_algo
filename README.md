@@ -1,13 +1,12 @@
 <div align="center">
-  <img alt="Billerikay Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/images/logo.png" width="400px" />
+  <img alt="FutuAlgo Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/images/logo.png" width="400px" />
 
 **billpwchan/futu-algo API Reference Documentation**
 
 [![Issues](https://img.shields.io/github/issues/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/issues)
 [![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
+[![Downloads](https://img.shields.io/github/downloads/billpwchan/futu_algo/total?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
 [![CommitActivity](https://img.shields.io/github/commit-activity/y/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/commits/master)
-[![WorkflowStatus](https://img.shields.io/github/workflow/status/billpwchan/futu_algo/CodeQL?style=for-the-badge)](https://github.com/billpwchan/futu_algo/commits/master)
 [![RepoSize](https://img.shields.io/github/repo-size/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
 [![Languages](https://img.shields.io/github/languages/top/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
 
