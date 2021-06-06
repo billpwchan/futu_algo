@@ -29,6 +29,7 @@ class FutuTrade:
         """
 
         self.config = config
+        self.default_logger = logger.get_logger("futu_trade")
         self.__init_futu_client()
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
@@ -38,7 +39,6 @@ class FutuTrade:
         # self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
         self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
-        self.default_logger = logger.get_logger("futu_trade")
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
 
         # Futu-Specific Variables
@@ -62,7 +62,10 @@ class FutuTrade:
         if os_type == 'Windows':
             home_dir = str(Path.home())
             opend_dir = f'{home_dir}\AppData\Roaming\Futu\FutuOpenD\FutuOpenD.exe'
-            subprocess.Popen([opend_dir])
+            try:
+                subprocess.Popen([opend_dir])
+            except FileNotFoundError:
+                self.default_logger.error("Cannot auto-start FutuOpenD due to missing OpenD client, Ignore.")
 
     def __unlock_trade(self):
         """
