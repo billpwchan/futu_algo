@@ -1,5 +1,5 @@
 <div align="center">
-  <img alt="Billerikay Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/images/logo.png" width="400px" />
+  <img alt="FutuAlgo Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/images/logo.png" width="400px" />
 
 **billpwchan/futu-algo API Reference Documentation**
 
