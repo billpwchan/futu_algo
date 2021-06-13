@@ -19,17 +19,13 @@
 import datetime
 import glob
 import itertools
-import platform
-from datetime import date
-from pathlib import Path
 import subprocess
+from datetime import date
 
 from futu import *
 
 from engines import data_engine
 from handlers.cur_kline_handler import CurKlineHandler
-from handlers.rt_data_handler import RTDataHandler
-from handlers.stock_quote_handler import StockQuoteHandler
 from util import logger
 from util.global_vars import *
 
@@ -148,29 +144,29 @@ class FutuTrade:
 
     def get_market_state(self):
         """
-                获取全局状态
+        获取全局状态
 
-                :return: (ret, data)
+        :return: (ret, data)
 
-                        ret == RET_OK data为包含全局状态的字典，含义如下
+                ret == RET_OK data为包含全局状态的字典，含义如下
 
-                        ret != RET_OK data为错误描述字符串
+                ret != RET_OK data为错误描述字符串
 
-                        =====================   ===========   ==============================================================
-                        key                      value类型                        说明
-                        =====================   ===========   ==============================================================
-                        market_sz               str            深圳市场状态，参见MarketState
-                        market_us               str            美国市场状态，参见MarketState
-                        market_sh               str            上海市场状态，参见MarketState
-                        market_hk               str            香港市场状态，参见MarketState
-                        market_hkfuture         str            香港期货市场状态，参见MarketState
-                        market_usfuture         str            美国期货市场状态，参见MarketState
-                        server_ver              str            FutuOpenD版本号
-                        trd_logined             str            '1'：已登录交易服务器，'0': 未登录交易服务器
-                        qot_logined             str            '1'：已登录行情服务器，'0': 未登录行情服务器
-                        timestamp               str            Futu后台服务器当前时间戳(秒)
-                        local_timestamp         double         FutuOpenD运行机器当前时间戳(
-                        =====================   ===========   ==============================================================
+                =====================   ===========   ==============================================================
+                key                      value类型                        说明
+                =====================   ===========   ==============================================================
+                market_sz               str            深圳市场状态，参见MarketState
+                market_us               str            美国市场状态，参见MarketState
+                market_sh               str            上海市场状态，参见MarketState
+                market_hk               str            香港市场状态，参见MarketState
+                market_hkfuture         str            香港期货市场状态，参见MarketState
+                market_usfuture         str            美国期货市场状态，参见MarketState
+                server_ver              str            FutuOpenD版本号
+                trd_logined             str            '1'：已登录交易服务器，'0': 未登录交易服务器
+                qot_logined             str            '1'：已登录行情服务器，'0': 未登录行情服务器
+                timestamp               str            Futu后台服务器当前时间戳(秒)
+                local_timestamp         double         FutuOpenD运行机器当前时间戳(
+                =====================   ===========   ==============================================================
         """
         return self.quote_ctx.get_global_state()
 
@@ -179,25 +175,24 @@ class FutuTrade:
         获取证券的关联数据
         :param code: 证券id，str，例如HK.00700
         :return: (ret, data)
+        ret == RET_OK 返回pd dataframe数据，数据列格式如下
 
-                ret == RET_OK 返回pd dataframe数据，数据列格式如下
-
-                ret != RET_OK 返回错误字符串
-                =======================   ===========   ==============================================================================
-                参数                        类型                        说明
-                =======================   ===========   ==============================================================================
-                code                        str           证券代码
-                lot_size                    int           每手数量
-                stock_type                  str           证券类型，参见SecurityType
-                stock_name                  str           证券名字
-                list_time                   str           上市时间（美股默认是美东时间，港股A股默认是北京时间）
-                wrt_valid                   bool          是否是窝轮，如果为True，下面wrt开头的字段有效
-                wrt_type                    str           窝轮类型，参见WrtType
-                wrt_code                    str           所属正股
-                future_valid                bool          是否是期货，如果为True，下面future开头的字段有效
-                future_main_contract        bool          是否主连合约（期货特有字段）
-                future_last_trade_time      string        最后交易时间（期货特有字段，非主连期货合约才有值）
-                =======================   ===========   ==============================================================================
+        ret != RET_OK 返回错误字符串
+        =======================   ===========   ==============================================================================
+        参数                        类型                        说明
+        =======================   ===========   ==============================================================================
+        code                        str           证券代码
+        lot_size                    int           每手数量
+        stock_type                  str           证券类型，参见SecurityType
+        stock_name                  str           证券名字
+        list_time                   str           上市时间（美股默认是美东时间，港股A股默认是北京时间）
+        wrt_valid                   bool          是否是窝轮，如果为True，下面wrt开头的字段有效
+        wrt_type                    str           窝轮类型，参见WrtType
+        wrt_code                    str           所属正股
+        future_valid                bool          是否是期货，如果为True，下面future开头的字段有效
+        future_main_contract        bool          是否主连合约（期货特有字段）
+        future_last_trade_time      string        最后交易时间（期货特有字段，非主连期货合约才有值）
+        =======================   ===========   ==============================================================================
         """
         output_df = pd.DataFrame()
         for security_reference_type in self.security_type_list:
@@ -421,42 +416,6 @@ class FutuTrade:
             input_csv = pd.read_csv(input_file, index_col=None)
             self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_WEEK)
-
-    def stock_quote_subscription(self, input_data: dict, stock_list: list, strategy_map: dict, timeout: int = 60):
-        """
-            实时报价回调，异步处理已订阅股票的实时报价推送。
-        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
-        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
-        :param strategy_map: Strategies defined in ./strategies class. Should be inherited from based class Strategies
-        :param timeout: Subscription Timeout in secs.
-        """
-        self.__unlock_trade()
-
-        # Stock Quote Handler
-        handler = StockQuoteHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
-                                    strategy_map=strategy_map, trd_env=self.trd_env)
-        self.quote_ctx.set_handler(handler)  # 设置实时报价回调
-        self.quote_ctx.subscribe(stock_list, [SubType.QUOTE, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
-                                 subscribe_push=True)  # 订阅实时报价类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)
-
-    def rt_data_subscription(self, input_data: dict, stock_list: list, strategy_map: dict, timeout: int = 60):
-        """
-            实时分时回调，异步处理已订阅股票的实时分时推送。
-        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
-        :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
-        :param strategy_map: Strategies defined in ./strategies class. Should be inherited from based class Strategies
-        :param timeout: Subscription Timeout in secs.
-        """
-        self.__unlock_trade()
-
-        # RT Data Handler
-        handler = RTDataHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
-                                strategy_map=strategy_map, trd_env=self.trd_env)
-        self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
-        self.quote_ctx.subscribe(stock_list, [SubType.RT_DATA, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
-                                 subscribe_push=True)  # 订阅分时类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)
 
     def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy_map: dict, timeout: int = 60,
                                subtype: SubType = SubType.K_1M):
