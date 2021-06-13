@@ -2,49 +2,49 @@ name: futu_trade
 channels:
   - defaults
 dependencies:
-  - beautifulsoup4=4.9.3
-  - blas=1.0
-  - brotlipy=0.7.0
-  - ca-certificates=2021.4.13
-  - certifi=2020.12.5
-  - cffi=1.14.5
-  - chardet=4.0.0
-  - cryptography=3.4.7
-  - et_xmlfile=1.0.1
-  - html5lib=1.1
-  - humanize=3.5.0
-  - idna=2.10
-  - importlib_metadata=3.10.0
-  - intel-openmp=2021.2.0
-  - jdcal=1.4.1
-  - mkl=2021.2.0
-  - mkl-service=2.3.0
-  - mkl_fft=1.3.0
-  - mkl_random=1.2.1
-  - numpy-base=1.20.1
-  - openpyxl=3.0.5
-  - openssl=1.1.1k
-  - pandas=1.2.0
-  - pycparser=2.20
-  - pyopenssl=20.0.1
-  - pysocks=1.7.1
-  - python=3.8.8
-  - python-dateutil=2.8.1
-  - pytz=2021.1
-  - requests=2.25.1
-  - six=1.15.0
-  - soupsieve=2.2.1
-  - sqlite=3.35.4
-  - urllib3=1.26.4
-  - vc=14.2
-  - vs2015_runtime=14.27.29016
-  - webencodings=0.5.1
-  - wheel=0.36.2
-  - win_inet_pton=1.1.0
-  - wincertstore=0.2
-  - xlrd=2.0.1
-  - yaml=0.2.5
-  - zipp=3.4.1
+  - beautifulsoup4=4.9.3=pyhb0f4dca_0
+  - blas=1.0=mkl
+  - brotlipy=0.7.0=py38h2bbff1b_1003
+  - ca-certificates=2021.4.13=haa95532_1
+  - certifi=2020.12.5=py38haa95532_0
+  - cffi=1.14.5=py38hcd4344a_0
+  - chardet=4.0.0=py38haa95532_1003
+  - cryptography=3.4.7=py38h71e12ea_0
+  - et_xmlfile=1.0.1=py_1001
+  - html5lib=1.1=py_0
+  - humanize=3.5.0=pyhd3eb1b0_0
+  - idna=2.10=pyhd3eb1b0_0
+  - importlib_metadata=3.10.0=hd3eb1b0_0
+  - intel-openmp=2021.2.0=haa95532_616
+  - jdcal=1.4.1=py_0
+  - mkl=2021.2.0=haa95532_296
+  - mkl-service=2.3.0=py38h2bbff1b_1
+  - mkl_fft=1.3.0=py38h277e83a_2
+  - mkl_random=1.2.1=py38hf11a4ad_2
+  - numpy-base=1.20.1=py38haf7ebc8_0
+  - openpyxl=3.0.5=py_0
+  - openssl=1.1.1k=h2bbff1b_0
+  - pandas=1.2.0=py38hf11a4ad_0
+  - pycparser=2.20=py_2
+  - pyopenssl=20.0.1=pyhd3eb1b0_1
+  - pysocks=1.7.1=py38haa95532_0
+  - python=3.8.8=hdbf39b2_5
+  - python-dateutil=2.8.1=pyhd3eb1b0_0
+  - pytz=2021.1=pyhd3eb1b0_0
+  - requests=2.25.1=pyhd3eb1b0_0
+  - six=1.15.0=py38haa95532_0
+  - soupsieve=2.2.1=pyhd3eb1b0_0
+  - sqlite=3.35.4=h2bbff1b_0
+  - urllib3=1.26.4=pyhd3eb1b0_0
+  - vc=14.2=h21ff451_1
+  - vs2015_runtime=14.27.29016=h5e58377_2
+  - webencodings=0.5.1=py38_1
+  - wheel=0.36.2=pyhd3eb1b0_0
+  - win_inet_pton=1.1.0=py38haa95532_0
+  - wincertstore=0.2=py38_0
+  - xlrd=2.0.1=pyhd3eb1b0_0
+  - yaml=0.2.5=he774522_0
+  - zipp=3.4.1=pyhd3eb1b0_0
   - pip:
       - backtesting==0.3.1
       - bokeh==2.3.0
@@ -86,3 +86,4 @@ dependencies:
       - typing-extensions==3.7.4.3
       - yarg==0.1.9
       - yfinance==0.1.59
+prefix: C:\Users\billpwchan\anaconda3\envs\futu_trade

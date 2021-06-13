@@ -103,7 +103,7 @@ class StockFilter:
             database.commit()
 
     def parse_stock_info(self, stock_code):
-        return (stock_code, YahooFinanceInterface.get_stock_info(stock_code))
+        return stock_code, YahooFinanceInterface.get_stock_info(stock_code)
 
     def update_stock_info(self):
         pool = Pool(cpu_count())

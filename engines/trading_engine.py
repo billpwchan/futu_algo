@@ -291,18 +291,19 @@ class FutuTrade:
                     self.default_logger.error(f'Cannot get Real-time K-line data: {data}')
         return input_data
 
-    def update_1M_data(self, stock_code: str, years=2, force_update: bool = False) -> None:
+    def update_1M_data(self, stock_code: str, years=2, force_update: bool = False, default_days: int = 30) -> None:
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
-        :param force_update:
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 2 years
+        :param default_days:
+        :param force_update:
         """
         column_names = json.loads(self.config.get('FutuOpenD.DataFormat', 'HistoryDataFormat'))
         history_df = pd.DataFrame(columns=column_names)
         # If force update, update all 2-years 1M data. Otherwise only update the last week's data
         start_date = str((datetime.today() - timedelta(days=round(365 * years))).date()) if force_update else str(
-            (datetime.today() - timedelta(days=30)).date())
+            (datetime.today() - timedelta(days=default_days)).date())
         end_date = str(datetime.today().date())
         # This will give a list of dates between 2-years range
         date_range = pd.date_range(start_date, end_date, freq='d').strftime("%Y-%m-%d").tolist()
