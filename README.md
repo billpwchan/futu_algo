@@ -117,11 +117,11 @@ Create a folder named 'database' in the root folder, and execute the SQLite DDL 
 
 For **Windows**:
 
-    python main_backend.py -u
+    python main_backend.py --force_update
 
 For **MacOS/Linux**:
 
-    python3 main_backend.py -u
+    python3 main_backend.py --force_update
 
 ### 4. Enjoy :smile:
 
@@ -131,7 +131,8 @@ Update all `K_1M` and `K_DAY` interval historical K-line data
 
     python main_backend.py -u   /   python main_backend.py --update
 
-**IMPORTANT NOTE:** This will not override existing historical data if the file exists.
+**IMPORTANT NOTE:** This will not override existing historical data if the file exists. The default number of days are
+80 (will be customizable in the future).
 
 If you want to refresh all data, use the following command instead (WITH CAUTION!)
 
@@ -148,6 +149,14 @@ Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 Execute Stock Filtering with Pre-defined Filtering Strategies
 
     python main_backend.py -f Volume_Threshold Price_Threshold   /   python main_backend.py --filter Volume_Threshold Price_Threshold
+
+## GUI Usages
+
+Start the GUI with `main.py` (**NOT FINISHED YET**)
+
+```commandline
+    python main.py
+```
 
 ## Future Plans
 
