@@ -118,14 +118,18 @@ def init_backtesting(strategy_name: str):
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
-                     stock_strategy_map: dict,
-                     subtype: SubType = SubType.K_5M):
-    input_data = futu_trade.get_data_realtime(stock_list, sub_type=subtype, kline_num=100)
-    # strategy_map = dict object {'HK.00001', MACD_Cross(), 'HK.00002', MACD_Cross()...}
-    strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_map.get(stock_code, strategy_name),
-                                                input_data=input_data) for stock_code in stock_list}
-    futu_trade.cur_kline_subscription(input_data, stock_list=stock_list, strategy_map=strategy_map, timeout=3600 * 12,
-                                      subtype=subtype)
+                     stock_strategy_map: dict, sub_type: SubType = SubType.K_5M):
+    # Subscribe to the stock list first
+    if futu_trade.kline_subscribe(stock_list, sub_type=sub_type):
+        # Subscription Success -> Get Real Time Data
+        input_data = futu_trade.get_data_realtime(stock_list, sub_type=sub_type, kline_num=100)
+        # strategy_map = dict object {'HK.00001', MACD_Cross(), 'HK.00002', MACD_Cross()...}
+        strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_map.get(stock_code, strategy_name),
+                                                    input_data=input_data) for stock_code in stock_list}
+        while True:
+            futu_trade.cur_kline_evalaute(stock_list=stock_list, strategy_map=strategy_map, sub_type=sub_type)
+    else:
+        exit(1)
 
 
 def init_stock_filter(filter_list: list) -> list:

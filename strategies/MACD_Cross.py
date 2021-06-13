@@ -35,7 +35,7 @@ class MACDCross(Strategies):
         super().__init__(input_data)
         self.parse_data()
 
-    def parse_data(self, latest_data: pd.DataFrame = None, backtesting: bool = False):
+    def parse_data(self, stock_list: list = None, latest_data: pd.DataFrame = None, backtesting: bool = False):
         # Received New Data => Parse it Now to input_data
         if latest_data is not None:
             # Only need to update MACD for the stock_code with new data
@@ -49,6 +49,9 @@ class MACDCross(Strategies):
             # Append empty columns and concat at the bottom
             latest_data = pd.concat([latest_data, pd.DataFrame(columns=['MACD', 'MACD_signal', 'MACD_hist'])])
             self.input_data[stock_list[0]] = self.input_data[stock_list[0]].append(latest_data)
+        elif stock_list is not None:
+            # Override Updated Stock List
+            stock_list = stock_list
         else:
             stock_list = self.input_data.keys()
 

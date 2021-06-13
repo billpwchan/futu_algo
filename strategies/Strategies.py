@@ -28,7 +28,15 @@ class Strategies(ABC):
         super().__init__()
 
     @abstractmethod
-    def parse_data(self, latest_data: pd.DataFrame, backtesting: bool):
+    def parse_data(self, stock_list: list, latest_data: pd.DataFrame, backtesting: bool):
+        """
+        Stock List for Retrieval Mode
+        Latest Data for Subscription Mode
+        Backtesting for Backtesting Mode
+        :param stock_list:
+        :param latest_data:
+        :param backtesting:
+        """
         pass
 
     @abstractmethod

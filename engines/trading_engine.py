@@ -24,8 +24,7 @@ from datetime import date
 
 from futu import *
 
-from engines import data_engine
-from handlers.cur_kline_handler import CurKlineHandler
+import engines
 from util import logger
 from util.global_vars import *
 
@@ -46,9 +45,10 @@ class FutuTrade:
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         # self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
-        self.futu_data = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
+        self.futu_data = engines.data_engine.DatabaseInterface(
+            database_path=self.config['Database'].get('Database_path'))
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
-
+        self.trading_util = engines.TradingUtil(self.quote_ctx, self.trade_ctx, self.trd_env)
         # Futu-Specific Variables
         self.market_list = [Market.HK, Market.US, Market.SH, Market.SZ, Market.HK_FUTURE, Market.SG, Market.JP]
         self.security_type_list = [SecurityType.BOND, SecurityType.BWRT, SecurityType.STOCK, SecurityType.WARRANT,
@@ -266,6 +266,11 @@ class FutuTrade:
         else:
             self.default_logger.error(f"Cannot Retrieve Account Info for {self.trd_env}")
 
+    def kline_subscribe(self, stock_list: list, sub_type: SubType = SubType.K_1M) -> bool:
+        ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type, SubType.ORDER_BOOK, SubType.BROKER],
+                                                        subscribe_push=False)
+        return ret_sub == RET_OK
+
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
         """
         Receive real-time K-Line data as initial technical indicators observations
@@ -276,14 +281,12 @@ class FutuTrade:
         :return: dictionary of k-line data
         """
         input_data = {}
-        ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type], subscribe_push=False)
         for stock_code in stock_list:
-            if ret_sub == RET_OK:  # 订阅成功
-                ret, data = self.quote_ctx.get_cur_kline(stock_code, kline_num, sub_type, AuType.QFQ)
-                if ret == RET_OK:
-                    input_data[stock_code] = input_data.get(stock_code, data)
-                else:
-                    self.default_logger.error(f'Cannot get Real-time K-line data: {data}')
+            ret, data = self.quote_ctx.get_cur_kline(stock_code, kline_num, sub_type, AuType.QFQ)
+            if ret == RET_OK:
+                input_data[stock_code] = input_data.get(stock_code, data)
+            else:
+                self.default_logger.error(f'Cannot get Real-time K-line data: {data}')
         return input_data
 
     def update_1M_data(self, stock_code: str, years=2, force_update: bool = False, default_days: int = 30) -> None:
@@ -417,26 +420,26 @@ class FutuTrade:
             self.default_logger.info(f'Saving to Database: {input_file}')
             self.__store_data_database(input_csv, k_type=KLType.K_WEEK)
 
-    def cur_kline_subscription(self, input_data: dict, stock_list: list, strategy_map: dict, timeout: int = 60,
-                               subtype: SubType = SubType.K_1M):
+    def cur_kline_evalaute(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
         """
-            实时 K 线回调，异步处理已订阅股票的实时 K 线推送。
+            Real-Time K-Line!
         :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy_map: Strategies defined in ./strategies class. Should be inherited from based class Strategies
         :param timeout: Subscription Timeout in secs.
-        :param subtype: Subscription SubType for FuTu (i.e., Trading Frequency)
+        :param sub_type: Subscription SubType for FuTu (i.e., Trading Frequency)
 
         """
         self.__unlock_trade()
 
-        # cur Kline Handler
-        handler = CurKlineHandler(quote_ctx=self.quote_ctx, trade_ctx=self.trade_ctx, input_data=input_data,
-                                  strategy_map=strategy_map, trd_env=self.trd_env)
-        self.quote_ctx.set_handler(handler)  # 设置实时分时推送回调
-        self.quote_ctx.subscribe(stock_list, [subtype, SubType.ORDER_BOOK, SubType.BROKER], is_first_push=True,
-                                 subscribe_push=True)  # 订阅K线数据类型，FutuOpenD开始持续收到服务器的推送
-        time.sleep(timeout)
+        input_data = self.get_data_realtime(stock_list, sub_type, 100)
+        for stock_code in stock_list:
+            strategy_map[stock_code].set_input_data_stock_code(stock_code, input_data[stock_code])
+            strategy_map[stock_code].parse_data(stock_list=[stock_code])
+            if strategy_map[stock_code].sell(stock_code=stock_code):
+                self.trading_util.place_sell_order(stock_code)
+            if strategy_map[stock_code].buy(stock_code=stock_code):
+                self.trading_util.place_buy_order(stock_code)
 
     def display_quota(self):
         """
