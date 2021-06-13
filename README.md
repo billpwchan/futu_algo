@@ -15,23 +15,37 @@
 
 ## Highlights
 
-- **Supported Platforms and Markets**: Futu_algo is a algorithmic trading solution developed based on FutuOpenD and
-  FutuOpenAPI. Fully support FutuNiuNiu and FutuMooMoo users in Hong Kong stock market. *(More market support is coming
-  soon)*
-- **Historical K-Line Data**: Allow users to automatically downloading historical data for your interested stocks into
-  CSV and storing to SQLite database for backtesting. *(up to 1M level for max. 2 years, or 1D level for max. 10 years)*
-- **Backtesting Trading Strategies (BETA)**: Backtest your own trading strategies on historical data with a summarized
-  reports and visualizations using Pyfolio. For more demanding users, feel free to other commercial solutions such as
-  Amibroker for backtesting.
-- **High-Frequency Trading**: Real-time low-latency trading features that allows applying your own basket of trading
-  strategies on your stock pool. User can specify the trading strategy to be used for each stock based on their
-  preference. *(up to 1M level)*
-- **Advanced Stock Screener**: Screens high-quality stocks using your own stock screening strategies, and notify your
-  friends using the email subscription feature.
-- **Trading Strategy Editor**: Write your own trading strategy following a simple template (buy, sell, calculate
-  technical indicators). Common strategies such as MACD and KDJ-based trading rules are provided as guidelines.
-- **GUI Support (Upcoming)**: Easy-to-use GUI for users to adjust their configurations, trading, downloading data and
-  filtering stocks within one application. No longer need to type any command for trading!
+- **Supported Platforms and Markets**
+
+  Futu_algo is a algorithmic trading solution developed based on FutuOpenD and FutuOpenAPI. Fully support FutuNiuNiu and
+  FutuMooMoo users in Hong Kong stock market. *(More market support is coming soon)*
+- **Historical K-Line Data**
+
+  Allow users to automatically downloading historical data for your interested stocks into CSV and storing to SQLite
+  database for backtesting. *(up to 1M level for max. 2 years, or 1D level for max. 10 years)*
+- **Backtesting Trading Strategies (BETA)**
+
+  Backtest your own trading strategies on historical data with a summarized reports and visualizations using Pyfolio.
+  For more demanding users, feel free to other commercial solutions such as Amibroker for backtesting.
+- **High-Frequency Trading**
+
+  Real-time low-latency trading features that allows applying your own basket of trading strategies on your stock pool.
+  User can specify the trading strategy to be used for each stock based on their preference.
+
+  ***EXAMPLE: 0.01s/STOCK TO DECIDE BUY/SELL ORDER WITH A 3-TECHNICAL INDICATORS STRATEGY (MACD, KDJ AND CLOSE PRICE)***
+
+- **Advanced Stock Screener**
+
+  Screens high-quality stocks using your own stock screening strategies, and notify your friends using the email
+  subscription feature.
+- **Trading Strategy Editor**
+
+  Write your own trading strategy following a simple template (buy, sell, calculate technical indicators). Common
+  strategies such as MACD and KDJ-based trading rules are provided as guidelines.
+- **GUI Support (Upcoming)**
+
+  Easy-to-use GUI for users to adjust their configurations, trading, downloading data and filtering stocks within one
+  application. No longer need to type any command for trading!
 
 ## Version Guidance
 
