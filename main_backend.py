@@ -137,18 +137,21 @@ def init_stock_filter(filter_list: list) -> list:
 def main():
     # Initialize Argument Parser
     parser = argparse.ArgumentParser()
+
+    # Data Related Arguments
     parser.add_argument("-u", "--update", help="Daily Update Data (Execute Before Market Starts)",
                         action="store_true")
     parser.add_argument("-fu", "--force_update",
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
     parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
 
-    # Retrieve file names for all strategies as the argument option
+    # Trading Related Arguments
     strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                      "__init__" not in file_name and "Strategies" not in file_name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute HFT using Pre-defined Strategy")
 
+    # Backtesting Related Arguments
     parser.add_argument("-b", "--backtesting", type=str, choices=strategy_list,
                         help="Backtesting a Pre-defined Strategy")
 

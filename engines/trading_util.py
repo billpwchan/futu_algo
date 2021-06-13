@@ -44,7 +44,7 @@ class TradingUtil:
 
         # Already Holds Position of the stock. No need to buy another share
         if not position_data.empty:
-            self.default_logger.warn(f"Account holds position for stock {stock_code}")
+            self.default_logger.warning(f"Account holds position for stock {stock_code}")
             return
 
         # Check if an order has already been made but not filled_completely
@@ -121,7 +121,7 @@ class TradingUtil:
 
         # Already Holds No Position of the stock. No need to SELL
         if position_data.empty:
-            self.default_logger.warn(f"Account does not hold any position for stock {stock_code}")
+            self.default_logger.warning(f"Account does not hold any position for stock {stock_code}")
             return
 
         # Check if an order has already been made but not filled_completely
