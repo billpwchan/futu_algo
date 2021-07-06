@@ -113,7 +113,7 @@ conda env export > environment.yml
 To update current environment with the latest dependencies, use the following command
 
 ```bash
-conda env update --name DeepTrust --file environment.yml --prune
+conda env update --name futu_trade --file environment.yml --prune
 ```
 
 ### 2. Install FutuOpenD
