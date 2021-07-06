@@ -100,7 +100,21 @@ SubscriptionList = ["account1@example.com", "account2@example.com"]
 
 Install using [conda](https://docs.conda.io/en/latest/):
 
-    conda create --name <env> --file requirements.txt
+```bash
+conda env create -f environment.yml
+```
+
+To export current environment, use the following command
+
+```bash
+conda env export > environment.yml
+```
+
+To update current environment with the latest dependencies, use the following command
+
+```bash
+conda env update --name DeepTrust --file environment.yml --prune
+```
 
 ### 2. Install FutuOpenD
 

@@ -72,9 +72,7 @@ dependencies:
       - pyside6==6.0.3
       - pyxlsb==1.0.7
       - pyyaml==5.4.1
-      - scikit-learn==0.24.1
       - scipy==1.6.0
-      - seaborn==0.11.1
       - setuptools==56.2.0
       - shiboken6==6.0.3
       - simplejson==3.17.2
@@ -86,4 +84,3 @@ dependencies:
       - typing-extensions==3.7.4.3
       - yarg==0.1.9
       - yfinance==0.1.59
-prefix: C:\Users\billpwchan\anaconda3\envs\futu_trade
