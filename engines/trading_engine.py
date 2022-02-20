@@ -22,6 +22,7 @@ import itertools
 import subprocess
 from datetime import date
 
+import psutil
 from deprecated import deprecated
 from futu import *
 
@@ -66,7 +67,7 @@ class FutuTrade:
 
     def __init_futu_client(self):
         os_type = platform.system()
-        if os_type == 'Windows':
+        if os_type == 'Windows' and 'FutuOpenD.exe' not in (p.name() for p in psutil.process_iter()):
             home_dir = str(Path.home())
             opend_dir = f'{home_dir}\AppData\Roaming\Futu\FutuOpenD\FutuOpenD.exe'
             try:
