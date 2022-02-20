@@ -164,3 +164,4 @@ cython_debug/
 !/filters/Triple_Cross.py
 
 /backtesting_report/
+/stock_filter_report/

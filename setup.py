@@ -22,7 +22,7 @@ from cx_Freeze import setup, Executable
 import pkg_resources
 
 # ADD FILES
-files = ['icon.ico', 'themes/', 'stock_strategy_map_template.yml', 'config_template.ini']
+files = ['images/icon.ico', 'themes/', 'stock_strategy_map_template.yml', 'config_template.ini']
 
 # TARGET
 target = Executable(

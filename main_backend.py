@@ -35,10 +35,10 @@ def __daily_update_filters():
 
 def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Daily Update Filtered Security
-    procs = []
-    proc = Process(target=__daily_update_filters)  # instantiating without any argument
-    procs.append(proc)
-    proc.start()
+    # procs = []
+    # proc = Process(target=__daily_update_filters)  # instantiating without any argument
+    # procs.append(proc)
+    # proc.start()
 
     # Daily Update Stock Info (Need to Rethink!!!)
     # stock_filter.update_stock_info()
@@ -57,16 +57,13 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
-        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=80)
-
-    # Daily Update FuTu Historical Data
-    # futu_trade.store_all_data_database()
+        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=365)
 
     # Clean non-trading days data
     DataProcessingInterface.clear_empty_data()
 
-    for proc in procs:
-        proc.join()
+    # for proc in procs:
+    #     proc.join()
 
 
 def __dynamic_instantiation(prefix: str, module_name: str, optional_parameter=None):
@@ -82,7 +79,7 @@ def __dynamic_instantiation(prefix: str, module_name: str, optional_parameter=No
 def __init_strategy(strategy_name: str, input_data: dict) -> Strategies:
     """
     Return a trading strategy instance using a strategy name in string.
-    :param strategy_name: an available strategy module name in the strategies folder
+    :param strategy_name: an available strategy module name in the strategies' folder
     :param input_data: Initialized input data for the strategy to calculate the technical indicator
     :return: a strategy instance
     """
@@ -147,7 +144,6 @@ def main():
                         action="store_true")
     parser.add_argument("-fu", "--force_update",
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
-    parser.add_argument("-d", "--database", help="Store All CSV Data to Database", action="store_true")
 
     # Trading Related Arguments
     strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
@@ -176,8 +172,6 @@ def main():
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
     if not stock_list:
-        # stock_list = data_engine.DatabaseInterface(
-        #     database_path=config.get('Database', 'Database_path')).get_stock_list()
         # Directly get list of stock codes from the data folder. Easier.
         stock_list = [str(f.path).replace('./data/', '') for f in os.scandir("./data/") if f.is_dir()]
         stock_list = stock_list[:-1]
@@ -192,14 +186,11 @@ def main():
     if args.update or args.force_update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
-    if args.database:
-        # Update ALl Data to Database
-        futu_trade.store_all_data_database()
     if args.strategy:
         # Stock Basket => 4 Parts
         # 1. Currently Holding Stocks (i.e., in the trading account with existing position)
         # 2. Filtered Stocks (i.e., based on 1D data if -f option is adopted
-        # 3. StockList in config.ini (i.e., if empty, default use all stocks in the database)
+        # 3. StockList in config.ini (i.e., if empty, default use all stocks in the data folder)
         # 4. Top 30 HSI Constituents
         if args.filter:
             stock_list.extend(filtered_stock_list)

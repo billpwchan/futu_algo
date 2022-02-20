@@ -612,6 +612,6 @@ class MainWindow(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon("icon.ico"))
+    app.setWindowIcon(QtGui.QIcon("images/icon.ico"))
     window = SplashScreen()
     sys.exit(app.exec_())

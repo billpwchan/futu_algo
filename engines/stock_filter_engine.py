@@ -20,7 +20,9 @@ import json
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
-from engines.data_engine import DatabaseInterface, HKEXInterface, YahooFinanceInterface
+import pandas as pd
+
+from engines.data_engine import HKEXInterface, YahooFinanceInterface
 from util import logger
 from util.global_vars import *
 
@@ -87,20 +89,16 @@ class StockFilter:
         filtered_stock_list = pool.map(self.validate_stock_individual, self.full_equity_list)
         pool.close()
         pool.join()
-        # filtered_stock_list = []
-        # for stock_code in self.full_equity_list:
-        #     filtered_stock_list.append(self.validate_stock_individual(stock_code))
 
-        # Remove Redundant Records (If Exists)
-        database = DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
-        database.delete_stock_pool_from_date(date.today().strftime("%Y-%m-%d"))
-        database.commit()
+        filtered_stock_df = pd.DataFrame([], columns=['filter', 'code'])
+
         # Flatten Nested List
         for sublist in filtered_stock_list:
             for record in sublist:
-                database.add_stock_pool(date.today().strftime("%Y-%m-%d"), record[0], record[1])
+                filtered_stock_df.append({'filter': record[0], 'code': record[1]})
                 self.default_logger.info(f"Added Filtered Stock {record[1]} based on Filter {record[0]}")
-            database.commit()
+        filtered_stock_df.to_csv(PATH_FILTER_REPORT / f'{date.today().strftime("%Y-%m-%d")}_stock_list', index=False,
+                                 encoding='utf-8-sig')
 
     def parse_stock_info(self, stock_code):
         return stock_code, YahooFinanceInterface.get_stock_info(stock_code)

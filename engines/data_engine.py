@@ -33,8 +33,10 @@ import yfinance as yf
 
 from util import logger
 from util.global_vars import *
+from deprecated import deprecated
 
 
+@deprecated(version='1.0', reason="Database dependency is removed.")
 class DatabaseInterface:
     def __init__(self, database_path):
         Path("./database/").mkdir(parents=True, exist_ok=True)

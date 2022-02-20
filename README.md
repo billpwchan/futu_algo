@@ -73,9 +73,6 @@ Password_md5 = <Futu Login Password Md5 Value>
 HistoryDataFormat = ["code","time_key","open","close","high","low","pe_ratio","turnover_rate","volume","turnover","change_rate","last_close"]
 SubscribedDataFormat = None
 
-[Database]
-Database_path = <Your SQLite Database File Path>
-
 [TradePreference]
 LotSizeMultiplier = <# of Stocks to Buy per Signal>
 MaxPercPerAsset = <Maximum % of Capital Allocated per Asset>
@@ -127,20 +124,6 @@ to https://openapi.futunn.com/futu-api-doc/qa/quote.html
 
 **MAKE SURE YOU LOGIN TO FUTU OPEND FIRST BEFORE STARTING FUTU_ALGO!**
 
-### 3. Initialize SQLite Database
-
-Go to [SQLite official website](https://www.sqlite.org/quickstart.html) and follow the QuickStart instruction to install
-SQLite tools in the device.
-
-Create a folder named 'database' in the root folder, and execute the SQLite DDL file stored in *./util/database_ddl.sql*
-.
-
-```
-./
-  ├── database
-  │       └── stock_data.sqlite
-```
-
 ### 4. Download Data (e.g. 1M Data for max. 2 Years)
 
 For **Windows**:
@@ -165,10 +148,6 @@ Update all `K_1M` and `K_DAY` interval historical K-line data
 If you want to refresh all data, use the following command instead (WITH CAUTION!)
 
     python main_backend.py -fu  /   python main_backend.py --force_update
-
-Store all data from CSV to SQLite Database *(Currently the database isn't used for any feature)*
-
-    python main_backend.py -d   /   python main_backend.py --database
 
 Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
 

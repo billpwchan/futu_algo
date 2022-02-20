@@ -22,6 +22,7 @@ import itertools
 import subprocess
 from datetime import date
 
+from deprecated import deprecated
 from futu import *
 
 import engines
@@ -45,8 +46,6 @@ class FutuTrade:
         self.username = self.config['FutuOpenD.Credential'].get('Username')
         # self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
-        self.futu_data = engines.data_engine.DatabaseInterface(
-            database_path=self.config['Database'].get('Database_path'))
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
         self.trading_util = engines.TradingUtil(self.quote_ctx, self.trade_ctx, self.trd_env)
         # Futu-Specific Variables
@@ -135,65 +134,10 @@ class FutuTrade:
                 time.sleep(1)
                 self.default_logger.error(f'Historical Data Store Error: {data}')
 
-    def __store_data_database(self, data, k_type):
-        for index, row in data.iterrows():
-            self.futu_data.add_stock_data(row['code'], row['time_key'], row['open'], row['close'], row['high'],
-                                          row['low'], row['pe_ratio'], row['turnover_rate'], row['volume'],
-                                          row['turnover'], row['change_rate'], row['last_close'], k_type)
-        self.futu_data.commit()
-
     def get_market_state(self):
-        """
-        获取全局状态
-
-        :return: (ret, data)
-
-                ret == RET_OK data为包含全局状态的字典，含义如下
-
-                ret != RET_OK data为错误描述字符串
-
-                =====================   ===========   ==============================================================
-                key                      value类型                        说明
-                =====================   ===========   ==============================================================
-                market_sz               str            深圳市场状态，参见MarketState
-                market_us               str            美国市场状态，参见MarketState
-                market_sh               str            上海市场状态，参见MarketState
-                market_hk               str            香港市场状态，参见MarketState
-                market_hkfuture         str            香港期货市场状态，参见MarketState
-                market_usfuture         str            美国期货市场状态，参见MarketState
-                server_ver              str            FutuOpenD版本号
-                trd_logined             str            '1'：已登录交易服务器，'0': 未登录交易服务器
-                qot_logined             str            '1'：已登录行情服务器，'0': 未登录行情服务器
-                timestamp               str            Futu后台服务器当前时间戳(秒)
-                local_timestamp         double         FutuOpenD运行机器当前时间戳(
-                =====================   ===========   ==============================================================
-        """
         return self.quote_ctx.get_global_state()
 
-    def get_referencestock_list(self, stock_code: str) -> pd.DataFrame:
-        """
-        获取证券的关联数据
-        :param code: 证券id，str，例如HK.00700
-        :return: (ret, data)
-        ret == RET_OK 返回pd dataframe数据，数据列格式如下
-
-        ret != RET_OK 返回错误字符串
-        =======================   ===========   ==============================================================================
-        参数                        类型                        说明
-        =======================   ===========   ==============================================================================
-        code                        str           证券代码
-        lot_size                    int           每手数量
-        stock_type                  str           证券类型，参见SecurityType
-        stock_name                  str           证券名字
-        list_time                   str           上市时间（美股默认是美东时间，港股A股默认是北京时间）
-        wrt_valid                   bool          是否是窝轮，如果为True，下面wrt开头的字段有效
-        wrt_type                    str           窝轮类型，参见WrtType
-        wrt_code                    str           所属正股
-        future_valid                bool          是否是期货，如果为True，下面future开头的字段有效
-        future_main_contract        bool          是否主连合约（期货特有字段）
-        future_last_trade_time      string        最后交易时间（期货特有字段，非主连期货合约才有值）
-        =======================   ===========   ==============================================================================
-        """
+    def get_reference_stock_list(self, stock_code: str) -> pd.DataFrame:
         output_df = pd.DataFrame()
         for security_reference_type in self.security_type_list:
             ret, data = self.quote_ctx.get_referencestock_list(stock_code, security_reference_type)
@@ -398,35 +342,11 @@ class FutuTrade:
         output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
-    def store_all_data_database(self):
-        """
-        Store all files in ./data/{stock_code}/*.csv to the database in pre-defined format.
-        """
-        file_list = glob.glob(f"./data/*/*_1M.csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Saving to Database: {input_file}')
-            self.__store_data_database(input_csv, k_type=KLType.K_1M)
-
-        file_list = glob.glob(f"./data/*/*_1D.csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Saving to Database: {input_file}')
-            self.__store_data_database(input_csv, k_type=KLType.K_DAY)
-
-        file_list = glob.glob(f"./data/*/*_1W.csv", recursive=True)
-        for input_file in file_list:
-            input_csv = pd.read_csv(input_file, index_col=None)
-            self.default_logger.info(f'Saving to Database: {input_file}')
-            self.__store_data_database(input_csv, k_type=KLType.K_WEEK)
-
     def cur_kline_evalaute(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
         """
             Real-Time K-Line!
-        :param input_data: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :param strategy_map: Strategies defined in ./strategies class. Should be inherited from based class Strategies
-        :param timeout: Subscription Timeout in secs.
         :param sub_type: Subscription SubType for FuTu (i.e., Trading Frequency)
 
         """
