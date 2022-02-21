@@ -14,7 +14,7 @@ pyside6-rcc resources.qrc -o ./modules/resources_rc.py
 The best way to freeze the environment. Before freezing, better to clean unused packages in the environment.
 ```bash
 conda clean --all --yes
-conda list -e > requirements.txt
+conda env export > environment.yml
 ```
 
 **Freeze Required Dependencies**

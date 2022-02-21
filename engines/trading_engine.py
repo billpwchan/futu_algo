@@ -68,8 +68,7 @@ class FutuTrade:
     def __init_futu_client(self):
         os_type = platform.system()
         if os_type == 'Windows' and 'FutuOpenD.exe' not in (p.name() for p in psutil.process_iter()):
-            home_dir = str(Path.home())
-            opend_dir = f'{home_dir}\AppData\Roaming\Futu\FutuOpenD\FutuOpenD.exe'
+            opend_dir = Path.home() / 'AppData' / 'Roaming' / 'Futu' / 'FutuOpenD' / 'FutuOpenD.exe'
             try:
                 subprocess.Popen([opend_dir])
             except FileNotFoundError:

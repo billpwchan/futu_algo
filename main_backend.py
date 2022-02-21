@@ -57,7 +57,7 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
-        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=365)
+        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=30)
 
     # Clean non-trading days data
     DataProcessingInterface.clear_empty_data()
