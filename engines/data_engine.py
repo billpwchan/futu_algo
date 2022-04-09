@@ -23,17 +23,16 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
-from pathlib import Path
 
 import humanize
 import openpyxl
 import pandas as pd
 import requests
 import yfinance as yf
+from deprecated import deprecated
 
 from util import logger
 from util.global_vars import *
-from deprecated import deprecated
 
 
 @deprecated(version='1.0', reason="Database dependency is removed.")
@@ -198,6 +197,11 @@ class DataProcessingInterface:
         pool.map(DataProcessingInterface.check_empty_data, file_list)
         pool.close()
         pool.join()
+
+    @staticmethod
+    def get_num_days_to_update(stock_code) -> int:
+        return (datetime.now() - datetime.fromtimestamp(
+            Path(max((PATH_DATA / stock_code).glob('*.csv'), key=os.path.getctime)).stat().st_mtime)).days
 
 
 class YahooFinanceInterface:

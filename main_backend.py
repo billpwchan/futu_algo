@@ -18,9 +18,6 @@
 
 import argparse
 import importlib
-from multiprocessing import Process
-
-import yaml
 
 from engines import *
 from strategies.Strategies import Strategies
@@ -53,17 +50,17 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Update basic information for all markets
     futu_trade.update_stock_basicinfo()
 
+    # Identify the last update date of the data
+    default_days = max([DataProcessingInterface.get_num_days_to_update(stock_code) for stock_code in stock_list])
+
     # Update historical k-line
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
-        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=30)
+        futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=default_days)
 
     # Clean non-trading days data
     DataProcessingInterface.clear_empty_data()
-
-    # for proc in procs:
-    #     proc.join()
 
 
 def __dynamic_instantiation(prefix: str, module_name: str, optional_parameter=None):
@@ -149,7 +146,7 @@ def main():
     strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
                      "__init__" not in file_name and "Strategies" not in file_name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
-                        help="Execute HFT using Pre-defined Strategy")
+                        help="Execute Algo Trade using Pre-defined Strategy (Stock-Strategy Map should be defined in stock_strategy_map.yml)")
 
     # Backtesting Related Arguments
     parser.add_argument("-b", "--backtesting", type=str, choices=strategy_list,
@@ -183,9 +180,11 @@ def main():
         for subscriber in subscription_list:
             filter_name = args.email_name if args.email_name else "Default Stock Filter"
             email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
+
     if args.update or args.force_update:
         # Daily Update Data
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
+
     if args.strategy:
         # Stock Basket => 4 Parts
         # 1. Currently Holding Stocks (i.e., in the trading account with existing position)
@@ -195,7 +194,9 @@ def main():
         if args.filter:
             stock_list.extend(filtered_stock_list)
         # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
-        init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
+        if futu_trade.is_normal_trading_time(stock_list=stock_list):
+            init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
+
     if args.backtesting:
         init_backtesting(args.backtesting)
 

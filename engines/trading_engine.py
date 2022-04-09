@@ -17,13 +17,11 @@
 
 
 import datetime
-import glob
 import itertools
 import subprocess
 from datetime import date
 
 import psutil
-from deprecated import deprecated
 from futu import *
 
 import engines
@@ -36,7 +34,6 @@ class FutuTrade:
         """
             Futu Trading Engine Constructor
         """
-
         self.config = config
         self.default_logger = logger.get_logger("futu_trade")
         self.__init_futu_client()
@@ -137,6 +134,30 @@ class FutuTrade:
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
 
+    def is_normal_trading_time(self, stock_list: list) -> bool:
+        '''
+        MarketState.MORNING            HK and A-share morning
+        MarketState.AFTERNOON          HK and A-share afternoon, US opening hours
+        MarketState.FUTURE_DAY_OPEN    HK, SG, JP futures day market open
+        MarketState.FUTURE_OPEN        US futures open
+        MarketState.NIGHT_OPEN         HK, SG, JP futures night market open
+        '''
+
+        ret, data = self.quote_ctx.get_market_state(stock_list)
+        if ret != RET_OK:
+            print('Get market state failed: ', data)
+            return False
+        market_state = data['market_state'][0]
+
+        if market_state == MarketState.MORNING or \
+                market_state == MarketState.AFTERNOON or \
+                market_state == MarketState.FUTURE_DAY_OPEN or \
+                market_state == MarketState.FUTURE_OPEN or \
+                market_state == MarketState.NIGHT_OPEN:
+            return True
+        self.default_logger.info('It is not regular trading hours.')
+        return False
+
     def get_reference_stock_list(self, stock_code: str) -> pd.DataFrame:
         output_df = pd.DataFrame()
         for security_reference_type in self.security_type_list:
@@ -213,6 +234,8 @@ class FutuTrade:
     def kline_subscribe(self, stock_list: list, sub_type: SubType = SubType.K_1M) -> bool:
         ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type, SubType.ORDER_BOOK, SubType.BROKER],
                                                         subscribe_push=False)
+        if ret_sub != RET_OK:
+            self.default_logger.error(f' Cannot subscribe to K-Line: {err_message}')
         return ret_sub == RET_OK
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
