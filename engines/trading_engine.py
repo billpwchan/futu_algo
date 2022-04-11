@@ -82,6 +82,16 @@ class FutuTrade:
             else:
                 raise Exception("Account Unlock Unsuccessful: {}".format(data))
 
+    @staticmethod
+    def __save_csv_to_file(data, output_path):
+        """
+        Save Data to CSV File
+        :param data: Data to Save
+        :param output_path: File Name to Save
+        :return: None
+        """
+        data.to_csv(output_path, index=False, encoding='utf-8-sig')
+
     def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
                                k_type: object = KLType, force_update: bool = False) -> bool:
         """
@@ -122,9 +132,8 @@ class FutuTrade:
                                                                            max_count=1000, page_req_key=None,
                                                                            extended_time=False)
             if ret == RET_OK:
-                data.to_csv(output_path, index=False, encoding='utf-8-sig')
+                self.__save_csv_to_file(data, output_path)
                 self.default_logger.info(f'Saved: {output_path}')
-                # self.__store_data_database(data, k_type=k_type)
                 return True
             else:
                 # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
@@ -145,7 +154,7 @@ class FutuTrade:
 
         ret, data = self.quote_ctx.get_market_state(stock_list)
         if ret != RET_OK:
-            print('Get market state failed: ', data)
+            self.default_logger.error('Get market state failed: ', data)
             return False
         market_state = data['market_state'][0]
 
@@ -155,7 +164,7 @@ class FutuTrade:
                 market_state == MarketState.FUTURE_OPEN or \
                 market_state == MarketState.NIGHT_OPEN:
             return True
-        self.default_logger.info('It is not regular trading hours.')
+        self.default_logger.error('It is not regular trading hours.')
         return False
 
     def get_reference_stock_list(self, stock_code: str) -> pd.DataFrame:
@@ -198,7 +207,6 @@ class FutuTrade:
                     break
             elif ret == RET_ERROR:
                 return []
-
         return output_list
 
     def get_account_info(self) -> dict:
@@ -311,7 +319,7 @@ class FutuTrade:
         for input_date in date_range:
             output_path = f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
-            output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
+            self.__save_csv_to_file(output_df, output_path)
             self.default_logger.info(f'Saved: {output_path}')
             # self.__store_data_database(output_df, k_type=KLType.K_1M)
 
@@ -347,7 +355,7 @@ class FutuTrade:
                 self.default_logger.error(f'Cannot get Owner Plate: {data}')
             time.sleep(3.5)
         output_path = './data/Stock_Pool/stock_owner_plate.csv'
-        output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
+        self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Owner Plate Updated: {output_path}')
 
     def update_stock_basicinfo(self):
@@ -360,9 +368,9 @@ class FutuTrade:
             if ret == RET_OK:
                 output_df = pd.concat([output_df, data], ignore_index=True)
             else:
-                self.default_logger.error(f'Cannot get Stock Basic Info: {data}')
+                self.default_logger.error(f'Cannot get Stock Basic Info of {market} - {stock_type}: {data}')
         output_path = './data/Stock_Pool/stock_basic_info.csv'
-        output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
+        self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
     def cur_kline_evalaute(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):

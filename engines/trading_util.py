@@ -32,6 +32,18 @@ class TradingUtil:
         self.status_filter_list = [OrderStatus.WAITING_SUBMIT,
                                    OrderStatus.SUBMITTING, OrderStatus.SUBMITTED, OrderStatus.FILLED_PART]
 
+    def get_holding_position(self, stock_code):
+        holding_position = 0
+        ret, data = self.trade_ctx.position_list_query(code=stock_code, trd_env=self.trd_env)
+        if ret != RET_OK:
+            self.default_logger.error('Get position list failed: ', data)
+            return None
+        else:
+            if data.shape[0] > 0:
+                holding_position = data['qty'][0]
+            print(f'[Position] The position of {stock_code} is {holding_position}')
+        return holding_position
+
     def place_buy_order(self, stock_code):
         ret_code, position_data = self.trade_ctx.position_list_query(code=stock_code, pl_ratio_min=None,
                                                                      pl_ratio_max=None,

@@ -18,6 +18,7 @@
 
 import argparse
 import importlib
+from math import ceil
 
 from engines import *
 from strategies.Strategies import Strategies
@@ -55,7 +56,8 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
 
     # Update historical k-line
     for stock_code in stock_list:
-        futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_DAY)
+        futu_trade.update_DW_data(stock_code, years=ceil(default_days / 365), force_update=force_update,
+                                  k_type=KLType.K_DAY)
         futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=default_days)
 
