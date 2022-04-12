@@ -25,6 +25,8 @@ PATH = Path.cwd()
 PATH_DATA = PATH / 'data'
 PATH_FILTER_REPORT = PATH / 'stock_filter_report'
 
+ORDER_RETRY_MAX = 3
+
 if not Path("config.ini").exists():
     raise SystemExit("Missing config.ini. Please use the config_template.ini to create your configuration.")
 

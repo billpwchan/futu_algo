@@ -58,7 +58,8 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     for stock_code in stock_list:
         futu_trade.update_DW_data(stock_code, years=ceil(default_days / 365), force_update=force_update,
                                   k_type=KLType.K_DAY)
-        futu_trade.update_DW_data(stock_code, force_update=force_update, k_type=KLType.K_WEEK)
+        futu_trade.update_DW_data(stock_code, years=ceil(default_days / 365), force_update=force_update,
+                                  k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=default_days)
 
     # Clean non-trading days data
@@ -123,7 +124,7 @@ def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, str
         strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_map.get(stock_code, strategy_name),
                                                     input_data=input_data) for stock_code in stock_list}
         while True:
-            futu_trade.cur_kline_evalaute(stock_list=stock_list, strategy_map=strategy_map, sub_type=sub_type)
+            futu_trade.cur_kline_evaluate(stock_list=stock_list, strategy_map=strategy_map, sub_type=sub_type)
     else:
         exit(1)
 

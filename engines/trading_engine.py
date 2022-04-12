@@ -45,7 +45,7 @@ class FutuTrade:
         # self.password = self.config['FutuOpenD.Credential'].get('Password')
         self.password_md5 = self.config['FutuOpenD.Credential'].get('Password_md5')
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
-        self.trading_util = engines.TradingUtil(self.quote_ctx, self.trade_ctx, self.trd_env)
+        self.trading_util = engines.OrderEngine(self.quote_ctx, self.trade_ctx, self.trd_env)
         # Futu-Specific Variables
         self.market_list = [Market.HK, Market.US, Market.SH, Market.SZ, Market.HK_FUTURE, Market.SG, Market.JP]
         self.security_type_list = [SecurityType.BOND, SecurityType.BWRT, SecurityType.STOCK, SecurityType.WARRANT,
@@ -373,7 +373,7 @@ class FutuTrade:
         self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
-    def cur_kline_evalaute(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
+    def cur_kline_evaluate(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
         """
             Real-Time K-Line!
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
