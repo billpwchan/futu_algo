@@ -156,13 +156,12 @@ class FutuTrade:
         if ret != RET_OK:
             self.default_logger.error('Get market state failed: ', data)
             return False
-        market_state = data['market_state'][0]
 
-        if market_state == MarketState.MORNING or \
-                market_state == MarketState.AFTERNOON or \
-                market_state == MarketState.FUTURE_DAY_OPEN or \
-                market_state == MarketState.FUTURE_OPEN or \
-                market_state == MarketState.NIGHT_OPEN:
+        if all(market_state == MarketState.MORNING or \
+               market_state == MarketState.AFTERNOON or \
+               market_state == MarketState.FUTURE_DAY_OPEN or \
+               market_state == MarketState.FUTURE_OPEN or \
+               market_state == MarketState.NIGHT_OPEN for market_state in data['market_state'].values.tolist()):
             return True
         self.default_logger.error('It is not regular trading hours.')
         return False
