@@ -115,7 +115,7 @@ def init_backtesting(strategy_name: str):
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
-                     stock_strategy_map: dict, sub_type: SubType = SubType.K_5M):
+                     stock_strategy_map: dict, sub_type: SubType = SubType.K_1M):
     # Subscribe to the stock list first
     if futu_trade.kline_subscribe(stock_list, sub_type=sub_type):
         # Subscription Success -> Get Real Time Data
@@ -196,6 +196,7 @@ def main():
         # 4. Top 30 HSI Constituents
         if args.filter:
             stock_list.extend(filtered_stock_list)
+        stock_list = stock_list[:150]
         # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         if futu_trade.is_normal_trading_time(stock_list=stock_list):
             init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)

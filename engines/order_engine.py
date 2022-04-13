@@ -159,7 +159,7 @@ class OrderEngine:
 
     def place_buy_order(self, stock_code):
         # If already holds position, skip this buy order
-        if self.get_holding_position(stock_code) > 0:
+        if self.get_holding_position_qty(stock_code) > 0:
             return
 
         # If Unfilled BUY ORDER is detected, no need to issue another BUY ORDER
@@ -190,7 +190,7 @@ class OrderEngine:
 
     def place_sell_order(self, stock_code):
         # If it does not hold any position, skip this sell order
-        if self.get_holding_position(stock_code) == 0:
+        if self.get_holding_position_qty(stock_code) == 0:
             return
 
         # If Unfilled SELL ORDER is detected, no need to issue another SELL ORDER

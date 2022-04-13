@@ -239,10 +239,12 @@ class FutuTrade:
             self.default_logger.error(f"Cannot Retrieve Account Info for {self.trd_env}")
 
     def kline_subscribe(self, stock_list: list, sub_type: SubType = SubType.K_1M) -> bool:
-        ret_sub, err_message = self.quote_ctx.subscribe(stock_list, [sub_type, SubType.ORDER_BOOK, SubType.BROKER],
-                                                        subscribe_push=False)
+        self.default_logger.info(f'Subscribing to {len(stock_list)} kline...')
+        # Maximum subscribe limit is 300
+        ret_sub, err_message = self.quote_ctx.subscribe(stock_list[:min(len(stock_list), 150)],
+                                                        [sub_type, SubType.ORDER_BOOK])
         if ret_sub != RET_OK:
-            self.default_logger.error(f' Cannot subscribe to K-Line: {err_message}')
+            self.default_logger.error(f'Cannot subscribe to K-Line: {err_message}')
         return ret_sub == RET_OK
 
     def get_data_realtime(self, stock_list: list, sub_type: SubType = SubType.K_1M, kline_num: int = 1000) -> dict:
