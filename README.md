@@ -113,6 +113,12 @@ To update current environment with the latest dependencies, use the following co
 conda env update --name futu_trade --file environment.yml --prune
 ```
 
+For GitHub Actions - with pip dependencies, use the following command
+
+```bash
+pip list --format=freeze > requirements.txt
+```
+
 ### 2. Install FutuOpenD
 
 For **Windows/MacOS/CentOS/Ubuntu**:
