@@ -29,14 +29,21 @@ PATH_FILTER_REPORT = PATH / 'stock_filter_report'
 ORDER_RETRY_MAX = 3
 
 if not Path("config.ini").exists():
-    raise SystemExit("Missing config.ini. Please use the config_template.ini to create your configuration.")
+    if not Path("config_template.ini").exists():
+        raise SystemExit("Missing config.ini. Please use the config_template.ini to create your configuration.")
+    else:
+        print("Please rename config_template.ini to config.ini and update it.")
 
 config = configparser.ConfigParser()
-config.read("config.ini")
+config.read("config.ini" if Path("config.ini").exists() else "config_template.ini")
 
 if not Path("stock_strategy_map.yml").exists():
-    raise SystemExit("Missing stock_strategy_map.yml. Please use the stock_strategy_map_template.yml to create your "
-                     "configuration.")
+    if not Path("stock_strategy_map_template.yml").exists():
+        raise SystemExit(
+            "Missing stock_strategy_map.yml. Please use the stock_strategy_map_template.yml to create your configuration.")
+    else:
+        print("Please rename stock_strategy_map_template.yml to stock_strategy_map.yml and update it.")
 
-with open('stock_strategy_map.yml', 'r') as infile:
+with open('stock_strategy_map.yml' if Path("stock_strategy_map.yml").exists()
+          else "stock_strategy_map_template.yml", 'r') as infile:
     stock_strategy_map = yaml.safe_load(infile)
