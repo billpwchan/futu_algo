@@ -138,7 +138,7 @@ class FutuTrade:
             else:
                 # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
                 time.sleep(1)
-                self.default_logger.error(f'Historical Data Store Error: {data}')
+                self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -292,7 +292,7 @@ class FutuTrade:
         if ret == RET_OK:
             history_df = pd.concat([history_df, data], ignore_index=True)
         else:
-            self.default_logger.error(f'Cannot get Historical K-line data: {data}')
+            self.default_logger.error(f'Cannot get Historical 1M K-line data: {data}')
             return
 
         # 请求后面的所有结果
@@ -312,8 +312,8 @@ class FutuTrade:
                     history_df = pd.concat([history_df, data], ignore_index=True)
                     break
                 else:
-                    self.default_logger.error(f'Cannot get Historical K-line data: {data}')
-                    # Revert back to previous page req key and re-try again
+                    self.default_logger.error(f'Cannot get Historical 1M K-line data: {data}')
+                    # Revert to previous page req key and re-try again
                     page_req_key = original_page_req_key
                     time.sleep(1)
 
@@ -322,7 +322,7 @@ class FutuTrade:
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
             self.__save_csv_to_file(output_df, output_path)
             self.default_logger.info(f'Saved: {output_path}')
-            # self.__store_data_database(output_df, k_type=KLType.K_1M)
+        time.sleep(0.5)
 
     def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
                        k_type: KLType = KLType.K_DAY) -> None:
