@@ -6,5 +6,4 @@ yfinance
 deprecated
 psutil
 futu-api
-yaml
 pyyaml
