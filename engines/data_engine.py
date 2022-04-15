@@ -92,7 +92,6 @@ class DataProcessingInterface:
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
         :return: Dictionary in Format {'HK.00001': pd.Dataframe, 'HK.00002': pd.Dataframe}
         """
-
         output_dict = {}
         for stock_code in stock_list:
             # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
@@ -113,6 +112,8 @@ class DataProcessingInterface:
     def get_custom_interval_data(target_date: datetime, custom_interval: int, stock_list: list) -> dict:
         """
             Get 5M/15M/Other Customized-Interval Data from CSV based on Stock List. Returned in Dict format
+            Supported Interval: 3M, 5M, 15M, 30M
+            Not-Supported Interval: 60M
         :param target_date: Date in DateTime Format (YYYY-MM-DD)
         :param custom_interval: Customized-Interval in unit of "Minutes"
         :param stock_list: A List of Stock Code with Format (e.g., [HK.00001, HK.00002])
@@ -146,8 +147,9 @@ class DataProcessingInterface:
                 "turnover":      "sum",
             }
             # Group from 09:31:00 with Freq = 5 Min
-            minute_df = input_csv.groupby(pd.Grouper(freq=f'{custom_interval}Min', closed='left', offset='1min')).agg(
-                agg_list)[1:]
+            minute_df = input_csv.groupby(
+                pd.Grouper(freq=f'{custom_interval}min', closed='left', offset='1min', origin='start')
+            ).agg(agg_list)[1:]
             # For 1min -> 5min, need to add Timedelta of 4min
             minute_df.index = minute_df.index + pd.Timedelta(minutes=int(custom_interval - 1))
             # Drop Lunch Time
@@ -178,7 +180,7 @@ class DataProcessingInterface:
             minute_df = minute_df.reindex(columns=column_names)
 
             # Convert Timestamp type column to standard String format
-            minute_df['time_key'] = minute_df['time_key'].dt.strftime('%Y-%m-%d  %H:%M:%S')
+            minute_df['time_key'] = minute_df['time_key'].dt.strftime('%Y-%m-%d %H:%M:%S')
             input_data[stock_code] = input_data.get(stock_code, minute_df)
         return input_data
 

@@ -93,8 +93,9 @@ def __init_filter(filter_list: list) -> list:
     :param filter_list: a list of filter names (in strings)
     :return: a list of filters
     """
+
     if "all" in filter_list:
-        filter_list = [Path(file_name).name[:-3] for file_name in glob.glob("./filters/*.py") if
+        filter_list = [Path(file_name).name[:-3] for file_name in PATH_FILTERS.rglob("*.py") if
                        "__init__" not in file_name and "Filters" not in file_name]
 
     return [__dynamic_instantiation(prefix="filters", module_name=filter_name) for filter_name in filter_list]
@@ -146,7 +147,7 @@ def main():
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
 
     # Trading Related Arguments
-    strategy_list = [Path(file_name).name[:-3] for file_name in glob.glob("./strategies/*.py") if
+    strategy_list = [file_name.name.name[:-3] for file_name in PATH_STRATEGIES.rglob("*.py") if
                      "__init__" not in file_name and "Strategies" not in file_name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute Algo Trade using Pre-defined Strategy (Stock-Strategy Map should be defined in stock_strategy_map.yml)")
@@ -156,7 +157,7 @@ def main():
                         help="Backtesting a Pre-defined Strategy")
 
     # Retrieve file names for all strategies as the argument option
-    filter_list = [Path(file_name).name[:-3] for file_name in glob.glob("./filters/*.py") if
+    filter_list = [file_name.name.name[:-3] for file_name in PATH_FILTERS.rglob("*.py") if
                    "__init__" not in file_name and "Filters" not in file_name]
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
