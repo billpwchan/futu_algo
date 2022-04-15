@@ -39,7 +39,7 @@ from util.global_vars import *
 @deprecated(version='1.0', reason="Database dependency is removed.")
 class DatabaseInterface:
     def __init__(self, database_path):
-        Path("./database/").mkdir(parents=True, exist_ok=True)
+        Path(PATH_DATABASE).mkdir(parents=True, exist_ok=True)
         self.conn = sqlite3.connect(database_path)
         self.cur = self.conn.cursor()
 
@@ -98,10 +98,12 @@ class DataProcessingInterface:
         for stock_code in stock_list:
             # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
             input_df = pd.concat(
-                [pd.read_csv(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv', index_col=None) for input_date in
-                 date_range if
-                 Path(f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').exists() and (not pd.read_csv(
-                     f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv').empty)],
+                [pd.read_csv(PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv',
+                             index_col=None)
+                 for input_date in date_range if
+                 Path(PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv').exists() and (
+                     not pd.read_csv(
+                         PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv').empty)],
                 ignore_index=True)
             input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
             input_df.sort_values(by='time_key', ascending=True, inplace=True)
@@ -120,7 +122,8 @@ class DataProcessingInterface:
 
         input_data = {}
         for stock_code in stock_list:
-            input_path = f'./data/{stock_code}/{stock_code}_{str(target_date)}_1M.csv'
+            input_path = PATH_DATA / stock_code / f'{stock_code}_{target_date.strftime("%Y-%m-%d")}_1M.csv'
+
             if not Path(input_path).exists():
                 continue
             input_csv = pd.read_csv(input_path, index_col=None)
@@ -193,9 +196,8 @@ class DataProcessingInterface:
 
     @staticmethod
     def clear_empty_data():
-        file_list = glob.glob(f"./data/*/*_1[DWM].csv", recursive=True)
         pool = Pool(cpu_count())
-        pool.map(DataProcessingInterface.check_empty_data, file_list)
+        pool.map(DataProcessingInterface.check_empty_data, PATH_DATA.rglob("*/*_1[DWM].csv"))
         pool.close()
         pool.join()
 
@@ -305,19 +307,19 @@ class HKEXInterface:
         """
         full_stock_list = "https://www.hkex.com.hk/eng/services/trading/securities/securitieslists/ListOfSecurities.xlsx"
         resp = requests.get(full_stock_list)
-        with open('./data/Stock_Pool/ListOfSecurities.xlsx', 'wb') as fp:
+        with open(PATH_DATA / 'Stock_Pool' / 'ListOfSecurities.xlsx', 'wb') as fp:
             fp.write(resp.content)
 
-        wb = openpyxl.load_workbook('./data/Stock_Pool/ListOfSecurities.xlsx')
+        wb = openpyxl.load_workbook(PATH_DATA / 'Stock_Pool' / 'ListOfSecurities.xlsx')
         sh = wb.active
-        with open('./data/Stock_Pool/ListOfSecurities.csv', 'w', newline="") as f:
+        with open(PATH_DATA / 'Stock_Pool' / 'ListOfSecurities.csv', 'w', newline="") as f:
             c = csv.writer(f)
             for r in sh.rows:
                 c.writerow([cell.value for cell in r])
 
     @staticmethod
     def get_security_df_full() -> pd.DataFrame:
-        input_csv = pd.read_csv('./data/Stock_Pool/ListOfSecurities.csv', index_col=None, skiprows=2,
+        input_csv = pd.read_csv(PATH_DATA / 'Stock_Pool' / 'ListOfSecurities.csv', index_col=None, skiprows=2,
                                 dtype={'Stock Code': str})
         input_csv.dropna(subset=['Stock Code'], inplace=True)
         input_csv.drop(input_csv.columns[-1], axis=1, inplace=True)

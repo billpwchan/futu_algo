@@ -23,6 +23,7 @@ import yaml
 
 PATH = Path.cwd()
 PATH_DATA = PATH / 'data'
+PATH_DATABASE = PATH / 'database'  # Obsoleted
 PATH_FILTER_REPORT = PATH / 'stock_filter_report'
 
 ORDER_RETRY_MAX = 3

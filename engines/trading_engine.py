@@ -102,13 +102,13 @@ class FutuTrade:
         :param k_type: FuTu KLType Object
         :return: bool
         """
-        out_dir = f'./data/{stock_code}'
+        out_dir = PATH_DATA / stock_code
         if not os.path.exists(out_dir):
             os.mkdir(out_dir)
         if k_type == KLType.K_DAY:
-            output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1D.csv'
+            output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1D.csv'
         elif k_type == KLType.K_WEEK:
-            output_path = f'./data/{stock_code}/{stock_code}_{start_date.year}_1W.csv'
+            output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1W.csv'
         else:
             self.default_logger.error(f'Unsupported KLType. Please try it later.')
             return False
@@ -318,7 +318,7 @@ class FutuTrade:
                     time.sleep(1)
 
         for input_date in date_range:
-            output_path = f'./data/{stock_code}/{stock_code}_{input_date}_1M.csv'
+            output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
             self.__save_csv_to_file(output_df, output_path)
             self.default_logger.info(f'Saved: {output_path}')
@@ -355,7 +355,7 @@ class FutuTrade:
             else:
                 self.default_logger.error(f'Cannot get Owner Plate: {data}')
             time.sleep(3.5)
-        output_path = './data/Stock_Pool/stock_owner_plate.csv'
+        output_path = PATH_DATA / 'Stock_Pool' / 'stock_owner_plate.csv'
         self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Owner Plate Updated: {output_path}')
 
@@ -370,7 +370,7 @@ class FutuTrade:
                 output_df = pd.concat([output_df, data], ignore_index=True)
             else:
                 self.default_logger.error(f'Cannot get Stock Basic Info of {market} - {stock_type}: {data}')
-        output_path = './data/Stock_Pool/stock_basic_info.csv'
+        output_path = PATH_DATA / 'Stock_Pool' / 'stock_basic_info.csv'
         self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
