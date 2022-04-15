@@ -20,6 +20,7 @@ import csv
 import glob
 import json
 import os
+import re
 import sqlite3
 from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
@@ -206,8 +207,21 @@ class DataProcessingInterface:
 
 class YahooFinanceInterface:
     @staticmethod
+    def __validate_stock_code(stock_list: list) -> list:
+        """
+            Check stock code format, and always return Yahoo Finance Stock Code format
+            Use Internally
+        :param stock_list: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
+        :return: Stock code list in Yahoo Finance format
+        """
+        return [YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
+                for stock_code in stock_list]
+
+    @staticmethod
     def get_top_30_hsi_constituents() -> list:
-        payload = pd.read_html('https://finance.yahoo.com/quote/%5EHSI/components/')[0]
+        r = requests.get('https://finance.yahoo.com/quote/%5EHSI/components/', headers={
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'})
+        payload = pd.read_html(r.text)[0]
         return [YahooFinanceInterface.yfinance_code_to_futu_code(stock_code) for stock_code in
                 payload['Symbol'].tolist()]
 
@@ -218,6 +232,7 @@ class YahooFinanceInterface:
             E.g., HK.09988 -> 9988.HK
         :param futu_code: Stock code used in Futu (e.g., HK.09988)
         """
+        assert re.match(r'^[A-Z]{2}.\d{5}$', futu_code)
         return '.'.join(reversed(futu_code.split('.')))[1:]
 
     @staticmethod
@@ -227,18 +242,8 @@ class YahooFinanceInterface:
             E.g., 9988.HK -> HK.09988
         :param yfinance_code: Stock code used in Yahoo Finance (e.g., 9988.HK)
         """
+        assert re.match(r'^\d{4}.[A-Z]{2}$', yfinance_code)
         return '.'.join(reversed(('0' + yfinance_code).split('.')))
-
-    @staticmethod
-    def __validate_stock_code(stock_list: list) -> list:
-        """
-            Check stock code format, and always return Yahoo Finance Stock Code format
-            Use Internally
-        :param stock_list: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
-        :return: Stock code list in Yahoo Finance format
-        """
-        return [YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
-                for stock_code in stock_list]
 
     @staticmethod
     def get_stocks_info(stock_list: list) -> dict:
@@ -280,8 +285,7 @@ class YahooFinanceInterface:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         return yf.download(stock_list, end=datetime.now().date().strftime("%Y-%m-%d"),
                            start=(datetime.today() - timedelta(days=365 * 30)).date().strftime("%Y-%m-%d"),
-                           group_by="ticker",
-                           auto_adjust=True, actions=True, progress=False)
+                           group_by="ticker", auto_adjust=True, actions=True, progress=False)
 
     @staticmethod
     def get_stock_history(stock_code: str) -> pd.DataFrame:

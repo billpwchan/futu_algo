@@ -1,4 +1,3 @@
-
 # GUI-Related Commands
 
 **Update Customized Images in GUI**
