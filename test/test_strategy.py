@@ -17,33 +17,77 @@
 
 
 import unittest
+import pandas as pd
+
+from strategies.MACD_Cross import MACDCross
+from util.global_vars import *
 
 
 class StrategyTestCase(unittest.TestCase):
-    # def setUp(self):
-    #     self.stock_code = 'HK.09988'
-    #     self.complete_data = pd.read_csv('./test/test_data/test_data.csv', index_col=None)
-    #     self.input_data = self.complete_data.iloc[:150, :]
-    #     self.test_data = self.complete_data.iloc[150:, :]
-    #     self.strategy = QuantLegendary({self.stock_code: self.input_data}, observation=150)
-    #
-    # def test_buy(self):
-    #     for index, row in self.test_data.iterrows():
-    #         latest_data = row.to_frame().transpose()
-    #         latest_data.reset_index(drop=True, inplace=True)
-    #         self.strategy.parse_data(latest_data=latest_data)
-    #         self.strategy.buy(self.stock_code)
-    #     self.assertEqual(True, True)
-    #
-    # def test_sell(self):
-    #     for index, row in self.test_data.iterrows():
-    #         latest_data = row.to_frame().transpose()
-    #         latest_data.reset_index(drop=True, inplace=True)
-    #         self.strategy.parse_data(latest_data=latest_data)
-    #         self.strategy.sell(self.stock_code)
-    #     self.assertEqual(True, True)
-    def test_buy(self):
+    def setUp(self):
+        self.stock_code = 'HK.09988'
+        self.preparation_date = '2022-04-12'
+        self.preparation_data = pd.read_csv(
+            PATH_DATA / self.stock_code / f'{self.stock_code}_{self.preparation_date}_1M.csv',
+            index_col=None)
+        self.target_date = '2022-04-13'
+        self.target_data = pd.read_csv(PATH_DATA / self.stock_code / f'{self.stock_code}_{self.target_date}_1M.csv',
+                                       index_col=None)
+
+    def test_MACD_Cross_calculation(self):
+        MACD_samples = {
+            '2022-04-13 15:30:00': {'MACD': -0.063, 'MACD_signal': -0.023, 'MACD_hist': -0.079},
+            '2022-04-13 16:00:00': {'MACD': 0.066, 'MACD_signal': -0.008, 'MACD_hist': 0.148}
+        }
+
+        strategy = MACDCross({self.stock_code: self.preparation_data},
+                             fast_period=12, slow_period=26, signal_period=9, observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            if row['time_key'] in MACD_samples.keys():
+                ta_calculations = strategy.get_input_data_stock_code(self.stock_code)
+                latest_row = ta_calculations.loc[ta_calculations['time_key'] == row['time_key']]
+                self.assertAlmostEqual(latest_row['MACD'].values[0], MACD_samples[row['time_key']]['MACD'],
+                                       delta=0.0006)
+                self.assertAlmostEqual(latest_row['MACD_signal'].values[0],
+                                       MACD_samples[row['time_key']]['MACD_signal'], delta=0.0006)
+                self.assertAlmostEqual(latest_row['MACD_hist'].values[0], MACD_samples[row['time_key']]['MACD_hist'],
+                                       delta=0.0006)
+
+    def test_MACD_Cross_buy(self):
+        buy_decision_keys = ['2022-04-13 11:59:00', ' 2022-04-13 13:32:00', '2022-04-13 13:54:00',
+                             '2022-04-13 14:17:00', '2022-04-13 14:52:00', '2022-04-13 15:14:00',
+                             '2022-04-13 15:18:00', '2022-04-13 15:45:00']
+
+        strategy = MACDCross({self.stock_code: self.preparation_data}, fast_period=12, slow_period=26, signal_period=9,
+                             observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            buy_decision = strategy.buy(self.stock_code)
+            if row['time_key'] in buy_decision_keys:
+                self.assertTrue(buy_decision)
+
         self.assertEqual(True, True)
+
+    # def test_sell(self):
+    #     input_data = self.target_data.iloc[:100, :]
+    #     test_data = self.target_data.iloc[100:, :]
+    #
+    #     strategy = MACDCross({self.stock_code: input_data}, fast_period=12, slow_period=26, signal_period=9,
+    #                          observation=100)
+    #
+    #     for index, row in test_data.iterrows():
+    #         latest_data = row.to_frame().transpose()
+    #         latest_data.reset_index(drop=True, inplace=True)
+    #         strategy.parse_data(latest_data=latest_data)
+    #         strategy.sell(self.stock_code)
+    #     self.assertEqual(True, True)
 
 
 if __name__ == '__main__':
