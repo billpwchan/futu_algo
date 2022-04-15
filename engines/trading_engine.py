@@ -318,7 +318,7 @@ class FutuTrade:
                     time.sleep(1)
 
         for input_date in date_range:
-            output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv'
+            output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
             self.__save_csv_to_file(output_df, output_path)
             self.default_logger.info(f'Saved: {output_path}')

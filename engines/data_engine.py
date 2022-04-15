@@ -98,12 +98,12 @@ class DataProcessingInterface:
         for stock_code in stock_list:
             # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
             input_df = pd.concat(
-                [pd.read_csv(PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv',
+                [pd.read_csv(PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv',
                              index_col=None)
                  for input_date in date_range if
-                 Path(PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv').exists() and (
+                 Path(PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv').exists() and (
                      not pd.read_csv(
-                         PATH_DATA / stock_code / f'{stock_code}_{input_date.strftime("%Y-%m-%d")}_1M.csv').empty)],
+                         PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv').empty)],
                 ignore_index=True)
             input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
             input_df.sort_values(by='time_key', ascending=True, inplace=True)
@@ -121,8 +121,9 @@ class DataProcessingInterface:
         """
 
         input_data = {}
+        target_date = target_date.strftime('%Y-%m-%d')
         for stock_code in stock_list:
-            input_path = PATH_DATA / stock_code / f'{stock_code}_{target_date.strftime("%Y-%m-%d")}_1M.csv'
+            input_path = PATH_DATA / stock_code / f'{stock_code}_{target_date}_1M.csv'
 
             if not Path(input_path).exists():
                 continue
