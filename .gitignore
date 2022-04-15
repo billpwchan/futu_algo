@@ -140,10 +140,14 @@ dmypy.json
 cython_debug/
 
 /.idea
-/data
-/config.ini
-/database
-/stock_strategy_map.yml
+/data/*/*.*
+!/data/HK.09988/HK.09988_2022-04-11_1M.csv
+!/data/HK.09988/HK.09988_2022-04-12_1M.csv
+!/data/HK.09988/HK.09988_2022-04-13_1M.csv
+!/data/HK.09988/HK.09988_2021_1D.csv
+!/data/HK.09988/HK.09988_2022_1W.csv
+config.ini
+stock_strategy_map.yml
 
 # Strategies
 /strategies/*
@@ -163,5 +167,5 @@ cython_debug/
 !/filters/Volume_Threshold.py
 !/filters/Triple_Cross.py
 
-/backtesting_report/
-/stock_filter_report/
+/backtesting_report/*
+/stock_filter_report/*
