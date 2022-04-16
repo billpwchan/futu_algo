@@ -147,18 +147,22 @@ def main():
                         help="Force Update All Data Up to Max. Allowed Years (USE WITH CAUTION)", action="store_true")
 
     # Trading Related Arguments
-    strategy_list = [file_name.name.name[:-3] for file_name in PATH_STRATEGIES.rglob("*.py") if
-                     "__init__" not in file_name and "Strategies" not in file_name]
+    strategy_list = [file_name.name[:-3] for file_name in PATH_STRATEGIES.rglob("*.py") if
+                     "__init__" not in file_name.name and "Strategies" not in file_name.name]
     parser.add_argument("-s", "--strategy", type=str, choices=strategy_list,
                         help="Execute Algo Trade using Pre-defined Strategy (Stock-Strategy Map should be defined in stock_strategy_map.yml)")
+    parser.add_argument("--include_hsi", help="Include HSI in the Stock List", action="store_true")
+    parser.add_argument("-t", "--time_interval", type=str,
+                        choices=["K_1M", "K_3M", "K_5M", "K_15M", "K_30M", "K_60M", "K_DAY", "K_WEEK", "K_MON",
+                                 "K_QUARTER", "K_YEAR"], default="K_1M")
 
     # Backtesting Related Arguments
     parser.add_argument("-b", "--backtesting", type=str, choices=strategy_list,
                         help="Backtesting a Pre-defined Strategy")
 
     # Retrieve file names for all strategies as the argument option
-    filter_list = [file_name.name.name[:-3] for file_name in PATH_FILTERS.rglob("*.py") if
-                   "__init__" not in file_name and "Filters" not in file_name]
+    filter_list = [file_name.name[:-3] for file_name in PATH_FILTERS.rglob("*.py") if
+                   "__init__" not in file_name.name and "Filters" not in file_name.name]
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
     parser.add_argument("-en", "--email_name", type=str, help="Name of the applied stock filtering techniques")
@@ -172,10 +176,10 @@ def main():
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
-    if not stock_list:
-        # Directly get list of stock codes from the data folder. Easier.
-        stock_list = [str(f.path).replace('./data/', '') for f in os.scandir("./data/") if f.is_dir()]
-        stock_list = stock_list[:-1]
+
+    # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
+    if args.include_hsi or not stock_list:
+        stock_list.extend(YahooFinanceInterface.get_top_30_hsi_constituents())
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
@@ -195,12 +199,10 @@ def main():
         # 2. Filtered Stocks (i.e., based on 1D data if -f option is adopted
         # 3. StockList in config.ini (i.e., if empty, default use all stocks in the data folder)
         # 4. Top 30 HSI Constituents
-        if args.filter:
-            stock_list.extend(filtered_stock_list)
-        stock_list = stock_list[:150]
+
         # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
         if futu_trade.is_normal_trading_time(stock_list=stock_list):
-            init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map)
+            init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map, sub_type=args.time_interval)
 
     if args.backtesting:
         init_backtesting(args.backtesting)

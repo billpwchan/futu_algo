@@ -176,4 +176,4 @@ stock_strategy_map.yml
 /stock_filter_report/*
 
 # Tests
-!/test/test_strategy_private.py
+/test/test_strategy_private.py
