@@ -23,6 +23,7 @@ import platform
 import subprocess
 import time
 from datetime import date, datetime, timedelta
+from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 import psutil
@@ -34,6 +35,7 @@ from futu import AccumulateFilter, AuType, Currency, KLType, KL_FIELD, Market, M
     SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv
 
 import engines
+from engines import HKEXInterface, YahooFinanceInterface
 from util import logger
 from util.global_vars import *
 
@@ -276,6 +278,7 @@ class FutuTrade:
     def update_1M_data(self, stock_code: str, years=2, force_update: bool = False, default_days: int = 30) -> None:
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
+            Assume today is 2022-04-17, the oldest data that can be downloaded is 2020-04-17
         :param stock_code: Stock Code with Format (e.g., HK.00001)
         :param years: 2 years
         :param default_days:
@@ -381,6 +384,23 @@ class FutuTrade:
         output_path = PATH_DATA / 'Stock_Pool' / 'stock_basic_info.csv'
         self.__save_csv_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
+
+    def update_stock_fundamentals(self):
+        """
+        Update stock fundamentals information for all equities in Hong Kong stock market.
+        """
+        pool = Pool(cpu_count())
+        output_list = pool.map(YahooFinanceInterface.parse_stock_info, HKEXInterface.get_equity_list_full())
+        pool.close()
+        pool.join()
+
+        output_dict = {}
+        for record in output_list:
+            output_dict[record[0]] = output_dict.get(record[0], record[1])
+            self.default_logger.info(f"Updated Stock Fundamentals for {record[0]}")
+
+        with open(PATH_DATA / 'Stock_Pool' / 'stock_fundamentals.json', 'w') as fp:
+            json.dump(output_dict, fp)
 
     def cur_kline_evaluate(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
         """

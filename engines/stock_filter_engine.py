@@ -16,7 +16,6 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 
 
-import json
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
@@ -97,22 +96,5 @@ class StockFilter:
             for record in sublist:
                 filtered_stock_df.append({'filter': record[0], 'code': record[1]})
                 self.default_logger.info(f"Added Filtered Stock {record[1]} based on Filter {record[0]}")
-        filtered_stock_df.to_csv(PATH_FILTER_REPORT / f'{date.today().strftime("%Y-%m-%d")}_stock_list', index=False,
-                                 encoding='utf-8-sig')
-
-    def parse_stock_info(self, stock_code):
-        return stock_code, YahooFinanceInterface.get_stock_info(stock_code)
-
-    def update_stock_info(self):
-        pool = Pool(cpu_count())
-        output_list = pool.map(self.parse_stock_info, self.full_equity_list)
-        pool.close()
-        pool.join()
-
-        output_dict = {}
-        for record in output_list:
-            output_dict[record[0]] = output_dict.get(record[0], record[1])
-            self.default_logger.info(f"Updated Stock Info for {record[0]}")
-
-        with open('./data/Stock_Pool/stock_info.json', 'w') as fp:
-            json.dump(output_dict, fp)
+        filtered_stock_df.to_csv(PATH_FILTER_REPORT / f'{date.today().strftime("%Y-%m-%d")}_stock_list.csv',
+                                 index=False, encoding='utf-8-sig')

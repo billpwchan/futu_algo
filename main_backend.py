@@ -38,11 +38,11 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # procs.append(proc)
     # proc.start()
 
-    # Daily Update Stock Info (Need to Rethink!!!)
-    # stock_filter.update_stock_info()
-
     # Daily Update HKEX Security List & Subscribed Data
     HKEXInterface.update_security_list_full()
+
+    # Daily Update Stock Fundamentals
+    futu_trade.update_stock_fundamentals()
 
     # Daily Update Owner Plate for all Stocks
     full_equity_list = HKEXInterface.get_equity_list_full()
