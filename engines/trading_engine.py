@@ -134,12 +134,12 @@ class FutuTrade:
         start_date = start_date.strftime("%Y-%m-%d")
         end_date = end_date.strftime("%Y-%m-%d") if end_date is not None else None
         while True:
-            ret, data = self.quote_ctx.request_history_kline(stock_code, start=start_date,
-                                                             end=end_date,
-                                                             ktype=k_type, autype=AuType.QFQ,
-                                                             fields=[KL_FIELD.ALL],
-                                                             max_count=1000, page_req_key=None,
-                                                             extended_time=False)
+            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
+                                                                           end=end_date,
+                                                                           ktype=k_type, autype=AuType.QFQ,
+                                                                           fields=[KL_FIELD.ALL],
+                                                                           max_count=1000, page_req_key=None,
+                                                                           extended_time=False)
             if ret == RET_OK:
                 self.__save_csv_to_file(data, output_path)
                 self.default_logger.info(f'Saved: {output_path}')
@@ -152,13 +152,13 @@ class FutuTrade:
         return self.quote_ctx.get_global_state()
 
     def is_normal_trading_time(self, stock_list: list) -> bool:
-        '''
+        """
         MarketState.MORNING            HK and A-share morning
         MarketState.AFTERNOON          HK and A-share afternoon, US opening hours
         MarketState.FUTURE_DAY_OPEN    HK, SG, JP futures day market open
         MarketState.FUTURE_OPEN        US futures open
         MarketState.NIGHT_OPEN         HK, SG, JP futures night market open
-        '''
+        """
 
         ret, data = self.quote_ctx.get_market_state(stock_list)
         if ret != RET_OK:
