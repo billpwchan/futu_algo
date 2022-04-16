@@ -49,7 +49,7 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     futu_trade.update_owner_plate(stock_list=full_equity_list)
 
     # Update basic information for all markets
-    futu_trade.update_stock_basicinfo()
+    # futu_trade.update_stock_basicinfo()
 
     # Identify the last update date of the data
     default_days = max([DataProcessingInterface.get_num_days_to_update(stock_code) for stock_code in stock_list])
