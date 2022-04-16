@@ -19,6 +19,7 @@
 import unittest
 import pandas as pd
 
+from strategies.KDJ_Cross import KDJCross
 from strategies.MACD_Cross import MACDCross
 from util.global_vars import *
 
@@ -78,6 +79,54 @@ class StrategyTestCase(unittest.TestCase):
 
         strategy = MACDCross({self.stock_code: self.preparation_data}, fast_period=12, slow_period=26, signal_period=9,
                              observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            sell_decision = strategy.sell(self.stock_code)
+            if row['time_key'] in sell_decision_keys:
+                self.assertTrue(sell_decision)
+
+    def test_KDJ_Cross_calculation(self):
+        KDJ_samples = {
+            '2022-04-13 15:00:00': {'%k': 52.524, '%d': 53.634, '%j': 50.303},
+            '2022-04-13 16:00:00': {'%k': 85.049, '%d': 74.249, '%j': 106.650}
+        }
+
+        strategy = KDJCross({self.stock_code: self.preparation_data}, fast_k=9, slow_k=3, slow_d=3, over_buy=80,
+                            over_sell=20, observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            if row['time_key'] in KDJ_samples.keys():
+                ta_calculations = strategy.get_input_data_stock_code(self.stock_code)
+                latest_row = ta_calculations.loc[ta_calculations['time_key'] == row['time_key']]
+                self.assertAlmostEqual(latest_row['%k'].values[0], KDJ_samples[row['time_key']]['%k'], delta=0.0006)
+                self.assertAlmostEqual(latest_row['%d'].values[0], KDJ_samples[row['time_key']]['%d'], delta=0.0006)
+                self.assertAlmostEqual(latest_row['%j'].values[0], KDJ_samples[row['time_key']]['%j'], delta=0.0006)
+
+    def test_KDJ_Cross_buy(self):
+        buy_decision_keys = ['2022-04-13 09:45:00', '2022-04-13 11:29:00']
+
+        strategy = KDJCross({self.stock_code: self.preparation_data}, fast_k=9, slow_k=3, slow_d=3, over_buy=80,
+                            over_sell=20, observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            buy_decision = strategy.buy(self.stock_code)
+            if row['time_key'] in buy_decision_keys:
+                self.assertTrue(buy_decision)
+
+    def test_KDJ_Cross_sell(self):
+        sell_decision_keys = ['2022-04-13 13:13:00', '2022-04-13 13:38:00']
+
+        strategy = KDJCross({self.stock_code: self.preparation_data}, fast_k=9, slow_k=3, slow_d=3, over_buy=80,
+                            over_sell=20, observation=100)
 
         for index, row in self.target_data.iterrows():
             latest_data = row.to_frame().transpose()
