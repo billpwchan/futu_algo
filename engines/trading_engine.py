@@ -16,13 +16,22 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 
 
-import datetime
 import itertools
+import json
+import os
+import platform
 import subprocess
-from datetime import date
+import time
+from datetime import date, datetime, timedelta
 
+import pandas as pd
 import psutil
-from futu import *
+from futu import AccumulateFilter, AuType, Currency, KLType, KL_FIELD, Market, MarketState, OpenHKTradeContext, \
+    OpenQuoteContext, \
+    RET_ERROR, RET_OK, \
+    SecurityReferenceType, \
+    SecurityType, \
+    SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv
 
 import engines
 from util import logger
@@ -125,20 +134,19 @@ class FutuTrade:
         start_date = start_date.strftime("%Y-%m-%d")
         end_date = end_date.strftime("%Y-%m-%d") if end_date is not None else None
         while True:
-            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
-                                                                           end=end_date,
-                                                                           ktype=k_type, autype=AuType.QFQ,
-                                                                           fields=[KL_FIELD.ALL],
-                                                                           max_count=1000, page_req_key=None,
-                                                                           extended_time=False)
+            ret, data = self.quote_ctx.request_history_kline(stock_code, start=start_date,
+                                                             end=end_date,
+                                                             ktype=k_type, autype=AuType.QFQ,
+                                                             fields=[KL_FIELD.ALL],
+                                                             max_count=1000, page_req_key=None,
+                                                             extended_time=False)
             if ret == RET_OK:
                 self.__save_csv_to_file(data, output_path)
                 self.default_logger.info(f'Saved: {output_path}')
                 return True
-            else:
-                # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
-                time.sleep(1)
-                self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
+            # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
+            time.sleep(1)
+            self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -415,5 +423,4 @@ class FutuTrade:
         if ret == RET_OK:
             self.default_logger.info(f'Trading Days: {data}')
             return data
-        else:
-            self.default_logger.error(f'error: {data}')
+        self.default_logger.error(f'error: {data}')

@@ -42,10 +42,10 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # stock_filter.update_stock_info()
 
     # Daily Update HKEX Security List & Subscribed Data
-    data_engine.HKEXInterface.update_security_list_full()
+    HKEXInterface.update_security_list_full()
 
     # Daily Update Owner Plate for all Stocks
-    full_equity_list = data_engine.HKEXInterface.get_equity_list_full()
+    full_equity_list = HKEXInterface.get_equity_list_full()
     futu_trade.update_owner_plate(stock_list=full_equity_list)
 
     # Update basic information for all markets
@@ -104,7 +104,7 @@ def __init_filter(filter_list: list) -> list:
 def init_backtesting(strategy_name: str):
     start_date = datetime(2019, 3, 20).date()
     end_date = datetime(2021, 3, 23).date()
-    stock_list = data_engine.YahooFinanceInterface.get_top_30_hsi_constituents()
+    stock_list = YahooFinanceInterface.get_top_30_hsi_constituents()
     bt = Backtesting(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
@@ -200,7 +200,7 @@ def main():
         # 3. StockList in config.ini (i.e., if empty, default use all stocks in the data folder)
         # 4. Top 30 HSI Constituents
 
-        # stock_list.extend(data_engine.YahooFinanceInterface.get_top_30_hsi_constituents())
+        # stock_list.extend(YahooFinanceInterface.get_top_30_hsi_constituents())
         if futu_trade.is_normal_trading_time(stock_list=stock_list):
             init_day_trading(futu_trade, stock_list, args.strategy, stock_strategy_map, sub_type=args.time_interval)
 
