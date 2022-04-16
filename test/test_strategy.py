@@ -58,8 +58,8 @@ class StrategyTestCase(unittest.TestCase):
                                        delta=0.0006)
 
     def test_MACD_Cross_buy(self):
-        buy_decision_keys = ['2022-04-13 11:59:00', ' 2022-04-13 13:32:00', '2022-04-13 13:54:00',
-                             '2022-04-13 14:17:00', '2022-04-13 14:52:00', '2022-04-13 15:14:00',
+        buy_decision_keys = ['2022-04-13 09:52:00', '2022-04-13 11:59:00', ' 2022-04-13 13:32:00',
+                             '2022-04-13 13:54:00', '2022-04-13 14:17:00', '2022-04-13 14:52:00', '2022-04-13 15:14:00',
                              '2022-04-13 15:18:00', '2022-04-13 15:45:00']
 
         strategy = MACDCross({self.stock_code: self.preparation_data}, fast_period=12, slow_period=26, signal_period=9,
@@ -73,22 +73,21 @@ class StrategyTestCase(unittest.TestCase):
             if row['time_key'] in buy_decision_keys:
                 self.assertTrue(buy_decision)
 
-        self.assertEqual(True, True)
+    def test_MACD_Cross_sell(self):
+        sell_decision_keys = ['2022-04-13 09:34:00', '2022-04-13 11:16:00']
 
-    # def test_sell(self):
-    #     input_data = self.target_data.iloc[:100, :]
-    #     test_data = self.target_data.iloc[100:, :]
-    #
-    #     strategy = MACDCross({self.stock_code: input_data}, fast_period=12, slow_period=26, signal_period=9,
-    #                          observation=100)
-    #
-    #     for index, row in test_data.iterrows():
-    #         latest_data = row.to_frame().transpose()
-    #         latest_data.reset_index(drop=True, inplace=True)
-    #         strategy.parse_data(latest_data=latest_data)
-    #         strategy.sell(self.stock_code)
-    #     self.assertEqual(True, True)
+        strategy = MACDCross({self.stock_code: self.preparation_data}, fast_period=12, slow_period=26, signal_period=9,
+                             observation=100)
+
+        for index, row in self.target_data.iterrows():
+            latest_data = row.to_frame().transpose()
+            latest_data.reset_index(drop=True, inplace=True)
+            strategy.parse_data(latest_data=latest_data)
+            sell_decision = strategy.sell(self.stock_code)
+            if row['time_key'] in sell_decision_keys:
+                self.assertTrue(sell_decision)
 
 
 if __name__ == '__main__':
-    unittest.main()
+    suite = (unittest.TestLoader().loadTestsFromTestCase(StrategyTestCase))
+    unittest.TextTestRunner(verbosity=2).run(suite)

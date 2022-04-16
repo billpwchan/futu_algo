@@ -99,4 +99,5 @@ class MACDCross(Strategies):
         if sell_decision:
             self.default_logger.info(
                 f"Sell Decision: {current_record['time_key']} based on \n {pd.concat([previous_record.to_frame().transpose(), current_record.to_frame().transpose()], axis=0)}")
+
         return sell_decision
