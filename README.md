@@ -27,7 +27,7 @@
 
   Backtest your own trading strategies on historical data with a summarized reports and visualizations using Pyfolio.
   For more demanding users, feel free to other commercial solutions such as Amibroker for backtesting.
-- **High-Frequency Trading**
+- **Algorithmic Trading**
 
   Real-time low-latency trading features that allows applying your own basket of trading strategies on your stock pool.
   User can specify the trading strategy to be used for each stock based on their preference.
@@ -51,7 +51,7 @@
 
 | FutuAlgo Release | Futu OpenAPI Specification |
 |:-----------------|:---------------------------|
-| 0.0.2-alpha.x    | 5.3                        |
+| 1.0              | 6.1                        |
 
 ## Deployment
 
@@ -144,38 +144,53 @@ For **MacOS/Linux**:
 
 ## Command-line Interface Usages
 
+### Historical Data Download & Processing
+
 Update all `K_1M` and `K_DAY` interval historical K-line data
 
     python main_backend.py -u   /   python main_backend.py --update
 
-**IMPORTANT NOTE:** This will not override existing historical data if the file exists. The default number of days are
-80 (will be customizable in the future).
+**IMPORTANT NOTE:** This will not override existing historical data if the file exists. It will automatically detect
+the latest stock data you have downloaded in the folder and resume from there.
 
 If you want to refresh all data, use the following command instead (WITH CAUTION!)
 
-    python main_backend.py -fu  /   python main_backend.py --force_update
+    python main_backend.py -fu   /   python main_backend.py --force_update
 
-Execute High-Frequency Trading (HFT) with a Pre-defined Strategy
+### Algorithmic Trading
 
-    python main_backend.py -s MACD_Cross    /   python main_backend.py --strategy MACD_Cross
+Execute Algorithmic Trading with a Pre-defined Strategy (By default use **1M data**)
 
-Execute Stock Filtering with Pre-defined Filtering Strategies
+    python main_backend.py -s MACD_Cross   /   python main_backend.py --strategy MACD_Cross
 
-    python main_backend.py -f Volume_Threshold Price_Threshold   /   python main_backend.py --filter Volume_Threshold Price_Threshold
+If you would like to use another time interval based date (e.g., Day data), use the following command
+
+    python main_backend.py -s MACD_Cross --time_interval K_DAY
+
+If you do not have a pre-defined stock list in `config.ini`, then you can just trade the Top 30 HSI stocks
+
+    python main_backend.py -s MACD_Cross --include_hsi --time_interval K_DAY
+
+**IMPORTANT NOTE:** The supported time intervals are: K_1M, K_30M, K_5M, K_15M, K_30M, K_60M, K_DAY, K_WEEK, K_MON,
+K_YEAR.
+
+### Stock Filtering and Email Subscription
+
+Execute Stock Filtering with Pre-defined Filtering Strategies with Email Title "MACD_Cross_Technique"
+
+    python main_backend.py -f Volume_Threshold Price_Threshold -en MACD_Cross_Technique
 
 ## GUI Usages
 
 Start the GUI with `main.py` (**NOT FINISHED YET**)
 
-```commandline
     python main.py
-```
 
 ## Future Plans
 
 - [ ] [NEED A GREAT NAME FOR THIS ALGO TRADE!!](https://github.com/billpwchan/futu_algo/issues/23)
-- [ ] [Custom Backtesting Time Interval]()
-- [ ] [Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)
+- [x] [Custom Backtesting Time Interval]()
+- [x] [Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)
 
 -----------
 
