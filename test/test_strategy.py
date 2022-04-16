@@ -51,12 +51,8 @@ class StrategyTestCase(unittest.TestCase):
             if row['time_key'] in MACD_samples.keys():
                 ta_calculations = strategy.get_input_data_stock_code(self.stock_code)
                 latest_row = ta_calculations.loc[ta_calculations['time_key'] == row['time_key']]
-                self.assertAlmostEqual(latest_row['MACD'].values[0], MACD_samples[row['time_key']]['MACD'],
-                                       delta=0.0006)
-                self.assertAlmostEqual(latest_row['MACD_signal'].values[0],
-                                       MACD_samples[row['time_key']]['MACD_signal'], delta=0.0006)
-                self.assertAlmostEqual(latest_row['MACD_hist'].values[0], MACD_samples[row['time_key']]['MACD_hist'],
-                                       delta=0.0006)
+                for key in MACD_samples[row['time_key']].keys():
+                    self.assertAlmostEqual(latest_row[key].values[0], MACD_samples[row['time_key']][key], delta=0.0006)
 
     def test_MACD_Cross_buy(self):
         buy_decision_keys = ['2022-04-13 09:52:00', '2022-04-13 11:59:00', ' 2022-04-13 13:32:00',
@@ -104,9 +100,8 @@ class StrategyTestCase(unittest.TestCase):
             if row['time_key'] in KDJ_samples.keys():
                 ta_calculations = strategy.get_input_data_stock_code(self.stock_code)
                 latest_row = ta_calculations.loc[ta_calculations['time_key'] == row['time_key']]
-                self.assertAlmostEqual(latest_row['%k'].values[0], KDJ_samples[row['time_key']]['%k'], delta=0.0006)
-                self.assertAlmostEqual(latest_row['%d'].values[0], KDJ_samples[row['time_key']]['%d'], delta=0.0006)
-                self.assertAlmostEqual(latest_row['%j'].values[0], KDJ_samples[row['time_key']]['%j'], delta=0.0006)
+                for key in KDJ_samples[row['time_key']].keys():
+                    self.assertAlmostEqual(latest_row[key].values[0], KDJ_samples[row['time_key']][key], delta=0.0006)
 
     def test_KDJ_Cross_buy(self):
         buy_decision_keys = ['2022-04-13 09:45:00', '2022-04-13 11:29:00']
