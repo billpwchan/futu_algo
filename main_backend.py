@@ -179,7 +179,8 @@ def main():
 
     # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
     if args.include_hsi or not stock_list:
-        stock_list.extend(YahooFinanceInterface.get_top_30_hsi_constituents())
+        [stock_list.append(stock_code) for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
+         stock_code not in stock_list]
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
@@ -190,7 +191,9 @@ def main():
             email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
 
     if args.update or args.force_update:
-        # Daily Update Data
+        # Daily Update Data based on all available time files in the data folder
+        [stock_list.append(str(f.path).replace('./data/', '')) for f in os.scandir("./data/") if
+         f.is_dir() and ('Stock_Pool' not in f.name) and (str(f.path).replace('./data/', '') not in stock_list)]
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
 
     if args.strategy:
