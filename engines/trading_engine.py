@@ -94,17 +94,20 @@ class FutuTrade:
                 raise Exception("Account Unlock Unsuccessful: {}".format(data))
 
     @staticmethod
-    def __save_csv_to_file(data, output_path):
+    def __save_csv_to_file(data, output_path) -> bool:
         """
         Save Data to CSV File
         :param data: Data to Save
         :param output_path: File Name to Save
         :return: None
         """
-        data.to_csv(output_path, index=False, encoding='utf-8-sig')
+        if not data.empty:
+            data.to_csv(output_path, index=False, encoding='utf-8-sig')
+            return True
+        return False
 
     def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
-                               k_type: object = KLType, force_update: bool = False) -> bool:
+                               k_type: object = KLType.K_DAY, force_update: bool = False) -> bool:
         """
         Save Historical Data (e.g., 1D, 1W, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
         :param stock_code: Stock Code with Format (e.g., HK.00001)
@@ -143,8 +146,9 @@ class FutuTrade:
                                                                            max_count=1000, page_req_key=None,
                                                                            extended_time=False)
             if ret == RET_OK:
-                self.__save_csv_to_file(data, output_path)
-                self.default_logger.info(f'Saved: {output_path}')
+                if self.__save_csv_to_file(data, output_path):
+                    self.default_logger.info(f'Saved {k_type} K-line data to {output_path}')
+                # Probably empty data during a non-trading date
                 return True
             # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
             time.sleep(1)
@@ -331,8 +335,8 @@ class FutuTrade:
         for input_date in date_range:
             output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
-            self.__save_csv_to_file(output_df, output_path)
-            self.default_logger.info(f'Saved: {output_path}')
+            if self.__save_csv_to_file(output_df, output_path):
+                self.default_logger.info(f'Saved 1M K-line data to {output_path}')
         time.sleep(0.5)
 
     def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
