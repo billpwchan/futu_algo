@@ -85,6 +85,10 @@ class DataProcessingInterface:
     default_logger = logger.get_logger("data_processing")
 
     @staticmethod
+    def validate_dir(dir_path: Path):
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+    @staticmethod
     def get_1M_data_range(date_range: list, stock_list: list) -> dict:
         """
             Get 1M Data from CSV based on Stock List. Returned in Dict format
@@ -190,16 +194,94 @@ class DataProcessingInterface:
         # TODO: Validate data against futu records
 
     @staticmethod
-    def check_empty_data(input_file: str):
-        input_csv = pd.read_csv(input_file, index_col=None)
-        if input_csv.empty:
-            os.remove(input_file)
-            DataProcessingInterface.default_logger.info(f'{input_file} removed.')
+    def save_stock_df_to_file(data: pd.DataFrame, output_path: str, file_type='parquet') -> bool:
+        """
+        Save Data to File (CSV / Feather)
+        :param data: Data to Save
+        :param output_path: File Name to Save
+        :param file_type: File Type to Save (CSV / Feather / Parquet)
+        :return: None
+        """
+        if not data.empty:
+            if file_type == 'csv':
+                data.to_csv(output_path, index=False, encoding='utf-8-sig')
+            elif file_type == 'parquet':
+                data.to_parquet(output_path, index=False)
+            return True
+        return False
+
+    @staticmethod
+    def get_stock_df_from_file(input_path: Path) -> pd.DataFrame:
+        """
+        Load Data from File (CSV / Feather / Parquet)
+        :param input_path: File Name to Load
+        :return: DataFrame
+        """
+        data = pd.DataFrame(columns=json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat')))
+        if input_path.suffix == 'csv':
+            data = pd.read_csv(input_path, index_col=None, encoding='utf-8-sig')
+        elif input_path.suffix == 'parquet':
+            data = pd.read_parquet(input_path)
+        return data
+
+    @staticmethod
+    def check_empty_data(input_path: Path) -> bool:
+        """
+        Check if the input file is empty
+        :param input_path:
+        :return:
+        """
+        input_df = DataProcessingInterface.get_stock_df_from_file(input_path)
+        if input_df.empty:
+            input_path.unlink()
+            DataProcessingInterface.default_logger.info(f'{input_path} removed.')
+            return True
+        return False
 
     @staticmethod
     def clear_empty_data():
         pool = Pool(cpu_count())
-        pool.map(DataProcessingInterface.check_empty_data, PATH_DATA.rglob("*/*_1[DWM].csv"))
+        pool.map(DataProcessingInterface.check_empty_data, PATH_DATA.rglob("*/*_1[DWM].parquet"))
+        pool.close()
+        pool.join()
+
+    @staticmethod
+    def convert_csv_to_parquet(input_file: Path) -> bool:
+        """
+        Convert CSV file to Parquet file
+        :param input_file: File to Convert
+        :return: bool
+        """
+        if input_file.suffix == '.csv':
+            output_file = input_file.as_posix().replace('.csv', '.parquet').replace('data', 'data_parquet')
+            output_file = Path(output_file)
+            # Temporary
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            DataProcessingInterface.default_logger.info(f'Converting {input_file} to {output_file}')
+            df = pd.read_csv(input_file, index_col=None)
+            df.to_parquet(output_file, index=False)
+            return True
+        return False
+
+    @staticmethod
+    def convert_parquet_to_csv(input_file: Path) -> bool:
+        """
+        Convert Parquet file to CSV file
+        :param input_file: File to Convert
+        :return: bool
+        """
+        if input_file.suffix == '.parquet':
+            output_file = input_file.as_posix().replace('.parquet', '.csv')
+            DataProcessingInterface.default_logger.info(f'Converting {input_file} to {output_file}')
+            df = pd.read_parquet(input_file)
+            df.to_csv(output_file, index=False)
+            return True
+        return False
+
+    @staticmethod
+    def convert_all_csv_to_parquet():
+        pool = Pool(cpu_count())
+        pool.map(DataProcessingInterface.convert_csv_to_parquet, PATH_DATA.rglob("*/*_1[DWM].csv"))
         pool.close()
         pool.join()
 

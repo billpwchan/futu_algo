@@ -35,7 +35,7 @@ from futu import AccumulateFilter, AuType, Currency, KLType, KL_FIELD, Market, M
     SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv
 
 import engines
-from engines import HKEXInterface, YahooFinanceInterface
+from engines import DataProcessingInterface, HKEXInterface, YahooFinanceInterface
 from util import logger
 from util.global_vars import *
 
@@ -92,67 +92,6 @@ class FutuTrade:
                 self.default_logger.info("Account Unlock Success.")
             else:
                 raise Exception("Account Unlock Unsuccessful: {}".format(data))
-
-    @staticmethod
-    def __save_csv_to_file(data, output_path) -> bool:
-        """
-        Save Data to CSV File
-        :param data: Data to Save
-        :param output_path: File Name to Save
-        :return: None
-        """
-        if not data.empty:
-            data.to_csv(output_path, index=False, encoding='utf-8-sig')
-            return True
-        return False
-
-    def __save_historical_data(self, stock_code: str, start_date: date, end_date: date = None,
-                               k_type: object = KLType.K_DAY, force_update: bool = False) -> bool:
-        """
-        Save Historical Data (e.g., 1D, 1W, etc.) from FUTU OpenAPI to ./data folder. Saved in CSV Format
-        :param stock_code: Stock Code with Format (e.g., HK.00001)
-        :param start_date: Datetime Object that specifies the start date
-        :param end_date: Datetime Object that specifies the end date. If left as None, it will be automatically calculated as 365 days after start_date
-        :param k_type: FuTu KLType Object
-        :return: bool
-        """
-        out_dir = PATH_DATA / stock_code
-        if not os.path.exists(out_dir):
-            os.mkdir(out_dir)
-        if k_type == KLType.K_DAY:
-            output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1D.csv'
-        elif k_type == KLType.K_WEEK:
-            output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1W.csv'
-        else:
-            self.default_logger.error(f'Unsupported KLType. Please try it later.')
-            return False
-
-        # Ensure update current day's 1M data & current year's 1D data
-        if os.path.exists(output_path) and not force_update and (
-                (start_date != datetime.today().date() and k_type == KLType.K_1M) or
-                (start_date.year != datetime.today().date().year and (
-                        k_type == KLType.K_DAY or k_type == KLType.K_WEEK))
-        ):
-            return False
-
-        # Request Historical K-line Data (Daily)
-        start_date = start_date.strftime("%Y-%m-%d")
-        end_date = end_date.strftime("%Y-%m-%d") if end_date is not None else None
-        while True:
-            ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
-                                                                           end=end_date,
-                                                                           ktype=k_type, autype=AuType.QFQ,
-                                                                           fields=[KL_FIELD.ALL],
-                                                                           max_count=1000, page_req_key=None,
-                                                                           extended_time=False)
-            if ret == RET_OK:
-                if self.__save_csv_to_file(data, output_path):
-                    self.default_logger.info(f'Saved {k_type} K-line data to {output_path}')
-                # Probably empty data during a non-trading date
-                return True
-            # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
-            time.sleep(1)
-            self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
 
     def get_market_state(self):
         return self.quote_ctx.get_global_state()
@@ -279,7 +218,7 @@ class FutuTrade:
                 self.default_logger.error(f'Cannot get Real-time K-line data: {data}')
         return input_data
 
-    def update_1M_data(self, stock_code: str, years=2, force_update: bool = False, default_days: int = 30) -> None:
+    def update_1M_data(self, stock_code: str, years=2, force_update: bool = False, default_days: int = 30):
         """
             Update 1M Data to ./data/{stock_code} folders for max. 2-years duration
             Assume today is 2022-04-17, the oldest data that can be downloaded is 2020-04-17
@@ -295,7 +234,7 @@ class FutuTrade:
             (datetime.today() - timedelta(days=default_days)).date())
         end_date = str(datetime.today().date())
         # This will give a list of dates between 2-years range
-        date_range = pd.date_range(start_date, end_date, freq='d').strftime("%Y-%m-%d").tolist()
+        date_range = pd.date_range(start_date, end_date, freq='d').strftime(DATETIME_FORMAT_DW).tolist()
         # Retrieve the first page
         ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code,
                                                                        start=start_date,
@@ -333,14 +272,13 @@ class FutuTrade:
                     time.sleep(1)
 
         for input_date in date_range:
-            output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv'
+            output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.parquet'
             output_df = history_df[history_df['time_key'].str.contains(input_date)]
-            if self.__save_csv_to_file(output_df, output_path):
+            if DataProcessingInterface.save_stock_df_to_file(output_df, output_path):
                 self.default_logger.info(f'Saved 1M K-line data to {output_path}')
         time.sleep(0.5)
 
-    def update_DW_data(self, stock_code: str, years=10, force_update: bool = False,
-                       k_type: KLType = KLType.K_DAY) -> None:
+    def update_DW_data(self, stock_code: str, years=10, force_update: bool = False, k_type: KLType = KLType.K_DAY):
         """
             Update 1D Data (365 days per file) to ./data/{stock_code} folders for max. 2-years duration
         :param force_update:
@@ -348,11 +286,37 @@ class FutuTrade:
         :param years: 10 years
         :param k_type: Futu K-Line Type
         """
-        for i in range(0, round(years + 1)):
-            day = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
-            if not self.__save_historical_data(stock_code=stock_code, start_date=day,
-                                               k_type=k_type, force_update=force_update):
-                continue
+        for i in range(0, 11 if force_update else (years + 1)):
+            start_date = date((datetime.today() - timedelta(days=i * 365)).year, 1, 1)
+
+            DataProcessingInterface.validate_dir(PATH_DATA / stock_code)
+
+            if k_type == KLType.K_DAY:
+                output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1D.parquet'
+            elif k_type == KLType.K_WEEK:
+                output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1W.parquet'
+            else:
+                self.default_logger.error(f'Unsupported KLType. Please try it later.')
+                return False
+
+            # Request Historical K-line Data (Daily)
+            start_date = start_date.strftime(DATETIME_FORMAT_DW)
+            end_date = end_date.strftime(DATETIME_FORMAT_DW) if end_date is not None else None
+            while True:
+                ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
+                                                                               end=end_date,
+                                                                               ktype=k_type, autype=AuType.QFQ,
+                                                                               fields=[KL_FIELD.ALL],
+                                                                               max_count=1000, page_req_key=None,
+                                                                               extended_time=False)
+                if ret == RET_OK:
+                    if DataProcessingInterface.save_stock_df_to_file(data, output_path):
+                        self.default_logger.info(f'Saved {k_type} K-line data to {output_path}')
+                    # Probably empty data during a non-trading date
+                    break
+                # Retry Storing Data due to too frequent requests (max. 60 requests per 30 seconds)
+                time.sleep(1)
+                self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
             time.sleep(0.6)
 
     def update_owner_plate(self, stock_list: list):
@@ -370,8 +334,8 @@ class FutuTrade:
             else:
                 self.default_logger.error(f'Cannot get Owner Plate: {data}')
             time.sleep(3.5)
-        output_path = PATH_DATA / 'Stock_Pool' / 'stock_owner_plate.csv'
-        self.__save_csv_to_file(output_df, output_path)
+        output_path = PATH_DATA / 'Stock_Pool' / 'stock_owner_plate.parquet'
+        DataProcessingInterface.save_stock_df_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Owner Plate Updated: {output_path}')
 
     def update_stock_basicinfo(self):
@@ -385,8 +349,8 @@ class FutuTrade:
                 output_df = pd.concat([output_df, data], ignore_index=True)
             else:
                 self.default_logger.error(f'Cannot get Stock Basic Info of {market} - {stock_type}: {data}')
-        output_path = PATH_DATA / 'Stock_Pool' / 'stock_basic_info.csv'
-        self.__save_csv_to_file(output_df, output_path)
+        output_path = PATH_DATA / 'Stock_Pool' / 'stock_basic_info.parquet'
+        DataProcessingInterface.save_stock_df_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
 
     def update_stock_fundamentals(self):

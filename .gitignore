@@ -175,5 +175,7 @@ stock_strategy_map.yml
 /backtesting_report/*
 /stock_filter_report/*
 
+/data_parquet/*/*.*
+
 # Tests
 /test/test_strategy_private.py

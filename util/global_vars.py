@@ -27,6 +27,11 @@ PATH_DATABASE = PATH / 'database'  # Obsoleted
 PATH_FILTERS = PATH / 'filters'
 PATH_STRATEGIES = PATH / 'strategies'
 PATH_FILTER_REPORT = PATH / 'stock_filter_report'
+PATH_STRATEGY_REPORT = PATH / 'stock_strategy_report'
+PATH_LOG = PATH / 'log'
+
+DATETIME_FORMAT_DW = '%Y-%m-%d'
+DATETIME_FORMAT_M = ''
 
 ORDER_RETRY_MAX = 3
 

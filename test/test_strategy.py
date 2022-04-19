@@ -24,7 +24,7 @@ from strategies.MACD_Cross import MACDCross
 from util.global_vars import *
 
 
-class StrategyTestCase(unittest.TestCase):
+class TestStrategy(unittest.TestCase):
     def setUp(self):
         self.stock_code = 'HK.09988'
         self.preparation_date = '2022-04-12'
@@ -133,5 +133,5 @@ class StrategyTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = (unittest.TestLoader().loadTestsFromTestCase(StrategyTestCase))
+    suite = (unittest.TestLoader().loadTestsFromTestCase(TestStrategy))
     unittest.TextTestRunner(verbosity=2).run(suite)

@@ -14,23 +14,6 @@
 #
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2022
 #  Copyright (c)  billpwchan - All Rights Reserved
-
-#  Futu Algo: Algorithmic Trading Framework
-#
-#  Licensed under the Apache License, Version 2.0 (the "License");
-#  you may not use this file except in compliance with the License.
-#  You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-#  Unless required by applicable law or agreed to in writing, software
-#  distributed under the License is distributed on an "AS IS" BASIS,
-#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#  See the License for the specific language governing permissions and
-#  limitations under the License.
-#
-#  Written by Bill Chan <billpwchan@hotmail.com>, 2022
-#  Copyright (c)  billpwchan - All Rights Reserved
 import datetime
 import unittest
 from pathlib import Path
@@ -40,7 +23,7 @@ import pandas as pd
 from engines import DataProcessingInterface, YahooFinanceInterface
 
 
-class YahooFinanceInterfaceTestCase(unittest.TestCase):
+class TestYahooFinanceInterface(unittest.TestCase):
     def test_get_top_30_hsi_constituents(self):
         top_30_hsi_constituents = YahooFinanceInterface.get_top_30_hsi_constituents()
         self.assertEqual(len(top_30_hsi_constituents), 30)
@@ -66,7 +49,7 @@ class YahooFinanceInterfaceTestCase(unittest.TestCase):
         self.assertRaises(AssertionError, YahooFinanceInterface.futu_code_to_yfinance_code, "9988.HK")
 
 
-class DataProcessingTestCase(unittest.TestCase):
+class TestDataProcessingInterface(unittest.TestCase):
     def test_get_1M_data_range(self):
         date_range = ['2022-04-11', '2022-04-12', '2022-04-13']
         stock_list = ['HK.09988', 'HK.00700']
@@ -106,7 +89,7 @@ class DataProcessingTestCase(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite_yahoo_finance = (unittest.TestLoader().loadTestsFromTestCase(YahooFinanceInterfaceTestCase))
-    suite_data_processing = (unittest.TestLoader().loadTestsFromTestCase(DataProcessingTestCase))
+    suite_yahoo_finance = (unittest.TestLoader().loadTestsFromTestCase(TestYahooFinanceInterface))
+    suite_data_processing = (unittest.TestLoader().loadTestsFromTestCase(TestDataProcessingInterface))
     suite = unittest.TestSuite([suite_yahoo_finance, suite_data_processing])
     unittest.TextTestRunner(verbosity=2).run(suite)
