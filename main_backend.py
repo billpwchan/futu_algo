@@ -210,7 +210,6 @@ def main():
     if args.backtesting:
         init_backtesting(args.backtesting)
 
-    DataProcessingInterface.convert_all_csv_to_parquet()
     futu_trade.display_quota()
 
 
