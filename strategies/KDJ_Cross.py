@@ -92,8 +92,7 @@ class KDJCross(Strategies):
 
     def buy(self, stock_code) -> bool:
 
-        current_record = self.input_data[stock_code].iloc[-2]
-        previous_record = self.input_data[stock_code].iloc[-3]
+        current_record, previous_record = self.get_current_and_previous_record(stock_code)
         # Buy Decision based on 当D < 超卖线, K线和D线同时上升，且K线从下向上穿过D线时，买入
         buy_decision = self.OVER_SELL > current_record['%d'] > previous_record['%d'] > previous_record['%k'] and \
                        current_record['%k'] > previous_record['%k'] and \
@@ -107,8 +106,7 @@ class KDJCross(Strategies):
 
     def sell(self, stock_code) -> bool:
 
-        current_record = self.input_data[stock_code].iloc[-2]
-        previous_record = self.input_data[stock_code].iloc[-3]
+        current_record, previous_record = self.get_current_and_previous_record(stock_code)
         # Sell Decision based on 当D > 超买线, K线和D线同时下降，且K线从上向下穿过D线时，卖出
         sell_decision = self.OVER_BUY < current_record['%d'] < previous_record['%d'] < previous_record['%k'] and \
                         current_record['%k'] < previous_record['%k'] and \

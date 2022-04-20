@@ -79,8 +79,7 @@ class MACDCross(Strategies):
     # @timeit
     def buy(self, stock_code) -> bool:
         # Crossover between MACD and Signal (Single Point Determined)
-        current_record = self.input_data[stock_code].iloc[-2]
-        previous_record = self.input_data[stock_code].iloc[-3]
+        current_record, previous_record = self.get_current_and_previous_record(stock_code)
         buy_decision = float(current_record['MACD']) > float(current_record['MACD_signal']) and float(
             previous_record['MACD']) <= float(previous_record['MACD_signal'])
         if buy_decision:
@@ -92,8 +91,7 @@ class MACDCross(Strategies):
     # @timeit
     def sell(self, stock_code) -> bool:
         # Crossover between Signal and MACD (Single Point Determined)
-        current_record = self.input_data[stock_code].iloc[-2]
-        previous_record = self.input_data[stock_code].iloc[-3]
+        current_record, previous_record = self.get_current_and_previous_record(stock_code)
         sell_decision = float(current_record['MACD']) < float(current_record['MACD_signal']) and float(
             previous_record['MACD']) >= float(previous_record['MACD_signal'])
         if sell_decision:

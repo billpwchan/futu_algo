@@ -16,7 +16,6 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 
 
-import time
 from abc import ABC, abstractmethod
 
 import pandas as pd
@@ -47,6 +46,9 @@ class Strategies(ABC):
     def sell(self, stock_code) -> bool:
         pass
 
+    def get_current_and_previous_record(self, stock_code: str) -> tuple:
+        return self.input_data[stock_code].iloc[-2], self.input_data[stock_code].iloc[-3]
+
     def get_input_data(self) -> dict:
         return self.input_data.copy()
 
@@ -58,18 +60,3 @@ class Strategies(ABC):
 
     def set_input_data_stock_code(self, stock_code: str, input_df: pd.DataFrame) -> None:
         self.input_data[stock_code] = input_df.copy()
-
-
-def timeit(method):
-    def timed(*args, **kw):
-        ts = time.time()
-        result = method(*args, **kw)
-        te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
-        else:
-            print('%r  %2.2f ms' % (method.__name__, (te - ts) * 1000))
-        return result
-
-    return timed
