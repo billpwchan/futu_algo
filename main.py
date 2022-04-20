@@ -16,23 +16,21 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 
 
-from PySide6 import QtGui
-from PySide6.QtWidgets import QMessageBox
-import pyqtgraph as pg
-
-from engines import *
-from modules import *
-from widgets import *
-from util import *
-import webbrowser as webbrowser
-
 import configparser
 import glob
 import json
 import os
 import sys
-import platform
+import webbrowser as webbrowser
 from pathlib import Path
+
+import pyqtgraph as pg
+from PySide6 import QtGui
+from PySide6.QtWidgets import QMessageBox
+
+from engines import *
+from modules import *
+from widgets import *
 
 # GLOBALS
 counter = 0
@@ -170,7 +168,7 @@ class MainWindow(QMainWindow):
 
         # SET CUSTOM THEME
         useCustomTheme = False
-        themeFile = "themes\py_dracula_dark.qss"
+        themeFile = PATH_CONFIG / 'themes' / 'py_dracula_dark.qss'
 
         # SET THEME AND HACKS
         if useCustomTheme:
