@@ -16,9 +16,9 @@
 #  Copyright (c)  billpwchan - All Rights Reserved
 
 
-from .backtesting_engine import *
-from .data_engine import *
-from .email_engine import *
+from .backtesting_engine import BacktestingEngine
+from .data_engine import DataProcessingInterface, HKEXInterface, YahooFinanceInterface
+from .email_engine import EmailEngine
 from .order_engine import *
 from .stock_filter_engine import *
-from .trading_engine import *
+from .trading_engine import FutuTrade

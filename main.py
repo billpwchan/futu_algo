@@ -46,7 +46,7 @@ APP_LOGO_SMALL = "./images/images/PyDracula.png"
 # Initialization Connection
 
 futu_trade = trading_engine.FutuTrade()
-email_handler = email_engine.Email()
+email_handler = email_engine.EmailEngine()
 
 
 class SplashScreen(QMainWindow):

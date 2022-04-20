@@ -32,7 +32,7 @@ from util.global_vars import *
 warnings.filterwarnings('ignore')
 
 
-class Backtesting:
+class BacktestingEngine:
     def __init__(self, stock_list: list, start_date: date, end_date: date, observation: int = 100):
         # Program-Related
         self.config = config
@@ -48,7 +48,7 @@ class Backtesting:
         self.start_date = start_date
         self.end_date = end_date
         self.date_range = pd.date_range(self.start_date, self.end_date - timedelta(days=1), freq='d').strftime(
-            "%Y-%m-%d").tolist()
+            DATETIME_FORMAT_DW).tolist()
         self.observation = observation
 
         # Transactions-Related
@@ -102,7 +102,6 @@ class Backtesting:
 
         output_dict = dict(ChainMap(*list_of_custom_dict))
         self.input_data = output_dict
-        self.input_data['HK.01997'].to_csv("STEP 1.csv")
 
     def get_backtesting_init_data(self) -> dict:
         return {key: value.copy().iloc[:min(value.shape[0], self.observation)] for (key, value) in

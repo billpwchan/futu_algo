@@ -18,11 +18,15 @@
 
 import argparse
 import importlib
+import json
+import sys
+from datetime import datetime
 from math import ceil
+
+from futu import KLType, SubType
 
 from engines import *
 from strategies.Strategies import Strategies
-from util.global_vars import *
 
 
 def __daily_update_filters():
@@ -105,7 +109,7 @@ def init_backtesting(strategy_name: str):
     start_date = datetime(2019, 3, 20).date()
     end_date = datetime(2021, 3, 23).date()
     stock_list = YahooFinanceInterface.get_top_30_hsi_constituents()
-    bt = Backtesting(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
+    bt = BacktestingEngine(stock_list=stock_list, start_date=start_date, end_date=end_date, observation=100)
     bt.prepare_input_data_file_custom_M(custom_interval=5)
     # bt.prepare_input_data_file_1M()
     strategy = __dynamic_instantiation(prefix="strategies", module_name=strategy_name,
@@ -116,18 +120,18 @@ def init_backtesting(strategy_name: str):
 
 
 def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, strategy_name: str,
-                     stock_strategy_map: dict, sub_type: SubType = SubType.K_1M):
+                     stock_strategy_dict: dict, sub_type: SubType = SubType.K_1M):
     # Subscribe to the stock list first
     if futu_trade.kline_subscribe(stock_list, sub_type=sub_type):
         # Subscription Success -> Get Real Time Data
         input_data = futu_trade.get_data_realtime(stock_list, sub_type=sub_type, kline_num=1000)
         # strategy_map = dict object {'HK.00001', MACD_Cross(), 'HK.00002', MACD_Cross()...}
-        strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_map.get(stock_code, strategy_name),
+        strategy_map = {stock_code: __init_strategy(strategy_name=stock_strategy_dict.get(stock_code, strategy_name),
                                                     input_data=input_data) for stock_code in stock_list}
         while True:
             futu_trade.cur_kline_evaluate(stock_list=stock_list, strategy_map=strategy_map, sub_type=sub_type)
     else:
-        exit(1)
+        sys.exit(1)
 
 
 def init_stock_filter(filter_list: list) -> list:
@@ -172,15 +176,15 @@ def main():
 
     # Initialization Connection
     futu_trade = trading_engine.FutuTrade()
-    email_handler = email_engine.Email()
+    email_handler = email_engine.EmailEngine()
 
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
 
     # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
     if args.include_hsi or not stock_list:
-        [stock_list.append(stock_code) for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
-         stock_code not in stock_list]
+        stock_list.extend([stock_code for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
+                           stock_code not in stock_list])
 
     if args.filter:
         filtered_stock_list = init_stock_filter(args.filter)
@@ -192,8 +196,10 @@ def main():
 
     if args.update or args.force_update:
         # Daily Update Data based on all available time files in the data folder
-        [stock_list.append(str(f.path).replace('./data/', '')) for f in os.scandir("./data/") if
-         f.is_dir() and ('Stock_Pool' not in f.name) and (str(f.path).replace('./data/', '') not in stock_list)]
+        stock_list.extend(
+            [stock_code.name for stock_code in PATH_DATA.iterdir() if
+             stock_code.is_dir() and stock_code not in stock_list])
+        stock_list.remove('Stock_Pool')
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
 
     if args.strategy:

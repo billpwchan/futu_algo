@@ -28,7 +28,7 @@ from util import logger
 from util.global_vars import *
 
 
-class Email:
+class EmailEngine:
     def __init__(self):
         """
             Email Engine Constructor
