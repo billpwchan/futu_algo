@@ -8,3 +8,4 @@ psutil
 futu-api
 pyyaml
 pylint
+pyarrow
