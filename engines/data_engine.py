@@ -100,12 +100,10 @@ class DataProcessingInterface:
         for stock_code in stock_list:
             # input_df refers to the all the 1M data from start_date to end_date in pd.Dataframe format
             input_df = pd.concat(
-                [pd.read_csv(PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv',
-                             index_col=None)
-                 for input_date in date_range if
-                 Path(PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv').exists() and (
-                     not pd.read_csv(
-                         PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.csv').empty)],
+                [DataProcessingInterface.get_stock_df_from_file(
+                    PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.parquet')
+                    for input_date in date_range if
+                    (PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.parquet').is_file()],
                 ignore_index=True)
             input_df[['open', 'close', 'high', 'low']] = input_df[['open', 'close', 'high', 'low']].apply(pd.to_numeric)
             input_df.sort_values(by='time_key', ascending=True, inplace=True)
@@ -127,17 +125,18 @@ class DataProcessingInterface:
         input_data = {}
         target_date = target_date.strftime('%Y-%m-%d')
         for stock_code in stock_list:
-            input_path = PATH_DATA / stock_code / f'{stock_code}_{target_date}_1M.csv'
+            input_path = PATH_DATA / stock_code / f'{stock_code}_{target_date}_1M.parquet'
 
-            if not Path(input_path).exists():
+            if not Path(input_path).is_file():
                 continue
-            input_csv = pd.read_csv(input_path, index_col=None)
+
+            input_df = DataProcessingInterface.get_stock_df_from_file(input_path)
             # Non-Trading Day -> Skip
-            if input_csv.empty:
+            if input_df.empty:
                 continue
             # Set Time-key as Index & Convert to Datetime
-            input_csv = input_csv.set_index('time_key')
-            input_csv.index = pd.to_datetime(input_csv.index, infer_datetime_format=True)
+            input_df = input_df.set_index('time_key')
+            input_df.index = pd.to_datetime(input_df.index, infer_datetime_format=True)
             # Define Function List
             agg_list = {
                 "code":          "first",
@@ -151,7 +150,7 @@ class DataProcessingInterface:
                 "turnover":      "sum",
             }
             # Group from 09:31:00 with Freq = 5 Min
-            minute_df = input_csv.groupby(
+            minute_df = input_df.groupby(
                 pd.Grouper(freq=f'{custom_interval}min', closed='left', offset='1min', origin='start')
             ).agg(agg_list)[1:]
             # For 1min -> 5min, need to add Timedelta of 4min
@@ -161,12 +160,12 @@ class DataProcessingInterface:
 
             # Update First Row (Special Cases) e.g. For 1min -> 5min, need to use the first 6min Rows of data
             minute_df.iloc[0] = \
-                input_csv.iloc[:(custom_interval + 1)].groupby('code').agg(agg_list).iloc[0]
+                input_df.iloc[:(custom_interval + 1)].groupby('code').agg(agg_list).iloc[0]
 
             # Update Last Close Price
             last_index = minute_df.index[0]
             minute_df['change_rate'] = 0
-            minute_df['last_close'] = input_csv['last_close'][0]
+            minute_df['last_close'] = input_df['last_close'][0]
             minute_df.loc[last_index, 'change_rate'] = 100 * (float(minute_df.loc[last_index, 'close']) - float(
                 minute_df.loc[last_index, 'last_close'])) / float(minute_df.loc[last_index, 'last_close'])
 
@@ -218,9 +217,9 @@ class DataProcessingInterface:
         :return: DataFrame
         """
         data = pd.DataFrame(columns=json.loads(config.get('FutuOpenD.DataFormat', 'HistoryDataFormat')))
-        if input_path.suffix == 'csv':
+        if input_path.suffix == '.csv':
             data = pd.read_csv(input_path, index_col=None, encoding='utf-8-sig')
-        elif input_path.suffix == 'parquet':
+        elif input_path.suffix == '.parquet':
             data = pd.read_parquet(input_path)
         return data
 
@@ -253,7 +252,7 @@ class DataProcessingInterface:
         :return: bool
         """
         if input_file.suffix == '.csv':
-            output_file = input_file.as_posix().replace('.csv', '.parquet').replace('data', 'data_parquet')
+            output_file = input_file.as_posix().replace('.csv', '.parquet')
             output_file = Path(output_file)
             # Temporary
             output_file.parent.mkdir(parents=True, exist_ok=True)

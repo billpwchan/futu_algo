@@ -17,8 +17,8 @@
 
 
 import unittest
-import pandas as pd
 
+from engines import DataProcessingInterface
 from strategies.KDJ_Cross import KDJCross
 from strategies.MACD_Cross import MACDCross
 from util.global_vars import *
@@ -28,12 +28,12 @@ class TestStrategy(unittest.TestCase):
     def setUp(self):
         self.stock_code = 'HK.09988'
         self.preparation_date = '2022-04-12'
-        self.preparation_data = pd.read_csv(
-            PATH_DATA / self.stock_code / f'{self.stock_code}_{self.preparation_date}_1M.csv',
-            index_col=None)
+        self.preparation_data = DataProcessingInterface.get_stock_df_from_file(
+            PATH_DATA / self.stock_code / f'{self.stock_code}_{self.preparation_date}_1M.parquet')
+
         self.target_date = '2022-04-13'
-        self.target_data = pd.read_csv(PATH_DATA / self.stock_code / f'{self.stock_code}_{self.target_date}_1M.csv',
-                                       index_col=None)
+        self.target_data = DataProcessingInterface.get_stock_df_from_file(
+            PATH_DATA / self.stock_code / f'{self.stock_code}_{self.target_date}_1M.parquet')
 
     def test_MACD_Cross_calculation(self):
         MACD_samples = {

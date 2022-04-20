@@ -18,8 +18,6 @@ import datetime
 import unittest
 from pathlib import Path
 
-import pandas as pd
-
 from engines import DataProcessingInterface, YahooFinanceInterface
 
 
@@ -65,8 +63,8 @@ class TestDataProcessingInterface(unittest.TestCase):
         for custom_interval in custom_intervals:
             output_df = DataProcessingInterface.get_custom_interval_data(target_date, custom_interval, stock_list)[
                 stock_list[0]]
-            reference_df = pd.read_csv(
-                Path.cwd() / 'test' / 'test_data' / f'HK.09988_2022-04-11_{custom_interval}M.csv', index_col=None)
+            reference_df = DataProcessingInterface.get_stock_df_from_file(
+                Path.cwd() / 'test' / 'test_data' / f'HK.09988_2022-04-11_{custom_interval}M.parquet')
 
             for index, row in output_df.iterrows():
                 self.assertEqual(row['code'], reference_df.loc[index, 'code'])
