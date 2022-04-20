@@ -64,7 +64,7 @@ class TestDataProcessingInterface(unittest.TestCase):
             output_df = DataProcessingInterface.get_custom_interval_data(target_date, custom_interval, stock_list)[
                 stock_list[0]]
             reference_df = DataProcessingInterface.get_stock_df_from_file(
-                Path.cwd() / 'test' / 'test_data' / f'HK.09988_2022-04-11_{custom_interval}M.parquet')
+                Path.cwd() / 'tests' / 'test_data' / f'HK.09988_2022-04-11_{custom_interval}M.parquet')
 
             for index, row in output_df.iterrows():
                 self.assertEqual(row['code'], reference_df.loc[index, 'code'])

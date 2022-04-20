@@ -23,6 +23,7 @@ from pathlib import Path
 import yaml
 
 PATH = Path.cwd()
+PATH_CONFIG = PATH / 'config'
 PATH_DATA = PATH / 'data'
 PATH_DATABASE = PATH / 'database'  # Obsoleted
 PATH_FILTERS = PATH / 'filters'
@@ -36,24 +37,26 @@ DATETIME_FORMAT_M = ''
 
 ORDER_RETRY_MAX = 3
 
-if not Path("config.ini").exists():
-    if not Path("config_template.ini").exists():
-        raise SystemExit("Missing config.ini. Please use the config_template.ini to create your configuration.")
+if not (PATH_CONFIG / 'config.ini').is_file():
+    if not (PATH_CONFIG / 'config_template.ini').is_file():
+        raise SystemExit(
+            "Missing config/config.ini. Please use the config/config_template.ini to create your configuration.")
     else:
         print("Please rename config_template.ini to config.ini and update it.")
 
 config = configparser.ConfigParser()
-config.read("config.ini" if Path("config.ini").exists() else "config_template.ini")
+config.read(
+    PATH_CONFIG / 'config.ini' if (PATH_CONFIG / 'config.ini').is_file() else PATH_CONFIG / 'config_template.ini')
 
-if not Path("stock_strategy_map.yml").exists():
-    if not Path("stock_strategy_map_template.yml").exists():
+if not (PATH_CONFIG / "stock_strategy_map.yml").is_file():
+    if not (PATH_CONFIG / "stock_strategy_map_template.yml").is_file():
         raise SystemExit(
             "Missing stock_strategy_map.yml. Please use the stock_strategy_map_template.yml to create your configuration.")
     else:
         print("Please rename stock_strategy_map_template.yml to stock_strategy_map.yml and update it.")
 
-with open('stock_strategy_map.yml' if Path("stock_strategy_map.yml").exists()
-          else "stock_strategy_map_template.yml", 'r') as infile:
+with open(PATH_CONFIG / "stock_strategy_map.yml" if (PATH_CONFIG / "stock_strategy_map.yml").is_file()
+          else PATH_CONFIG / "stock_strategy_map_template.yml", 'r') as infile:
     stock_strategy_map = yaml.safe_load(infile)
 
 

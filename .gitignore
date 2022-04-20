@@ -38,7 +38,7 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-# Unit test / coverage reports
+# Unit tests / coverage reports
 htmlcov/
 .tox/
 .nox/
@@ -151,8 +151,8 @@ cython_debug/
 !/data/HK.00700/HK.00700_2022-04-13_1M.*
 !/data/HK.00700/HK.00700_2021_1D.*
 !/data/HK.00700/HK.00700_2022_1W.*
-config.ini
-stock_strategy_map.yml
+config/config.ini
+config/stock_strategy_map.yml
 
 # Strategies
 /strategies/*
@@ -178,4 +178,4 @@ stock_strategy_map.yml
 /data_parquet/*/*.*
 
 # Tests
-/test/test_strategy_private.py
+/tests/test_strategy_private.py
