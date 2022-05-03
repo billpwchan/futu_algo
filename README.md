@@ -4,6 +4,7 @@
 **billpwchan/futu-algo API Reference Documentation**
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9bd8017de7e94474aa5254c5061f17d6)](https://app.codacy.com/gh/billpwchan/futu_algo?utm_source=github.com&utm_medium=referral&utm_content=billpwchan/futu_algo&utm_campaign=Badge_Grade_Settings)
+  
 [![Issues](https://img.shields.io/github/issues/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/issues)
 [![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
 [![LastCommit](https://img.shields.io/github/last-commit/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
