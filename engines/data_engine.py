@@ -287,7 +287,7 @@ class DataProcessingInterface:
     @staticmethod
     def get_num_days_to_update(stock_code) -> int:
         return (datetime.now() - datetime.fromtimestamp(
-            Path(max((PATH_DATA / stock_code).glob('*.csv'), key=os.path.getctime)).stat().st_mtime)).days
+            Path(max((PATH_DATA / stock_code).glob('*.parquet'), key=os.path.getctime)).stat().st_mtime)).days
 
 
 class YahooFinanceInterface:

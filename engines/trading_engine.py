@@ -263,11 +263,10 @@ class FutuTrade:
                 if ret == RET_OK:
                     history_df = pd.concat([history_df, data], ignore_index=True)
                     break
-                else:
-                    self.default_logger.error(f'Cannot get Historical 1M K-line data: {data}')
-                    # Revert to previous page req key and re-try again
-                    page_req_key = original_page_req_key
-                    time.sleep(1)
+                self.default_logger.error(f'Cannot get Historical 1M K-line data: {data}')
+                # Revert to previous page req key and re-try again
+                page_req_key = original_page_req_key
+                time.sleep(1)
 
         for input_date in date_range:
             output_path = PATH_DATA / stock_code / f'{stock_code}_{input_date}_1M.parquet'
@@ -294,15 +293,14 @@ class FutuTrade:
             elif k_type == KLType.K_WEEK:
                 output_path = PATH_DATA / stock_code / f'{stock_code}_{start_date.year}_1W.parquet'
             else:
-                self.default_logger.error(f'Unsupported KLType. Please try it later.')
+                self.default_logger.error('Unsupported KLType. Please try it later.')
                 return False
 
             # Request Historical K-line Data (Daily)
             start_date = start_date.strftime(DATETIME_FORMAT_DW)
-            end_date = end_date.strftime(DATETIME_FORMAT_DW) if end_date is not None else None
             while True:
                 ret, data, page_req_key = self.quote_ctx.request_history_kline(stock_code, start=start_date,
-                                                                               end=end_date,
+                                                                               end=None,
                                                                                ktype=k_type, autype=AuType.QFQ,
                                                                                fields=[KL_FIELD.ALL],
                                                                                max_count=1000, page_req_key=None,
@@ -319,7 +317,7 @@ class FutuTrade:
 
     def update_owner_plate(self, stock_list: list):
         """
-        Update Owner Plate information for all equities in Hong Kong Kong stock market.
+        Update Owner Plate information for all equities in Hong Kong stock market.
         :param stock_list: A list of all equities (i.e., stock code)
         """
         # Slice the list into 200-elements per list
@@ -365,8 +363,8 @@ class FutuTrade:
             output_dict[record[0]] = output_dict.get(record[0], record[1])
             self.default_logger.info(f"Updated Stock Fundamentals for {record[0]}")
 
-        with open(PATH_DATA / 'Stock_Pool' / 'stock_fundamentals.json', 'w') as fp:
-            json.dump(output_dict, fp)
+        with open(PATH_DATA / 'Stock_Pool' / 'stock_fundamentals.json', 'w') as f:
+            json.dump(output_dict, f)
 
     def cur_kline_evaluate(self, stock_list: list, strategy_map: dict, sub_type: SubType = SubType.K_1M):
         """
@@ -410,3 +408,4 @@ class FutuTrade:
             self.default_logger.info(f'Trading Days: {data}')
             return data
         self.default_logger.error(f'error: {data}')
+        return {}

@@ -66,8 +66,8 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
                                   k_type=KLType.K_WEEK)
         futu_trade.update_1M_data(stock_code, force_update=force_update, default_days=default_days)
 
-    # Clean non-trading days data
-    DataProcessingInterface.clear_empty_data()
+    # Clean non-trading days data (Obsoleted)
+    # DataProcessingInterface.clear_empty_data()
 
 
 def __dynamic_instantiation(prefix: str, module_name: str, optional_parameter=None):
