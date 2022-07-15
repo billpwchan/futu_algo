@@ -198,8 +198,8 @@ def main():
         # Daily Update Data based on all available time files in the data folder
         stock_list.extend(
             [stock_code.name for stock_code in PATH_DATA.iterdir() if
-             stock_code.is_dir() and stock_code not in stock_list])
-        stock_list.remove('Stock_Pool')
+             stock_code.is_dir() and stock_code.name not in stock_list])
+        if 'Stock_Pool' in stock_list: stock_list.remove('Stock_Pool')
         daily_update_data(futu_trade=futu_trade, stock_list=stock_list, force_update=args.force_update)
 
     if args.strategy:
