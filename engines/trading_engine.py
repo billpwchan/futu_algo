@@ -18,6 +18,7 @@
 
 import itertools
 import json
+import pathlib
 import platform
 import subprocess
 from datetime import date, datetime, timedelta
@@ -30,7 +31,7 @@ from futu import AccumulateFilter, AuType, Currency, KLType, KL_FIELD, Market, M
     RET_ERROR, RET_OK, \
     SecurityReferenceType, \
     SecurityType, \
-    SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv
+    SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv, SysConfig
 
 import engines
 from engines import DataProcessingInterface, HKEXInterface, YahooFinanceInterface
@@ -46,6 +47,13 @@ class FutuTrade:
         self.config = config
         self.default_logger = logger.get_logger("futu_trade")
         self.__init_futu_client()
+
+        rsa_private_key = self.config['FutuOpenD.Config'].get('RsaPrivateKey')
+        if rsa_private_key and pathlib.Path(rsa_private_key).is_file():
+            # Setting protocol encryption globally
+            SysConfig.enable_proto_encrypt(True)
+            SysConfig.set_init_rsa_file(rsa_private_key)
+
         self.quote_ctx = OpenQuoteContext(host=self.config['FutuOpenD.Config'].get('Host'),
                                           port=self.config['FutuOpenD.Config'].getint('Port'))
         self.trade_ctx = OpenHKTradeContext(host=self.config['FutuOpenD.Config'].get('Host'),
