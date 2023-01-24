@@ -23,7 +23,8 @@ import sys
 from datetime import datetime
 from math import ceil
 
-from futu import KLType, SubType
+import pandas as pd
+from futu import KLType, Market, SecurityType, SubType
 
 from engines import *
 from strategies.Strategies import Strategies
@@ -31,7 +32,7 @@ from strategies.Strategies import Strategies
 
 def __daily_update_filters():
     filters = list(__init_filter(filter_list=['all']))
-    stock_filter = StockFilter(stock_filters=filters)
+    stock_filter = StockFilter(stock_filters=filters, full_equity_list=HKEXInterface.get_equity_list_full())
     stock_filter.update_filtered_equity_pools()
 
 
@@ -48,12 +49,15 @@ def daily_update_data(futu_trade, stock_list: list, force_update: bool = False):
     # Daily Update Stock Fundamentals
     # futu_trade.update_stock_fundamentals()
 
-    # Daily Update Owner Plate for all Stocks
-    full_equity_list = HKEXInterface.get_equity_list_full()
-    futu_trade.update_owner_plate(stock_list=full_equity_list)
+    # Update Market Plate List
+    futu_trade.update_plate_list()
 
     # Update basic information for all markets
     futu_trade.update_stock_basicinfo()
+
+    # Daily Update Owner Plate for all Stocks
+    full_equity_list = HKEXInterface.get_equity_list_full()
+    futu_trade.update_owner_plate(stock_list=full_equity_list)
 
     # Identify the last update date of the data
     default_days = max([DataProcessingInterface.get_num_days_to_update(stock_code) for stock_code in stock_list])
@@ -134,9 +138,9 @@ def init_day_trading(futu_trade: trading_engine.FutuTrade, stock_list: list, str
         sys.exit(1)
 
 
-def init_stock_filter(filter_list: list) -> list:
+def init_stock_filter(filter_list: list, full_equity_list: list) -> list:
     filters = __init_filter(filter_list)
-    stock_filter = StockFilter(stock_filters=filters)
+    stock_filter = StockFilter(stock_filters=filters, full_equity_list=full_equity_list.copy())
     return stock_filter.get_filtered_equity_pools()
 
 
@@ -187,7 +191,13 @@ def main():
                            stock_code not in stock_list])
 
     if args.filter:
-        filtered_stock_list = init_stock_filter(args.filter)
+        full_equity_list = []
+        # full_equity_list.extend(futu_trade.get_stock_basicinfo(Market.HK, SecurityType.STOCK)['code'].tolist())
+        input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
+                   futu_trade.get_stock_basicinfo(Market.SZ, SecurityType.STOCK)], ignore_index=True)
+        full_equity_list.extend(input_df['code'].tolist())
+
+        filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
         filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
         for subscriber in subscription_list:

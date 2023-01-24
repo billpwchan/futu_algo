@@ -132,4 +132,3 @@ dependencies:
       - wrapt==1.13.3
       - yarg==0.1.9
       - yfinance==0.1.70
-prefix: C:\Users\billpwchan\anaconda3\envs\futu_trade

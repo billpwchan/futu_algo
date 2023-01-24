@@ -286,8 +286,19 @@ class DataProcessingInterface:
 
     @staticmethod
     def get_num_days_to_update(stock_code) -> int:
-        return (datetime.now() - datetime.fromtimestamp(
-            Path(max((PATH_DATA / stock_code).glob('*.parquet'), key=os.path.getctime)).stat().st_mtime)).days
+        try:
+            return (datetime.now() - datetime.fromtimestamp(
+                Path(max((PATH_DATA / stock_code).glob('*.parquet'), key=os.path.getctime)).stat().st_mtime)).days
+        # Will throw ValueError if the Path is not found
+        except ValueError:
+            return 365 * 2
+
+    @staticmethod
+    def get_file_to_df(input_file: Path) -> pd.DataFrame:
+        if input_file.suffix == '.parquet':
+            DataProcessingInterface.default_logger.info(f'Loading {input_file}...')
+            return pd.read_parquet(input_file)
+        return pd.DataFrame()
 
 
 class YahooFinanceInterface:
@@ -317,8 +328,12 @@ class YahooFinanceInterface:
             E.g., HK.09988 -> 9988.HK
         :param futu_code: Stock code used in Futu (e.g., HK.09988)
         """
-        assert re.match(r'^[A-Z]{2}.\d{5}$', futu_code)
-        return '.'.join(reversed(futu_code.split('.')))[1:]
+        if futu_code.startswith("HK"):
+            assert re.match(r'^[A-Z]{2}.\d{5}$', futu_code)
+            return '.'.join(reversed(futu_code.split('.')))[1:]
+        else:
+            assert re.match(r'^[A-Z]{2}.\d{6}$', futu_code)
+            return '.'.join(reversed(futu_code.split('.')))
 
     @staticmethod
     def yfinance_code_to_futu_code(yfinance_code: str) -> str:
@@ -373,7 +388,7 @@ class YahooFinanceInterface:
     @staticmethod
     def get_stock_history(stock_code: str) -> pd.DataFrame:
         stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
-        return yf.download(stock_code, auto_adjust=True, actions=True, progress=False)
+        return yf.download(stock_code, auto_adjust=True, actions=True, progress=False, period="1y")
 
     @staticmethod
     def parse_stock_info(stock_code: str):

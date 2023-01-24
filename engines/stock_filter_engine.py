@@ -27,17 +27,19 @@ from util.global_vars import *
 
 
 class StockFilter:
-    def __init__(self, stock_filters: list):
+    def __init__(self, stock_filters: list, full_equity_list : list):
         self.default_logger = logger.get_logger("stock_filter")
         self.config = config
-        self.full_equity_list = HKEXInterface.get_equity_list_full()
+        self.full_equity_list = full_equity_list
         self.stock_filters = stock_filters
+        self.default_logger.info(f'Stock Filter initialized ({len(full_equity_list)}: {full_equity_list}')
 
     def validate_stock(self, equity_code):
         try:
             quant_data = YahooFinanceInterface.get_stock_history(equity_code)
         except:
             self.default_logger.error('Exception Happened')
+            return None
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
         info_data = {}

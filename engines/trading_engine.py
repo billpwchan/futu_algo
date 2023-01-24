@@ -28,7 +28,7 @@ import pandas as pd
 import psutil
 from futu import AccumulateFilter, AuType, Currency, KLType, KL_FIELD, Market, MarketState, OpenHKTradeContext, \
     OpenQuoteContext, \
-    RET_ERROR, RET_OK, \
+    Plate, RET_ERROR, RET_OK, \
     SecurityReferenceType, \
     SecurityType, \
     SimpleFilter, SortDir, StockField, SubType, TradeDateMarket, TrdEnv, SysConfig
@@ -64,7 +64,7 @@ class FutuTrade:
         self.trd_env = TrdEnv.REAL if self.config.get('FutuOpenD.Config', 'TrdEnv') == 'REAL' else TrdEnv.SIMULATE
         self.trading_util = engines.OrderEngine(self.quote_ctx, self.trade_ctx, self.trd_env)
         # Futu-Specific Variables
-        self.market_list = [Market.HK, Market.US, Market.SH, Market.SZ, Market.HK_FUTURE, Market.SG, Market.JP]
+        self.market_list = [Market.HK, Market.US, Market.SH, Market.SZ, Market.SG, Market.JP]
         self.security_type_list = [SecurityType.BOND, SecurityType.BWRT, SecurityType.STOCK, SecurityType.WARRANT,
                                    SecurityType.IDX, SecurityType.ETF, SecurityType.FUTURE, SecurityType.PLATE,
                                    SecurityType.PLATESET]
@@ -323,6 +323,19 @@ class FutuTrade:
                 self.default_logger.error(f'{k_type} Historical KLine Store Error: {data}')
             time.sleep(0.6)
 
+    def update_plate_list(self):
+        output_df = pd.DataFrame()
+        for market in self.market_list:
+            ret, data = self.quote_ctx.get_plate_list(market=market, plate_class=Plate.ALL)
+            if ret == RET_OK:
+                output_df = pd.concat([output_df, data], ignore_index=True)
+            else:
+                self.default_logger.error(f'Cannot get Plate List: {data}')
+            time.sleep(3.5)
+        output_path = PATH_DATA / 'Stock_Pool' / 'stock_plate_list.parquet'
+        DataProcessingInterface.save_stock_df_to_file(output_df, output_path)
+        self.default_logger.info(f'Stock Owner Plate Updated: {output_path}')
+
     def update_owner_plate(self, stock_list: list):
         """
         Update Owner Plate information for all equities in Hong Kong stock market.
@@ -356,6 +369,15 @@ class FutuTrade:
         output_path = PATH_DATA / 'Stock_Pool' / 'stock_basic_info.parquet'
         DataProcessingInterface.save_stock_df_to_file(output_df, output_path)
         self.default_logger.info(f'Stock Static Basic Info Updated: {output_path}')
+
+    def get_stock_basicinfo(self, market: Market, stock_type: SecurityType):
+        output_df = pd.DataFrame()
+        ret, data = self.quote_ctx.get_stock_basicinfo(market=market, stock_type=stock_type)
+        if ret == RET_OK:
+            self.default_logger.info(f'Stock Basic Info of {market} - {stock_type} Retrieved.')
+            return data
+        else:
+            self.default_logger.error(f'Cannot get Stock Basic Info of {market} - {stock_type}: {data}')
 
     def update_stock_fundamentals(self):
         """

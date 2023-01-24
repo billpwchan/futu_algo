@@ -22,7 +22,7 @@ from filters.Filters import Filters
 
 
 class VolumeThreshold(Filters):
-    def __init__(self, volume_threshold: int = 10 ** 7):
+    def __init__(self, volume_threshold: int = 50000000):
         self.VOLUME_THRESHOLD = volume_threshold
         super().__init__()
 

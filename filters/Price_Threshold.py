@@ -22,7 +22,7 @@ from filters.Filters import Filters
 
 
 class PriceThreshold(Filters):
-    def __init__(self, price_threshold: int = 1):
+    def __init__(self, price_threshold: int = 3):
         self.PRICE_THRESHOLD = price_threshold
         super().__init__()
 
