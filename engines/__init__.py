@@ -17,7 +17,7 @@
 
 
 from .backtesting_engine import BacktestingEngine
-from .data_engine import DataProcessingInterface, HKEXInterface, YahooFinanceInterface
+from .data_engine import DataProcessingInterface, HKEXInterface, YahooFinanceInterface, TuShareInterface
 from .email_engine import EmailEngine
 from .order_engine import *
 from .stock_filter_engine import *

@@ -174,6 +174,7 @@ def main():
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
     parser.add_argument("-en", "--email_name", type=str, help="Name of the applied stock filtering techniques")
+    parser.add_argument("-m", "--market", type=str, choices=['HK', 'CHINA'], nargs="+", help="Available Market")
 
     # Evaluate Arguments
     args = parser.parse_args()
@@ -191,18 +192,34 @@ def main():
                            stock_code not in stock_list])
 
     if args.filter:
-        full_equity_list = []
-        # full_equity_list.extend(futu_trade.get_stock_basicinfo(Market.HK, SecurityType.STOCK)['code'].tolist())
-        input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
-                   futu_trade.get_stock_basicinfo(Market.SZ, SecurityType.STOCK)], ignore_index=True)
-        full_equity_list.extend(input_df['code'].tolist())
-
-        filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
-        filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
-        for subscriber in subscription_list:
-            filter_name = args.email_name if args.email_name else "Default Stock Filter"
-            email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
+        if 'HK' in args.market:
+            # HK Market Stock Filter
+            full_equity_list = []
+
+            full_equity_list.extend(futu_trade.get_stock_basicinfo(Market.HK, SecurityType.STOCK)['code'].tolist())
+            full_equity_list = ['HK.06862']
+            filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
+            filtered_stock_dict_hk = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
+
+            for subscriber in subscription_list:
+                filter_name = args.email_name if args.email_name else "Default Stock Filter"
+                email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict_hk)
+
+        if 'CHINA' in args.market:
+            input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
+                                  futu_trade.get_stock_basicinfo(Market.SZ, SecurityType.STOCK)], ignore_index=True)
+            china_equity_list = input_df['code'].tolist()
+            TuShareInterface.update_stocks_history(china_equity_list)
+
+            filtered_stock_list_china = init_stock_filter(args.filter, china_equity_list)
+            filtered_stock_dict_china = TuShareInterface.get_stocks_email(filtered_stock_list_china)
+
+            for subscriber in subscription_list:
+                filter_name = args.email_name if args.email_name else "Default Stock Filter"
+                email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict_china)
+
+
 
     if args.update or args.force_update:
         # Daily Update Data based on all available time files in the data folder

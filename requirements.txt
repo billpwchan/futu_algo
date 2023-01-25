@@ -9,3 +9,4 @@ futu-api
 pyyaml
 pylint
 pyarrow
+tushare

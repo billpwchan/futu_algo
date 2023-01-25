@@ -14,20 +14,20 @@
 #
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 #  Copyright (c)  billpwchan - All Rights Reserved
-
-
+import logging
+import multiprocessing
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 
-from engines.data_engine import HKEXInterface, YahooFinanceInterface
+from engines.data_engine import HKEXInterface, TuShareInterface, YahooFinanceInterface
 from util import logger
 from util.global_vars import *
 
 
 class StockFilter:
-    def __init__(self, stock_filters: list, full_equity_list : list):
+    def __init__(self, stock_filters: list, full_equity_list: list):
         self.default_logger = logger.get_logger("stock_filter")
         self.config = config
         self.full_equity_list = full_equity_list
@@ -36,9 +36,14 @@ class StockFilter:
 
     def validate_stock(self, equity_code):
         try:
-            quant_data = YahooFinanceInterface.get_stock_history(equity_code)
-        except:
-            self.default_logger.error('Exception Happened')
+            if 'HK' in equity_code:
+                quant_data = YahooFinanceInterface.get_stock_history(equity_code)
+            elif 'SZ' in equity_code or 'SH' in equity_code:
+                quant_data = TuShareInterface.get_stock_history(equity_code)
+            else:
+                quant_data = pd.DataFrame()
+        except Exception as e:
+            self.default_logger.error(f'Exception Happened: {e}')
             return None
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
@@ -52,8 +57,8 @@ class StockFilter:
     def validate_stock_individual(self, equity_code):
         try:
             quant_data = YahooFinanceInterface.get_stock_history(equity_code)
-        except:
-            self.default_logger.error('Exception Happened')
+        except Exception as e:
+            self.default_logger.error(f'Exception Happened: {e}')
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
         info_data = {}
@@ -71,12 +76,18 @@ class StockFilter:
             Based on history data extracted from Yahoo Finance
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
-        # database = data_engine.DatabaseInterface(database_path=self.config['Database'].get('Database_path'))
-
-        pool = Pool(cpu_count())
-        filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
-        pool.close()
-        pool.join()
+        filtered_stock_list = []
+        if 'HK' in self.full_equity_list[0]:
+            pool = Pool(min(len(self.full_equity_list), cpu_count()))
+            filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
+            pool.close()
+            pool.join()
+        else:
+            for stock_code in self.full_equity_list:
+                result = self.validate_stock(stock_code)
+                if result is not None:
+                    filtered_stock_list.append(result)
+        self.default_logger.info(f'Filtered Stock List: {filtered_stock_list}')
 
         return [item for item in filtered_stock_list if item is not None]
 

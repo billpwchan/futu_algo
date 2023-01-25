@@ -21,7 +21,7 @@ import json
 import os
 import re
 import sqlite3
-from datetime import datetime
+from datetime import datetime, timedelta
 from multiprocessing import Pool, cpu_count
 
 import humanize
@@ -29,6 +29,8 @@ import openpyxl
 import pandas as pd
 import requests
 import yfinance as yf
+import tushare as ts
+
 from deprecated import deprecated
 
 from util import logger
@@ -301,6 +303,65 @@ class DataProcessingInterface:
         return pd.DataFrame()
 
 
+class TuShareInterface:
+    output_df = pd.DataFrame()
+    pro = ts.pro_api(config.get('TuShare.Credential', 'token'))
+
+    @staticmethod
+    def __validate_stock_code(stock_list: list) -> list:
+        """
+            Check stock code format, and always return TuShare Stock Code format
+            Use Internally
+        :param stock_list: Either in Futu Format (Starts with HK/US) / Yahoo Finance Format (Starts with Number)
+        :return: Stock code list in Yahoo Finance format
+        """
+        return [YahooFinanceInterface.futu_code_to_yfinance_code(stock_code) if stock_code[:1].isalpha() else stock_code
+                for stock_code in stock_list]
+
+    @staticmethod
+    def update_stocks_history(stock_list: list) -> bool:
+        stock_list = TuShareInterface.__validate_stock_code(stock_list)
+        # Rate Limit = 6000 data per request
+        interval = int(6000 / 300)
+        stock_lists = [stock_list[i:i + interval] for i in range(0, len(stock_list), interval)]
+        start_date = str((datetime.today() - timedelta(days=round(365 * 1))).date())
+        end_date = str(datetime.today().date().strftime("%Y%m%d"))
+
+        for stock_list in stock_lists:
+            input_df = TuShareInterface.pro.daily(ts_code=','.join(stock_list), start_date=start_date,
+                                                  end_date=end_date)
+            input_df.sort_values(by=['ts_code', 'trade_date'], ascending=[True, True], inplace=True)
+            input_df = input_df.rename(columns={"ts_code": "code", "trade_date": "time_key", "vol": "volume"})
+            TuShareInterface.output_df = pd.concat([TuShareInterface.output_df, input_df], ignore_index=True)
+        return True
+
+    @staticmethod
+    def get_stock_history(stock_code: str) -> pd.DataFrame:
+        stock_code = TuShareInterface.__validate_stock_code([stock_code])[0]
+        return TuShareInterface.output_df[TuShareInterface.output_df['code'] == stock_code].reset_index(drop=True)
+
+    @staticmethod
+    def get_stocks_email(stock_list: list) -> dict:
+        stock_list = TuShareInterface.__validate_stock_code(stock_list)
+        output_dict = {}
+        input_df = TuShareInterface.pro.stock_basic(ts_code=','.join(stock_list), exchange='', list_status='L',
+                                                    fields='ts_code,symbol,name,area,industry,market,list_date,enname,fullname,curr_type')
+        for stock_code in stock_list:
+            stock_info = input_df[input_df['ts_code'] == stock_code].reset_index(drop=True)
+            stock_price = TuShareInterface.get_stock_history(stock_code).tail(1).reset_index(drop=True)
+            output_dict[stock_code] = {
+                'longName':      f"{stock_info['name'][0]} {stock_info['enname'][0]}",
+                'previousClose': f"{stock_info['curr_type'][0]} {stock_price['pre_close'][0]}",
+                'open':          f"{stock_info['curr_type'][0]} {stock_price['open'][0]}",
+                'close':         f"{stock_info['curr_type'][0]} {stock_price['close'][0]}",
+                'change':        stock_price['change'][0],
+                'pct_change':    stock_price['pct_chg'][0],
+                'volume':        humanize.intword(stock_price['volume'][0]),
+                'amount':        humanize.intword(stock_price['amount'][0])
+            }
+        return output_dict
+
+
 class YahooFinanceInterface:
     @staticmethod
     def __validate_stock_code(stock_list: list) -> list:
@@ -343,7 +404,10 @@ class YahooFinanceInterface:
         :param yfinance_code: Stock code used in Yahoo Finance (e.g., 9988.HK)
         """
         assert re.match(r'^\d{4}.[A-Z]{2}$', yfinance_code)
-        return '.'.join(reversed(('0' + yfinance_code).split('.')))
+        if 'HK' in yfinance_code:
+            return '.'.join(reversed(('0' + yfinance_code).split('.')))
+        else:
+            return '.'.join(reversed((yfinance_code).split('.')))
 
     @staticmethod
     def get_stocks_info(stock_list: list) -> dict:

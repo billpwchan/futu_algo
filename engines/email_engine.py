@@ -103,12 +103,12 @@ class EmailEngine:
               <th>Stock Code</th>
               <th>Company Name</th>
               <th>Last Close</th>
-              <th>Day's Range</th>
-              <th>Market Cap</th>
-              <th>Beta (5Y Monthly)</th>
-              <th>PE (Trailing/Forward)</th>
-              <th>EPS (Trailing/Forward)</th>
+              <th>Open</th>
+              <th>Close</th>
+              <th>Change</th>
+              <th>% Change</th>
               <th>Volume</th>
+              <th>Amount</th>
             </tr>
           </thead>
           <tbody>\n
@@ -120,12 +120,12 @@ class EmailEngine:
               <td>{equity}</td>
               <td>{values['longName']}</td>
               <td>{values['previousClose']}</td>
-              <td>{values['dayRange']}</td>
-              <td>{values['marketCap']}</td>
-              <td>{values['beta']}</td>
-              <td>{values['PE(Trailing/Forward)']}</td>
-              <td>{values['EPS(Trailing/Forward)']}</td>
+              <td>{values['open']}</td>
+              <td>{values['close']}</td>
+              <td>{values['change']}</td>
+              <td>{values['pct_change']}</td>
               <td>{values['volume']}</td>
+              <td>{values['amount']}</td>
             </tr>\n
             """
         html += """\
