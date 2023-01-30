@@ -207,7 +207,10 @@ class DataProcessingInterface:
             if file_type == 'csv':
                 data.to_csv(output_path, index=False, encoding='utf-8-sig')
             elif file_type == 'parquet':
-                data.to_parquet(output_path, index=False)
+                try:
+                    data.to_parquet(output_path, index=False)
+                except OverflowError:
+                    print("Error")
             return True
         return False
 
