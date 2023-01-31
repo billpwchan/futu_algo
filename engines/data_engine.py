@@ -28,10 +28,10 @@ import humanize
 import openpyxl
 import pandas as pd
 import requests
-import yfinance as yf
 import tushare as ts
-
+import yfinance as yf
 from deprecated import deprecated
+from tqdm import tqdm
 
 from util import logger
 from util.global_vars import *
@@ -330,7 +330,7 @@ class TuShareInterface:
         start_date = str((datetime.today() - timedelta(days=round(365 * 1))).date())
         end_date = str(datetime.today().date().strftime("%Y%m%d"))
 
-        for stock_list in stock_lists:
+        for stock_list in tqdm(stock_lists):
             input_df = TuShareInterface.pro.daily(ts_code=','.join(stock_list), start_date=start_date,
                                                   end_date=end_date)
             input_df.sort_values(by=['ts_code', 'trade_date'], ascending=[True, True], inplace=True)
@@ -353,12 +353,12 @@ class TuShareInterface:
             stock_info = input_df[input_df['ts_code'] == stock_code].reset_index(drop=True)
             stock_price = TuShareInterface.get_stock_history(stock_code).tail(1).reset_index(drop=True)
             output_dict[stock_code] = {
-                'longName':      f"{stock_info['name'][0]} {stock_info['enname'][0]}",
+                'longName':      f"{stock_info['name'][0]} ({stock_info['market'][0]}) {stock_info['enname'][0]}",
+                'description':   f"{stock_info['area'][0]} {stock_info['industry'][0]}",
                 'previousClose': f"{stock_info['curr_type'][0]} {stock_price['pre_close'][0]}",
                 'open':          f"{stock_info['curr_type'][0]} {stock_price['open'][0]}",
                 'close':         f"{stock_info['curr_type'][0]} {stock_price['close'][0]}",
-                'change':        stock_price['change'][0],
-                'pct_change':    stock_price['pct_chg'][0],
+                'pct_change':    f"{stock_price['pct_chg'][0]}%",
                 'volume':        humanize.intword(stock_price['volume'][0]),
                 'amount':        humanize.intword(stock_price['amount'][0])
             }
@@ -436,15 +436,16 @@ class YahooFinanceInterface:
         output_dict = {}
         for stock_code in stock_list:
             stock_info = yf.Ticker(stock_code).info
-            output_dict[stock_code] = {'longName':              stock_info.get('longName', 'N/A'),
-                                       'previousClose':         f"{stock_info.get('currency', 'N/A')} {stock_info.get('previousClose', 'N/A')}",
-                                       'open':                  f"{stock_info.get('currency', 'N/A')} {stock_info.get('open', 'N/A')}",
-                                       'dayRange':              f"{stock_info.get('currency', 'N/A')} {stock_info.get('dayLow', 'N/A')}-{stock_info.get('dayHigh', 'N/A')}",
-                                       'marketCap':             f"{stock_info.get('currency', 'N/A')} {humanize.intword(stock_info.get('marketCap', 'N/A'))}",
-                                       'beta':                  f"{stock_info.get('beta', 'N/A')}",
-                                       'PE(Trailing/Forward)':  f"{stock_info.get('trailingPE', 'N/A')} / {stock_info.get('forwardPE', 'N/A')}",
-                                       'EPS(Trailing/Forward)': f"{stock_info.get('trailingEps', 'N/A')} / {stock_info.get('forwardEps', 'N/A')}",
-                                       'volume':                humanize.intword(stock_info.get('volume', 'N/A'))}
+            output_dict[stock_code] = {'longName':      stock_info.get('longName', 'N/A'),
+                                       'previousClose': f"{stock_info.get('currency', 'N/A')} {stock_info.get('previousClose', 'N/A')}",
+                                       'description':   f"{stock_info.get('currency', 'N/A')} {humanize.intword(stock_info.get('marketCap', 'N/A'))}",
+                                       'open':          f"{stock_info.get('currency', 'N/A')} {stock_info.get('open', 'N/A')}",
+                                       'close':         f"{stock_info.get('currency', 'N/A')} {stock_info.get('dayLow', 'N/A')}-{stock_info.get('dayHigh', 'N/A')}",
+                                       'pct_change':    f"{stock_info.get('beta', 'N/A')}",
+                                       'volume':        f"{stock_info.get('trailingPE', 'N/A')} / {stock_info.get('forwardPE', 'N/A')}",
+                                       'amount':        f"{stock_info.get('trailingEps', 'N/A')} / {stock_info.get('forwardEps', 'N/A')}",
+                                       }
+
         return output_dict
 
     @staticmethod

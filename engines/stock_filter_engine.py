@@ -20,6 +20,7 @@ from datetime import date
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
+from tqdm import tqdm
 
 from engines.data_engine import HKEXInterface, TuShareInterface, YahooFinanceInterface
 from util import logger
@@ -43,7 +44,7 @@ class StockFilter:
             else:
                 quant_data = pd.DataFrame()
         except Exception as e:
-            self.default_logger.error(f'Exception Happened: {e}')
+            # self.default_logger.error(f'Exception Happened: {e}')
             return None
         quant_data.columns = [item.lower().strip() for item in quant_data]
         # info_data = YahooFinanceInterface.get_stock_info(equity_code)
@@ -83,13 +84,14 @@ class StockFilter:
             pool.close()
             pool.join()
         else:
-            for stock_code in self.full_equity_list:
+            for stock_code in tqdm(self.full_equity_list):
                 result = self.validate_stock(stock_code)
                 if result is not None:
                     filtered_stock_list.append(result)
+        filtered_stock_list = [item for item in filtered_stock_list if item is not None]
         self.default_logger.info(f'Filtered Stock List: {filtered_stock_list}')
 
-        return [item for item in filtered_stock_list if item is not None]
+        return filtered_stock_list
 
     def update_filtered_equity_pools(self):
         """

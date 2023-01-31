@@ -102,10 +102,10 @@ class EmailEngine:
             <tr>
               <th>Stock Code</th>
               <th>Company Name</th>
+              <th>Company Name</th>
               <th>Last Close</th>
               <th>Open</th>
               <th>Close</th>
-              <th>Change</th>
               <th>% Change</th>
               <th>Volume</th>
               <th>Amount</th>
@@ -119,10 +119,10 @@ class EmailEngine:
             <tr>
               <td>{equity}</td>
               <td>{values['longName']}</td>
+              <td>{values['description']}</td>
               <td>{values['previousClose']}</td>
               <td>{values['open']}</td>
               <td>{values['close']}</td>
-              <td>{values['change']}</td>
               <td>{values['pct_change']}</td>
               <td>{values['volume']}</td>
               <td>{values['amount']}</td>
