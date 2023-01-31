@@ -47,10 +47,11 @@ class EmailEngine:
 
     def write_daily_stock_filter_email(self, receiver: str, filter_name: str, message_content: dict):
         message = MIMEMultipart("alternative")
-        message["Subject"] = f"Daily Selected Stock List - {datetime.today().strftime('%Y-%m-%d')} - {filter_name}"
+        message["Subject"] = f"FutuAlgo Stock Filter - {datetime.today().strftime('%Y-%m-%d')} - {filter_name}"
         message["From"] = self.sender
         message["To"] = receiver
         text = "Please kindly review today's chosen stock list! "
+        newline = "\n"
         html = """\
         <style>
         * {
@@ -95,37 +96,29 @@ class EmailEngine:
           font-weight: bold;
           color: #009879;
         }
-
-        </style>
-        <table class="content-table">
-          <thead>
-            <tr>
-              <th>Stock Code</th>
-              <th>Company Name</th>
-              <th>Company Name</th>
-              <th>Last Close</th>
-              <th>Open</th>
-              <th>Close</th>
-              <th>% Change</th>
-              <th>Volume</th>
-              <th>Amount</th>
-            </tr>
-          </thead>
-          <tbody>\n
         """
 
+        header_flag = False
+
         for equity, values in message_content.items():
+            if not header_flag:
+                html += f"""\
+                 </style>
+                <table class="content-table">
+                  <thead>
+                    <tr>
+                      <th>Stock Code</th>
+                      f'{newline.join(f"<th>{key}</th>" for key, value in values.items())}'
+                    </tr>
+                  </thead>
+                  <tbody>\n
+                """
+                header_flag = True
+
             html += f"""\
             <tr>
               <td>{equity}</td>
-              <td>{values['longName']}</td>
-              <td>{values['description']}</td>
-              <td>{values['previousClose']}</td>
-              <td>{values['open']}</td>
-              <td>{values['close']}</td>
-              <td>{values['pct_change']}</td>
-              <td>{values['volume']}</td>
-              <td>{values['amount']}</td>
+              f'{newline.join(f"<td>{value}</td>" for key, value in values.items())}'
             </tr>\n
             """
         html += """\

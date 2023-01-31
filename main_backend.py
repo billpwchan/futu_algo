@@ -198,7 +198,8 @@ def main():
             full_equity_list = []
 
             full_equity_list.extend(futu_trade.get_stock_basicinfo(Market.HK, SecurityType.STOCK)['code'].tolist())
-            filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
+            # filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
+            filtered_stock_list = ['1114.HK']
             filtered_stock_dict_hk = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
 
             for subscriber in subscription_list:

@@ -10,3 +10,4 @@ pyyaml
 pylint
 pyarrow
 tushare
+tqdm

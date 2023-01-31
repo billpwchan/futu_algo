@@ -14,15 +14,13 @@
 #
 #  Written by Bill Chan <billpwchan@hotmail.com>, 2021
 #  Copyright (c)  billpwchan - All Rights Reserved
-import logging
-import multiprocessing
 from datetime import date
 from multiprocessing import Pool, cpu_count
 
 import pandas as pd
 from tqdm import tqdm
 
-from engines.data_engine import HKEXInterface, TuShareInterface, YahooFinanceInterface
+from engines.data_engine import TuShareInterface, YahooFinanceInterface
 from util import logger
 from util.global_vars import *
 
