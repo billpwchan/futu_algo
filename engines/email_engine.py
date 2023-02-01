@@ -108,7 +108,7 @@ class EmailEngine:
                   <thead>
                     <tr>
                       <th>Stock Code</th>
-                      f'{newline.join(f"<th>{key}</th>" for key, value in values.items())}'
+                      {newline.join(f"<th>{key}</th>" for key, value in values.items())}
                     </tr>
                   </thead>
                   <tbody>\n
@@ -118,7 +118,7 @@ class EmailEngine:
             html += f"""\
             <tr>
               <td>{equity}</td>
-              f'{newline.join(f"<td>{value}</td>" for key, value in values.items())}'
+              {newline.join(f"<td>{value}</td>" for key, value in values.items())}
             </tr>\n
             """
         html += """\
