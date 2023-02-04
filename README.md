@@ -3,7 +3,7 @@
 
 **billpwchan/futu-algo API Reference Documentation**
 
-<a href="https://www.buymeacoffee.com/roniemartinez" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+<a href="https://www.buymeacoffee.com/billpwchan98" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
 
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/9bd8017de7e94474aa5254c5061f17d6)](https://app.codacy.com/gh/billpwchan/futu_algo?utm_source=github.com&utm_medium=referral&utm_content=billpwchan/futu_algo&utm_campaign=Badge_Grade_Settings)
 
