@@ -186,11 +186,6 @@ def main():
     # Initialize Stock List
     stock_list = json.loads(config.get('TradePreference', 'StockList'))
 
-    # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
-    if args.include_hsi or not stock_list:
-        stock_list.extend([stock_code for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
-                           stock_code not in stock_list])
-
     if args.filter:
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
         if 'HK' in args.market:
@@ -218,7 +213,10 @@ def main():
                 filter_name = args.email_name if args.email_name else "Default Stock Filter"
                 email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict_china)
 
-
+    # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
+    if args.include_hsi or not stock_list:
+        stock_list.extend([stock_code for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
+                           stock_code not in stock_list])
 
     if args.update or args.force_update:
         # Daily Update Data based on all available time files in the data folder

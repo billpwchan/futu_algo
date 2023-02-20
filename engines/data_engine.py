@@ -190,6 +190,24 @@ class DataProcessingInterface:
         return input_data
 
     @staticmethod
+    def convert_day_interval_to_weekly(input_df: pd.DataFrame):
+        """
+        For Yahoo Finance format, Index(['Open', 'High', 'Low', 'Close', 'Volume', 'Dividends', 'Stock Splits'], dtype='object')
+        Convert from Day-level K-line to Weekly-level K-Line for Stock Filter. Inplace change
+        :param input_df: Dataframe extracted from yFinance lib
+        """
+        logic = {'open':   'first',
+                 'high':   'max',
+                 'low':    'min',
+                 'close':  'last',
+                 'volume': 'sum'}
+        input_df.columns = [item.lower().strip() for item in input_df]
+
+        input_df.index = pd.to_datetime(input_df.index)
+        input_df = input_df.resample('W').apply(logic)
+        input_df.index = input_df.index - pd.tseries.frequencies.to_offset("6D")
+
+    @staticmethod
     def validate_1M_data(date_range: list, stock_list: list, trading_days: dict):
         raise NotImplementedError
         # TODO: Validate data against futu records
@@ -440,12 +458,12 @@ class YahooFinanceInterface:
             output_dict[stock_code] = {
                 'Company Name':          f"{stock_ticker.info.get('shortName')} {stock_ticker.info.get('longName', 'N/A')}",
                 'Sector':                stock_ticker.info.get('sector', 'N/A'),
-                'Last Close':            f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('previous_close', 'N/A'):.3f}",
-                'Open':                  f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('open', 'N/A'):.3f}",
-                'Close':                 f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('last_price', 'N/A'):.3f}",
-                '% Change':              f"{(float(stock_ticker.fast_info.get('last_price', 'N/A')) - float(stock_ticker.fast_info.get('previous_close', 'N/A'))) / float(stock_ticker.fast_info.get('previous_close', 'N/A')) * 100:.2f}%",
+                'Last Close':            f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('previous_close', 'N/A')}",
+                'Open':                  f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('open', 'N/A')}",
+                'Close':                 f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('last_price', 'N/A')}",
+                # '% Change':              f"{(float(stock_ticker.fast_info.get('last_price', 'N/A')) - float(stock_ticker.fast_info.get('previous_close', 'N/A'))) / float(stock_ticker.fast_info.get('previous_close', 'N/A')) * 100:.2f}%",
                 'Volume':                f"{stock_ticker.fast_info.get('currency', 'N/A')} {humanize.intword(stock_ticker.fast_info.get('last_volume', 'N/A'))}",
-                '52 Week Range':         f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('year_low', 'N/A'):.3f}-{stock_ticker.fast_info.get('year_high', 'N/A'):.3f}",
+                '52 Week Range':         f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('year_low', 'N/A')}-{stock_ticker.fast_info.get('year_high', 'N/A')}",
                 'PE(Trailing/Forward)':  f"{stock_ticker.info.get('trailingPE', 'N/A')} / {stock_ticker.info.get('forwardPE', 'N/A')}",
                 'EPS(Trailing/Forward)': f"{stock_ticker.info.get('trailingEps', 'N/A')} / {stock_ticker.info.get('forwardEps', 'N/A')}",
                 'Target Mean Price':     f"{stock_ticker.fast_info.get('currency', 'N/A')} {humanize.intword(stock_ticker.fast_info.get('targetMeanPrice', 'N/A'))}",
@@ -459,10 +477,10 @@ class YahooFinanceInterface:
         return yf.download(stock_list, group_by="ticker", auto_adjust=True, actions=True, progress=False)
 
     @staticmethod
-    def get_stock_history(stock_code: str) -> pd.DataFrame:
+    def get_stock_history(stock_code: str, period: str = "1y") -> pd.DataFrame:
         stock_code = YahooFinanceInterface.__validate_stock_code([stock_code])[0]
         # return yf.download(stock_code, auto_adjust=True, actions=True, progress=False, period="1y")
-        return yf.Ticker(stock_code).history(period="1y")
+        return yf.Ticker(stock_code).history(period=period)
 
     @staticmethod
     def parse_stock_info(stock_code: str):
