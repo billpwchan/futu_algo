@@ -29,6 +29,7 @@ import openpyxl
 import pandas as pd
 import requests
 import tushare as ts
+import yahooquery
 import yfinance as yf
 from deprecated import deprecated
 from tqdm import tqdm
@@ -454,19 +455,18 @@ class YahooFinanceInterface:
         stock_list = YahooFinanceInterface.__validate_stock_code(stock_list)
         output_dict = {}
         for stock_code in stock_list:
-            stock_ticker = yf.Ticker(stock_code)
+            # stock_ticker = yf.Ticker(stock_code)
+            stock_ticker = yahooquery.Ticker(stock_code)
             output_dict[stock_code] = {
-                'Company Name':          f"{stock_ticker.info.get('shortName')} {stock_ticker.info.get('longName', 'N/A')}",
-                'Sector':                stock_ticker.info.get('sector', 'N/A'),
-                'Last Close':            f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('previous_close', 'N/A')}",
-                'Open':                  f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('open', 'N/A')}",
-                'Close':                 f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('last_price', 'N/A')}",
-                # '% Change':              f"{(float(stock_ticker.fast_info.get('last_price', 'N/A')) - float(stock_ticker.fast_info.get('previous_close', 'N/A'))) / float(stock_ticker.fast_info.get('previous_close', 'N/A')) * 100:.2f}%",
-                'Volume':                f"{stock_ticker.fast_info.get('currency', 'N/A')} {humanize.intword(stock_ticker.fast_info.get('last_volume', 'N/A'))}",
-                '52 Week Range':         f"{stock_ticker.fast_info.get('currency', 'N/A')} {stock_ticker.fast_info.get('year_low', 'N/A')}-{stock_ticker.fast_info.get('year_high', 'N/A')}",
-                'PE(Trailing/Forward)':  f"{stock_ticker.info.get('trailingPE', 'N/A')} / {stock_ticker.info.get('forwardPE', 'N/A')}",
-                'EPS(Trailing/Forward)': f"{stock_ticker.info.get('trailingEps', 'N/A')} / {stock_ticker.info.get('forwardEps', 'N/A')}",
-                'Target Mean Price':     f"{stock_ticker.fast_info.get('currency', 'N/A')} {humanize.intword(stock_ticker.fast_info.get('targetMeanPrice', 'N/A'))}",
+                'Company Name':         f"{stock_ticker.price[stock_code].get('shortName')} {stock_ticker.price[stock_code].get('longName')}",
+                'Sector':               stock_ticker.asset_profile[stock_code].get('sector', 'N/A'),
+                'Last Close':           f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.summary_detail[stock_code].get('previousClose', 0):.3f}",
+                'Open':                 f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.price[stock_code].get('regularMarketDayHigh', 0):.3f}",
+                'Close':                f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.price[stock_code].get('regularMarketPrice', 0):.3f}",
+                '% Change':             f"{stock_ticker.price[stock_code].get('regularMarketChange', 0):.2f}%",
+                'Volume':               f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {humanize.intword(stock_ticker.summary_detail[stock_code].get('volume', 'N/A'))}",
+                '52 Week Range':        f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.summary_detail[stock_code].get('fiftyTwoWeekLow', 'N/A')}-{stock_ticker.summary_detail[stock_code].get('fiftyTwoWeekHigh', 'N/A')}",
+                'PE(Trailing/Forward)': f"{stock_ticker.summary_detail[stock_code].get('trailingPE', 'N/A')} / {stock_ticker.summary_detail[stock_code].get('forwardPE', 'N/A')}",
             }
 
         return output_dict
