@@ -11,3 +11,4 @@ pylint
 pyarrow
 tushare
 tqdm
+yahooquery
