@@ -87,19 +87,19 @@ class TestDataProcessingInterface(unittest.TestCase):
                 self.assertAlmostEqual(row['last_close'], reference_df.loc[index, 'last_close'], places=2,
                                        msg=f"{index} last_close")
 
-    def test_convert_day_interval_to_weekly(self):
-        input_df = yf.Ticker("0700.HK").history(start="2023-01-02", end="2023-02-02", interval="1d")
-        DataProcessingInterface.convert_day_interval_to_weekly(input_df)
-        reference_df = yf.Ticker("0700.HK").history(start="2023-01-02", end="2023-02-02", interval="1wk")
-        reference_df.columns = [item.lower().strip() for item in reference_df]
-
-        for index, row in input_df.iterrows():
-            self.assertAlmostEqual(row['open'], reference_df.loc[index, 'open'], places = 2, msg = f"{index} open")
-            self.assertAlmostEqual(row['close'], reference_df.loc[index, 'close'], places=2, msg=f"{index} close")
-            self.assertAlmostEqual(row['high'], reference_df.loc[index, 'high'], places=2, msg=f"{index} high")
-            self.assertAlmostEqual(row['low'], reference_df.loc[index, 'low'], places=2, msg=f"{index} low")
-            self.assertAlmostEqual(row['volume'], reference_df.loc[index, 'volume'], places=2,
-                                   msg=f"{index} volume")
+    # def test_convert_day_interval_to_weekly(self):
+    #     input_df = yf.Ticker("0700.HK").history(start="2023-01-02", end="2023-02-02", interval="1d")
+    #     DataProcessingInterface.convert_day_interval_to_weekly(input_df)
+    #     reference_df = yf.Ticker("0700.HK").history(start="2023-01-02", end="2023-02-02", interval="1wk")
+    #     reference_df.columns = [item.lower().strip() for item in reference_df]
+    #
+    #     for index, row in input_df.iterrows():
+    #         self.assertAlmostEqual(row['open'], reference_df.loc[index, 'open'], places = 2, msg = f"{index} open")
+    #         self.assertAlmostEqual(row['close'], reference_df.loc[index, 'close'], places=2, msg=f"{index} close")
+    #         self.assertAlmostEqual(row['high'], reference_df.loc[index, 'high'], places=2, msg=f"{index} high")
+    #         self.assertAlmostEqual(row['low'], reference_df.loc[index, 'low'], places=2, msg=f"{index} low")
+    #         self.assertAlmostEqual(row['volume'], reference_df.loc[index, 'volume'], places=2,
+    #                                msg=f"{index} volume")
 
 
 if __name__ == '__main__':

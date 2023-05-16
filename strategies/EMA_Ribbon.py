@@ -48,7 +48,7 @@ class EMARibbon(Strategies):
                 inplace=True)
             # Append empty columns and concat at the bottom
             latest_data = pd.concat([latest_data, pd.DataFrame(columns=['EMA_fast', 'EMA_slow', 'EMA_supp'])])
-            self.input_data[stock_list[0]] = self.input_data[stock_list[0]].append(latest_data)
+            self.input_data[stock_list[0]] = pd.concat([self.input_data[stock_list[0]], latest_data])
         elif stock_list is not None:
             # Override Updated Stock List
             stock_list = stock_list
