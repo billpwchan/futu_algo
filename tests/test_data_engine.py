@@ -94,7 +94,7 @@ class TestDataProcessingInterface(unittest.TestCase):
         reference_df.columns = [item.lower().strip() for item in reference_df]
 
         for index, row in input_df.iterrows():
-            self.assertAlmostEqual(row['open'], reference_df.loc[, 'open'], places = 2, msg = f"{index} open")
+            self.assertAlmostEqual(row['open'], reference_df.loc[index, 'open'], places = 2, msg = f"{index} open")
             self.assertAlmostEqual(row['close'], reference_df.loc[index, 'close'], places=2, msg=f"{index} close")
             self.assertAlmostEqual(row['high'], reference_df.loc[index, 'high'], places=2, msg=f"{index} high")
             self.assertAlmostEqual(row['low'], reference_df.loc[index, 'low'], places=2, msg=f"{index} low")
