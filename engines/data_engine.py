@@ -409,12 +409,14 @@ class YahooFinanceInterface:
     def futu_code_to_yfinance_code(futu_code: str) -> str:
         """
             Convert Futu Stock Code to Yahoo Finance Stock Code format
-            E.g., HK.09988 -> 9988.HK
+            E.g., HK.09988 -> 9988.HK; US.SOHO -> SOHO
         :param futu_code: Stock code used in Futu (e.g., HK.09988)
         """
         if futu_code.startswith("HK"):
             assert re.match(r'^[A-Z]{2}.\d{5}$', futu_code)
             return '.'.join(reversed(futu_code.split('.')))[1:]
+        elif futu_code.startswith('US'):
+            return futu_code.replace('US.', '')
         else:
             assert re.match(r'^[A-Z]{2}.\d{6}$', futu_code)
             return '.'.join(reversed(futu_code.split('.')))

@@ -23,7 +23,6 @@ import sys
 from datetime import datetime
 from math import ceil
 
-import pandas as pd
 from futu import KLType, Market, SecurityType, SubType
 
 from engines import *
@@ -174,7 +173,7 @@ def main():
     parser.add_argument("-f", "--filter", type=str, choices=filter_list, nargs="+",
                         help="Filter Stock List based on Pre-defined Filters")
     parser.add_argument("-en", "--email_name", type=str, help="Name of the applied stock filtering techniques")
-    parser.add_argument("-m", "--market", type=str, choices=['HK', 'CHINA'], nargs="+", help="Available Market")
+    parser.add_argument("-m", "--market", type=str, choices=['HK', 'CHINA', 'US'], nargs="+", help="Available Market")
 
     # Evaluate Arguments
     args = parser.parse_args()
@@ -213,7 +212,13 @@ def main():
                 filter_name = args.email_name if args.email_name else "Default Stock Filter"
                 email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict_china)
 
-    # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
+        if 'US' in args.market:
+            full_equity_list = []
+            full_equity_list.extend(futu_trade.get_stock_basicinfo(Market.US, SecurityType.STOCK)['code'].tolist())
+            filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
+            print(filtered_stock_list)
+
+            # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
     if args.include_hsi or not stock_list:
         stock_list.extend([stock_code for stock_code in YahooFinanceInterface.get_top_30_hsi_constituents() if
                            stock_code not in stock_list])
