@@ -35,7 +35,7 @@ class StockFilter:
 
     def validate_stock(self, equity_code):
         try:
-            if ('HK' or 'US') in equity_code:
+            if 'HK' in equity_code or 'US' in equity_code:
                 quant_data = YahooFinanceInterface.get_stock_history(equity_code)
             elif 'SZ' in equity_code or 'SH' in equity_code:
                 quant_data = TuShareInterface.get_stock_history(equity_code)
@@ -76,7 +76,7 @@ class StockFilter:
         :return: Filtered Stock Code List in Futu Stock Code Format
         """
         filtered_stock_list = []
-        if ('HK' or 'US') in self.full_equity_list[0]:
+        if 'HK' in self.full_equity_list[0] or 'US' in self.full_equity_list[0]:
             pool = Pool(min(len(self.full_equity_list), cpu_count()))
             filtered_stock_list = pool.map(self.validate_stock, self.full_equity_list)
             pool.close()

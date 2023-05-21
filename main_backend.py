@@ -187,17 +187,19 @@ def main():
 
     if args.filter:
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
-        if 'HK' or 'US' in args.market:
-            # HK Market Stock Filter
-            full_equity_list = []
-            market_code = Market.HK if args.market == 'HK' else Market.US
-            full_equity_list.extend(futu_trade.get_stock_basicinfo(market_code, SecurityType.STOCK)['code'].tolist())
-            filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
-            filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
+        if 'HK' in args.market or 'US' in args.market:
+            for market in args.market:
+                # HK Market Stock Filter
+                full_equity_list = []
+                market_code = Market.HK if market == 'HK' else Market.US
+                full_equity_list.extend(
+                    futu_trade.get_stock_basicinfo(market_code, SecurityType.STOCK)['code'].tolist())
+                filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
+                filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
 
-            for subscriber in subscription_list:
-                filter_name = args.email_name if args.email_name else "Default Stock Filter"
-                email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
+                for subscriber in subscription_list:
+                    filter_name = args.email_name if args.email_name else "Default Stock Filter"
+                    email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
 
         if 'CHINA' in args.market:
             input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
