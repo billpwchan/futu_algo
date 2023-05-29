@@ -187,8 +187,9 @@ def main():
 
     if args.filter:
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
-        if 'HK' in args.market or 'US' in args.market:
-            for market in args.market:
+        for market in args.market:
+            filtered_stock_list = []
+            if 'HK' in args.market or 'US' in args.market:
                 # HK Market Stock Filter
                 full_equity_list = []
                 market_code = Market.HK if market == 'HK' else Market.US
@@ -197,22 +198,20 @@ def main():
                 filtered_stock_list = init_stock_filter(args.filter, full_equity_list)
                 filtered_stock_dict = YahooFinanceInterface.get_stocks_email(filtered_stock_list)
 
-                for subscriber in subscription_list:
-                    filter_name = args.email_name if args.email_name else "Default Stock Filter"
-                    email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
+            if 'CHINA' in args.market:
+                input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
+                                      futu_trade.get_stock_basicinfo(Market.SZ, SecurityType.STOCK)], ignore_index=True)
+                china_equity_list = input_df['code'].tolist()
+                TuShareInterface.update_stocks_history(china_equity_list)
 
-        if 'CHINA' in args.market:
-            input_df = pd.concat([futu_trade.get_stock_basicinfo(Market.SH, SecurityType.STOCK),
-                                  futu_trade.get_stock_basicinfo(Market.SZ, SecurityType.STOCK)], ignore_index=True)
-            china_equity_list = input_df['code'].tolist()
-            TuShareInterface.update_stocks_history(china_equity_list)
+                filtered_stock_list = init_stock_filter(args.filter, china_equity_list)
+                filtered_stock_dict = TuShareInterface.get_stocks_email(filtered_stock_list)
 
-            filtered_stock_list_china = init_stock_filter(args.filter, china_equity_list)
-            filtered_stock_dict_china = TuShareInterface.get_stocks_email(filtered_stock_list_china)
-
+            if len(filtered_stock_list) == 0:
+                continue
             for subscriber in subscription_list:
                 filter_name = args.email_name if args.email_name else "Default Stock Filter"
-                email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict_china)
+                email_handler.write_daily_stock_filter_email(subscriber, filter_name, filtered_stock_dict)
 
             # If the user does not provide any preferred stock list, use top 30 HSI constituents instead
     if args.include_hsi or not stock_list:
