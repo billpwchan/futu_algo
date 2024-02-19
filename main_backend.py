@@ -189,6 +189,7 @@ def main():
         subscription_list = json.loads(config.get('Email', 'SubscriptionList'))
         for market in args.market:
             filtered_stock_list = []
+            filtered_stock_dict = {}
             if 'HK' in args.market or 'US' in args.market:
                 # HK Market Stock Filter
                 full_equity_list = []
@@ -207,6 +208,7 @@ def main():
                 filtered_stock_list = init_stock_filter(args.filter, china_equity_list)
                 filtered_stock_dict = TuShareInterface.get_stocks_email(filtered_stock_list)
 
+            # DO NOT send email if no stock gets selected
             if len(filtered_stock_list) == 0:
                 continue
             for subscriber in subscription_list:
