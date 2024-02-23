@@ -465,7 +465,7 @@ class YahooFinanceInterface:
                 'Last Close':           f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.summary_detail[stock_code].get('previousClose', 0):.3f}",
                 'Open':                 f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.price[stock_code].get('regularMarketDayHigh', 0):.3f}",
                 'Close':                f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.price[stock_code].get('regularMarketPrice', 0):.3f}",
-                '% Change':             f"{stock_ticker.price[stock_code].get('regularMarketChangePercent', 0):.2f}%",
+                '% Change':             f"{float(stock_ticker.price[stock_code].get('regularMarketChangePercent', 0))*100:.2f}%",
                 'Volume':               f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {humanize.intword(stock_ticker.summary_detail[stock_code].get('volume', 'N/A'))}",
                 '52 Week Range':        f"{stock_ticker.summary_detail[stock_code].get('currency', 'N/A')} {stock_ticker.summary_detail[stock_code].get('fiftyTwoWeekLow', 'N/A')}-{stock_ticker.summary_detail[stock_code].get('fiftyTwoWeekHigh', 'N/A')}",
                 'PE(Trailing/Forward)': f"{stock_ticker.summary_detail[stock_code].get('trailingPE', 'N/A')} / {stock_ticker.summary_detail[stock_code].get('forwardPE', 'N/A')}",
