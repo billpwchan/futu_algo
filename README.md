@@ -1,65 +1,54 @@
-<div align="center">
-  <img alt="FutuAlgo Logo" src="https://raw.githubusercontent.com/billpwchan/futu_algo/master/images/logo.png" width="400px" />
+<a href="https://github.com/billpwchan"><img src="https://raw.githubusercontent.com/billpwchan/billpwchan/output/banner-futu_algo.svg" alt="futu_algo: algorithmic trading framework on Futu OpenAPI" width="100%"></a>
 
-**billpwchan/futu-algo API Reference Documentation**
+# futu_algo
 
-<a href="https://www.buymeacoffee.com/billpwchan98" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+An algorithmic trading framework for Hong Kong equities built on [Futu OpenD and Futu OpenAPI](https://openapi.futunn.com/). It covers the whole loop for a retail quant: download and store historical K-lines, screen the market, backtest a strategy, then run it live against your Futu account.
 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/9bd8017de7e94474aa5254c5061f17d6)](https://app.codacy.com/gh/billpwchan/futu_algo?utm_source=github.com&utm_medium=referral&utm_content=billpwchan/futu_algo&utm_campaign=Badge_Grade_Settings)
+基於富途 OpenD / OpenAPI 的港股量化交易框架：數據下載與存儲、選股、回測、實盤交易，一個倉庫完成。
 
-[![Issues](https://img.shields.io/github/issues/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/issues)
-[![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
-[![LastCommit](https://img.shields.io/github/last-commit/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/blob/master/LICENSE)
-[![CommitActivity](https://img.shields.io/github/commit-activity/y/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo/commits/master)
-[![WorkflowStatus](https://img.shields.io/github/workflow/status/billpwchan/futu_algo/CodeQL?style=for-the-badge)](https://github.com/billpwchan/futu_algo/commits/master)
-[![RepoSize](https://img.shields.io/github/repo-size/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
-[![Languages](https://img.shields.io/github/languages/top/billpwchan/futu_algo?style=for-the-badge)](https://github.com/billpwchan/futu_algo)
+[![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=flat-square&color=161b22)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/billpwchan/futu_algo?style=flat-square&color=161b22)](https://github.com/billpwchan/futu_algo/stargazers)
+[![Futu OpenAPI](https://img.shields.io/badge/Futu%20OpenAPI-6.1-161b22?style=flat-square)](https://openapi.futunn.com/)
 
-</div>
+## What it does
 
-## Highlights
+| Capability | Details |
+|:--|:--|
+| **Market data** | Downloads K-line history to CSV and SQLite: 1-minute bars for up to 2 years, daily bars for up to 10 years. Incremental updates resume from the last stored bar. |
+| **Stock screening** | Composable filters (`Volume_Threshold`, `Price_Threshold`, `MA_Simple`, `Triple_Cross`) across HK and mainland China markets, with optional email digests. |
+| **Strategies** | A small template (indicators, buy, sell) with `MACD_Cross`, `KDJ_Cross`, `RSI_Threshold` and `EMA_Ribbon` included. Each stock in the pool can run its own strategy. |
+| **Backtesting** | Replays stored history through the same strategy classes, with a Pyfolio-based summary. |
+| **Live trading** | Subscribes to real-time quotes and decides orders in about 0.01 s per stock for a three-indicator strategy (MACD, KDJ, close). Supports `SIMULATE` and `REAL` trading environments. |
 
-- **Supported Platforms and Markets**
+## How it fits together
 
-  Futu_algo is a algorithmic trading solution developed based on FutuOpenD and FutuOpenAPI. Fully support FutuNiuNiu and
-  FutuMooMoo users in Hong Kong stock market. *(More market support is coming soon)*
-- **Historical K-Line Data**
+```mermaid
+flowchart LR
+  OpenD[Futu OpenD] --> Data[data_engine<br/>K-line download]
+  Data --> Store[(CSV + SQLite)]
+  Store --> Filter[stock_filter_engine<br/>screening]
+  Store --> Backtest[backtesting_engine]
+  Filter --> Email[email_engine<br/>digest]
+  OpenD --> Trading[trading_engine<br/>real-time quotes]
+  Trading --> Orders[order_engine]
+  Orders --> OpenD
+```
 
-  Allow users to automatically downloading historical data for your interested stocks into CSV and storing to SQLite
-  database for backtesting. *(up to 1M level for max. 2 years, or 1D level for max. 10 years)*
-- **Backtesting Trading Strategies (BETA)**
+## Quick start
 
-  Backtest your own trading strategies on historical data with a summarized reports and visualizations using Pyfolio.
-  For more demanding users, feel free to other commercial solutions such as Amibroker for backtesting.
-- **Algorithmic Trading**
+1. **Install and log in to [Futu OpenD](https://www.futunn.com/download/OpenAPI)** (Windows, macOS, CentOS, Ubuntu). You need at least LV1 quote rights for the markets you trade; see the [quote permission guide](https://openapi.futunn.com/futu-api-doc/qa/quote.html).
+2. **Create the environment:**
+   ```bash
+   conda env create -f environment.yml
+   ```
+3. **Create `config.ini`** in the repository root (full template below).
+4. **Download data:**
+   ```bash
+   python main_backend.py --force_update
+   ```
 
-  Real-time low-latency trading features that allows applying your own basket of trading strategies on your stock pool.
-  User can specify the trading strategy to be used for each stock based on their preference.
-
-  ***EXAMPLE: 0.01s/STOCK TO DECIDE BUY/SELL ORDER WITH A 3-TECHNICAL INDICATORS STRATEGY (MACD, KDJ AND CLOSE PRICE)***
-
-- **Advanced Stock Screener**
-
-  Screens high-quality stocks using your own stock screening strategies, and notify your friends using the email
-  subscription feature. **Feel free to subscribe by submitting this Google Form! https://forms.gle/C9y4kyYUArKmFzu86**
-- **Trading Strategy Editor**
-
-  Write your own trading strategy following a simple template (buy, sell, calculate technical indicators). Common
-  strategies such as MACD and KDJ-based trading rules are provided as guidelines.
-- **GUI Support (Upcoming)**
-
-  Easy-to-use GUI for users to adjust their configurations, trading, downloading data and filtering stocks within one
-  application. No longer need to type any command for trading!
-
-## Version Guidance
-
-| FutuAlgo Release | Futu OpenAPI Specification |
-|:-----------------|:---------------------------|
-| 1.0              | 6.1                        |
-
-## Deployment
-
-### Pre-Requisite: Configuration File (Config.ini)
+<details>
+<summary><b>config.ini template</b></summary>
 
 ```ini
 [FutuOpenD.Config]
@@ -95,118 +84,42 @@ Password = <Sender Email Password>
 SubscriptionList = ["account1@example.com", "account2@example.com"]
 
 [TuShare.Credential]
-token = 2134342ABC2D03780772038A7816
+token = <TuShare API Token>
 ```
 
-**IMPORTANT NOTE:** The format may be changed in later commits. Please refer to this README if exception is raised.
+The format may change between commits; if an exception mentions a missing key, compare against this template.
+</details>
 
-### 1. Install Dependencies
+## Command-line usage
 
-Install using [conda](https://docs.conda.io/en/latest/):
+| Task | Command |
+|:--|:--|
+| Update K-line data before the open (resumes, never overwrites) | `python main_backend.py --update` |
+| Rebuild all data from scratch (slow, use with care) | `python main_backend.py --force_update` |
+| Trade live with a strategy on 1-minute bars | `python main_backend.py --strategy MACD_Cross` |
+| Trade on daily bars | `python main_backend.py --strategy MACD_Cross --time_interval K_DAY` |
+| Trade the top 30 HSI constituents when no stock list is configured | `python main_backend.py --strategy MACD_Cross --include_hsi --time_interval K_DAY` |
+| Backtest a strategy | `python main_backend.py --backtesting MACD_Cross` |
+| Screen HK and China A-shares and email the result | `python main_backend.py --filter Volume_Threshold Price_Threshold --email_name MACD_Cross_Technique --market HK CHINA` |
 
-```bash
-conda env create -f environment.yml
-```
+Supported intervals: `K_1M`, `K_3M`, `K_5M`, `K_15M`, `K_30M`, `K_60M`, `K_DAY`, `K_WEEK`, `K_MON`, `K_QUARTER`, `K_YEAR`.
 
-To export current environment, use the following command
+## Writing a strategy
 
-```bash
-conda env export > environment.yml
-```
+Add a file to `strategies/` that subclasses the base class in `strategies/Strategies.py`, compute your indicators, and implement the buy and sell rules. The file name becomes the value you pass to `--strategy` and `--backtesting`. `MACD_Cross.py` is the shortest complete example.
 
-To update current environment with the latest dependencies, use the following command
+## Project status
 
-```bash
-conda env update --name futu_trade --file environment.yml --prune
-```
+The core loop (data, screening, backtesting, live trading) is stable and used by the community around Futu OpenAPI. The PyQt GUI (`python main.py`) is unfinished. Active development of the trading stack continues in the sibling projects below.
 
-For GitHub Actions - with pip dependencies, use the following command
+## Part of a three-repo trading stack
 
-```bash
-pip list --format=freeze > requirements.txt
-```
+**[futu_tick_downloader](https://github.com/billpwchan/futu_tick_downloader)** (tick capture) → **[strategy_powerbacktest](https://github.com/billpwchan/strategy_powerbacktest)** (backtesting) → **futu_algo** (live trading)
 
-### 2. Install FutuOpenD
+Built by [Bill Chan](https://github.com/billpwchan). If it saves you time, you can [buy me a coffee](https://www.buymeacoffee.com/billpwchan98).
 
-For **Windows/MacOS/CentOS/Ubuntu**:
-
-https://www.futunn.com/download/OpenAPI
-
-Please do make sure that you have at least a LV1 subscription level on your interested quotes. For details, please refer
-to https://openapi.futunn.com/futu-api-doc/qa/quote.html
-
-**MAKE SURE YOU LOGIN TO FUTU OPEND FIRST BEFORE STARTING FUTU_ALGO!**
-
-### 4. Download Data (e.g. 1M Data for max. 2 Years)
-
-For **Windows**:
-
-    python main_backend.py --force_update
-
-For **MacOS/Linux**:
-
-    python3 main_backend.py --force_update
-
-### 4. Enjoy :smile:
-
-## Command-line Interface Usages
-
-### Historical Data Download & Processing
-
-Update all `K_1M` and `K_DAY` interval historical K-line data
-
-    python main_backend.py -u   /   python main_backend.py --update
-
-**IMPORTANT NOTE:** This will not override existing historical data if the file exists. It will automatically detect
-the latest stock data you have downloaded in the folder and resume from there.
-
-If you want to refresh all data, use the following command instead (WITH CAUTION!)
-
-    python main_backend.py -fu   /   python main_backend.py --force_update
-
-### Algorithmic Trading
-
-Execute Algorithmic Trading with a Pre-defined Strategy (By default use **1M data**)
-
-    python main_backend.py -s MACD_Cross   /   python main_backend.py --strategy MACD_Cross
-
-If you would like to use another time interval based date (e.g., Day data), use the following command
-
-    python main_backend.py -s MACD_Cross --time_interval K_DAY
-
-If you do not have a pre-defined stock list in `config.ini`, then you can just trade the Top 30 HSI stocks
-
-    python main_backend.py -s MACD_Cross --include_hsi --time_interval K_DAY
-
-**IMPORTANT NOTE:** The supported time intervals are: K_1M, K_30M, K_5M, K_15M, K_30M, K_60M, K_DAY, K_WEEK, K_MON,
-K_YEAR.
-
-### Stock Filtering and Email Subscription
-
-Execute Stock Filtering with Pre-defined Filtering Strategies with Email Title "MACD_Cross_Technique" in HK and
-China (Shanghai and Shenzhen) Stock Market
-
-    python main_backend.py -f Volume_Threshold Price_Threshold -en MACD_Cross_Technique -m HK CHINA
-
-## GUI Usages
-
-Start the GUI with `main.py` (**NOT FINISHED YET**)
-
-    python main.py
-
-## Future Plans
-
-- [ ] [NEED A GREAT NAME FOR THIS ALGO TRADE!!](https://github.com/billpwchan/futu_algo/issues/23)
-- [x] [Custom Backtesting Time Interval]()
-- [x] [Dynamic Instantiation](https://github.com/billpwchan/futu_algo/issues/18)
-
------------
-
-## Contributor
-
-[Bill Chan -- Main Developer](https://github.com/billpwchan/)
-
-## Disclaimer
+<details>
+<summary><b>Disclaimer</b></summary>
 
 Futures, stocks and options trading involves substantial risk of loss and is not suitable for every investor. The
 valuation of futures, stocks and options may fluctuate, and, as a result, clients may lose more than their original
@@ -235,3 +148,4 @@ and/or futures positions such as “spread” or “straddle” trades may be ju
 Information provided in this correspondence is intended solely for informational purposes and is obtained from sources
 believed to be reliable. Information is in no way guaranteed. No guarantee of any kind is implied or possible where
 projections of future conditions are attempted.
+</details>
