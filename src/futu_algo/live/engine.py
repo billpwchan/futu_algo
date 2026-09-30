@@ -33,7 +33,18 @@ from futu_algo.config import AppConfig
 from futu_algo.data.manager import DataManager
 from futu_algo.data.resample import resample_bars, session_labels
 from futu_algo.data.schema import BAR_COLUMNS
-from futu_algo.events import ACCOUNT, BAR, ENGINE, ERROR, RISK, SIGNAL, SUMMARY, EventBus
+from futu_algo.events import (
+    ACCOUNT,
+    BAR,
+    ENGINE,
+    ERROR,
+    RISK,
+    SIGNAL,
+    SUMMARY,
+    Event,
+    EventBus,
+    Level,
+)
 from futu_algo.live.broker import Broker, QuoteProvider
 from futu_algo.live.executor import OrderExecutor
 from futu_algo.live.feed import Bar, FutuBarFeed, split_in_progress
@@ -151,6 +162,10 @@ class LiveEngine:
         return self.calendar.phase(now or self.clock())
 
     def _persist(self) -> None:
+        snapshot = (dict(self.blocked), dict(self.bars_held), dict(self.peak))
+        if snapshot == getattr(self, "_persisted", None):
+            return
+        self._persisted = snapshot
         self.store.set("blocked", self.blocked)
         self.store.set("bars_held", self.bars_held)
         self.store.set("peak", self.peak)
@@ -188,7 +203,7 @@ class LiveEngine:
         self.windows[symbol] = bars.iloc[-self.max_window :]
         if len(bars):
             last = bars.iloc[-1]
-            self.last_bar[symbol] = Bar(symbol, bars.index[-1], *(float(last[c]) for c in BAR_COLUMNS))
+            self.last_bar[symbol] = Bar(symbol, pd.Timestamp(bars.index[-1]), *(float(last[c]) for c in BAR_COLUMNS))
             self._last_prices[symbol] = float(last["close"])
 
     def _to_target(self, symbol: str, base_bars: pd.DataFrame, now: datetime) -> tuple[pd.DataFrame, list[Bar]]:
@@ -203,7 +218,10 @@ class LiveEngine:
         label = resampled.index[-1]
         labels = session_labels(pd.DatetimeIndex(base_bars.index), self.tf.minutes, self.market)
         part = base_bars[labels == label]
-        open_chunk = [Bar(symbol, t, *(float(r[c]) for c in BAR_COLUMNS)) for t, r in part.iterrows()]
+        open_chunk = [
+            Bar(symbol, t, *(float(r[c]) for c in BAR_COLUMNS))
+            for t, r in zip(pd.DatetimeIndex(part.index), part.to_dict("records"), strict=True)
+        ]
         return resampled.iloc[:-1], open_chunk
 
     def _load_warmup(self, symbol: str) -> None:
@@ -234,7 +252,7 @@ class LiveEngine:
             self.feed.assembler.prime(symbol, live_base.index[-1] if len(live_base) else None)
             if open_chunk:
                 self.feed.assembler.seed(symbol, open_chunk)
-            for t, row in in_progress.iterrows():
+            for t, row in zip(pd.DatetimeIndex(in_progress.index), in_progress.to_dict("records"), strict=True):
                 self.feed.assembler.update(Bar(symbol, t, *(float(row[c]) for c in BAR_COLUMNS)))
         n = len(self.windows.get(symbol, []))
         if n < need:
@@ -334,7 +352,7 @@ class LiveEngine:
             self.last_decision[sym] = d
             self.store.add_signal(sym, bar.time.to_pydatetime(), strategy.name, sig, bar.close, d.action, {"detail": d.detail})
             if d.action not in ("hold", "warmup"):
-                level = "warning" if d.action == "skip" else "info"
+                level: Level = "warning" if d.action == "skip" else "info"
                 self.bus.emit(SIGNAL, f"{sym} {d.action.upper()} ({strategy.name}, signal={_fmt_sig(sig)}) {d.detail}".strip(),
                               level=level, symbol=sym, action=d.action, signal=None if math.isnan(sig) else sig, bar_time=bar.time.isoformat())
             self._persist()
@@ -358,7 +376,7 @@ class LiveEngine:
         if qty > 0:
             if working_sell:
                 return Decision(sym, bar.time, sig, "hold", "sell in progress")
-            reason = self._exit_reason(sym, pos, bar) if pos else None  # type: ignore[arg-type]
+            reason = self._exit_reason(sym, pos, bar) if pos else None
             if reason is None and sig == 0.0:
                 reason = "signal"
             if reason is None:
@@ -499,12 +517,12 @@ class LiveEngine:
             "positions": [p.to_dict() for p in self.positions.values()],
             "env": self.env,
         }
-        self.bus.emit(
+        self.bus.publish(Event(
             SUMMARY,
             f"{self.trading_day} ({self.env}): equity {self.account.equity:,.2f}, P/L {pnl:+,.2f}, "
             f"{len(fills)} fill(s), {len(self.positions)} position(s)",
-            **summary,
-        )
+            data=summary,
+        ))
         return summary
 
     # ================================================================ runtime
@@ -528,10 +546,11 @@ class LiveEngine:
             self.refresh_account()
             if self._feed_factory is not None:
                 self.feed = self._feed_factory(self._enqueue_bar)
+                # Futu serves get_cur_kline only for subscribed symbols, so subscribe first;
+                # bars pushed meanwhile queue up until the worker thread starts.
+                self.feed.subscribe(self.symbols)
             for sym in self.symbols:
                 self._load_warmup(sym)
-            if self.feed is not None:
-                self.feed.subscribe(self.symbols)
         except Exception as exc:
             self.state = "error"
             self.last_error = str(exc)

@@ -197,7 +197,7 @@ class FutuBarFeed:
 
         feed = self
 
-        class _Handler(CurKlineHandlerBase):  # type: ignore[misc]
+        class _Handler(CurKlineHandlerBase):
             def on_recv_rsp(self, rsp_pb: Any) -> Any:
                 ret, data = super().on_recv_rsp(rsp_pb)
                 if ret == RET_OK:
@@ -205,6 +205,10 @@ class FutuBarFeed:
                 else:
                     log.warning("K-line push error: %s", data)
                 return ret, data
+
+            def deliver(self, frame: pd.DataFrame) -> None:
+                """Entry point for simulated OpenD pushes (already-decoded frames)."""
+                feed._on_frame(frame)
 
         self.gateway.context().set_handler(_Handler())
         self._handler_installed = True

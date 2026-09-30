@@ -21,7 +21,13 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
-from futu_algo.backtest.metrics import align_series, book_metrics, drawdown, drawdown_periods, monthly_returns
+from futu_algo.backtest.metrics import (
+    align_series,
+    book_metrics,
+    drawdown,
+    drawdown_periods,
+    monthly_returns,
+)
 from futu_algo.backtest.simulator import (
     Simulator,
     SymbolFeed,
@@ -365,14 +371,14 @@ def _epoch(index: pd.DatetimeIndex) -> list[int]:
     """Chart time: seconds, with exchange-local wall time presented as if it were UTC."""
     idx = pd.DatetimeIndex(index)
     naive = idx.tz_localize(None) if idx.tz is not None else idx
-    return (naive.as_unit("s").asi8).tolist()
+    return [int(x) for x in naive.as_unit("s").to_numpy().astype("int64")]
 
 
 def _curve(series: pd.Series) -> list[dict[str, Any]]:
     s = series.dropna()
     if len(s) > MAX_CURVE_POINTS:
         step = math.ceil(len(s) / MAX_CURVE_POINTS)
-        s = pd.concat([s.iloc[::step], s.iloc[[-1]]])
+        s = pd.concat([s.iloc[::step], s.iloc[-1:]])
         s = s[~s.index.duplicated(keep="last")]
     return [{"time": t, "value": _num(v)} for t, v in zip(_epoch(pd.DatetimeIndex(s.index)), s.to_numpy(float), strict=True)]
 

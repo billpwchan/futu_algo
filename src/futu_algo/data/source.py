@@ -69,10 +69,9 @@ class FutuSource:
         pages = 0
         while True:
             key = page_key
-            _, data, page_key = self.gateway.call(
-                "history_kline",
-                f"request_history_kline({symbol}, {ktype}, {adjust}, {start}..{end})",
-                lambda ctx, key=key: ctx.request_history_kline(
+
+            def request(ctx: Any, key: Any = key) -> tuple[Any, ...]:
+                return ctx.request_history_kline(
                     symbol,
                     start=start.isoformat(),
                     end=end.isoformat(),
@@ -80,7 +79,10 @@ class FutuSource:
                     autype=AUTYPE[adjust],
                     max_count=PAGE_SIZE,
                     page_req_key=key,
-                ),
+                )
+
+            _, data, page_key = self.gateway.call(
+                "history_kline", f"request_history_kline({symbol}, {ktype}, {adjust}, {start}..{end})", request
             )
             pages += 1
             if data is not None and len(data):
@@ -104,14 +106,11 @@ class FutuSource:
         for sym in symbols:
             by_market.setdefault(parse_symbol(sym)[0], []).append(sym)
         for market, codes in by_market.items():
+            def basicinfo(ctx: Any, market: str = market, codes: list[str] = codes) -> tuple[Any, ...]:
+                return ctx.get_stock_basicinfo(market, "STOCK", codes)
+
             try:
-                _, frame = self.gateway.call(
-                    "basicinfo",
-                    f"get_stock_basicinfo({market})",
-                    lambda ctx, market=market, codes=codes: ctx.get_stock_basicinfo(
-                        market, "STOCK", codes
-                    ),
-                )
+                _, frame = self.gateway.call("basicinfo", f"get_stock_basicinfo({market})", basicinfo)
             except DataSourceError as exc:
                 log.warning("get_stock_basicinfo failed for %s: %s", codes, exc)
                 continue

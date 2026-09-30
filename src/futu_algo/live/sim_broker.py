@@ -23,7 +23,14 @@ from datetime import UTC, datetime
 from typing import Literal
 
 from futu_algo.errors import BrokerError
-from futu_algo.live.models import AccountSnapshot, OrderInfo, OrderRequest, OrderState, PositionInfo, Quote
+from futu_algo.live.models import (
+    AccountSnapshot,
+    OrderInfo,
+    OrderRequest,
+    OrderState,
+    PositionInfo,
+    Quote,
+)
 from futu_algo.market.costs import CostModel
 from futu_algo.market.instrument import Instrument
 from futu_algo.market.ticks import shift_ticks
@@ -152,7 +159,8 @@ class SimBroker:
                 if request.quantity > pos.quantity - selling:
                     raise BrokerError(f"Cannot sell {request.quantity} {request.symbol}: only {pos.quantity - selling} available")
             else:
-                ref = request.price or (self._quotes.get(request.symbol).ask if self._quotes.get(request.symbol) else None) or self._last(request.symbol)
+                quote = self._quotes.get(request.symbol)
+                ref = request.price or (quote.ask if quote else None) or self._last(request.symbol)
                 if ref:
                     need = request.quantity * ref + self.costs.fees("BUY", request.quantity, ref, inst, self.clock().date()).total
                     if need > self.account().buying_power + 1e-6:

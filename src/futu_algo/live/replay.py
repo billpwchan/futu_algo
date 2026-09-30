@@ -80,8 +80,12 @@ def replay(
             continue
         warm = bars[bars.index < start] if start is not None else bars.iloc[:0]
         engine.warmup(sym, warm)
-        for t, r in bars[bars.index >= start].iterrows() if start is not None else bars.iterrows():
-            timeline.setdefault(t, []).append(Bar(sym, t, r["open"], r["high"], r["low"], r["close"], r["volume"], r.get("turnover", 0.0)))
+        rest = bars[bars.index >= start] if start is not None else bars
+        for ts, r in zip(pd.DatetimeIndex(rest.index), rest.to_dict("records"), strict=True):
+            turnover = r.get("turnover", 0.0)
+            timeline.setdefault(ts, []).append(
+                Bar(sym, ts, r["open"], r["high"], r["low"], r["close"], r["volume"], turnover if turnover == turnover else 0.0)
+            )
     decisions: list[Decision] = []
     equity: list[tuple[datetime, float]] = []
     prev: pd.Timestamp | None = None

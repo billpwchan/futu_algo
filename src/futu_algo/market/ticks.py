@@ -93,7 +93,7 @@ def round_to_tick(
         n = math.floor(steps + 1e-9)
     else:
         n = round(steps)
-    decimals = max(0, -int(math.floor(math.log10(tick)))) + 1
+    decimals = max(0, -math.floor(math.log10(tick))) + 1
     return round(n * tick, decimals)
 
 

@@ -158,14 +158,18 @@ class FutuBroker:
             return
         broker = self
 
-        class _Orders(TradeOrderHandlerBase):  # type: ignore[misc]
+        class _Orders(TradeOrderHandlerBase):
             def on_recv_rsp(self, rsp_pb: Any) -> Any:
                 ret, data = super().on_recv_rsp(rsp_pb)
                 if ret == RET_OK and broker._listener:
                     broker._listener()
                 return ret, data
 
-        class _Deals(TradeDealHandlerBase):  # type: ignore[misc]
+            def deliver(self, _data: Any) -> None:
+                if broker._listener:
+                    broker._listener()
+
+        class _Deals(TradeDealHandlerBase):
             def on_recv_rsp(self, rsp_pb: Any) -> Any:
                 ret, data = super().on_recv_rsp(rsp_pb)
                 if ret == RET_OK and broker._listener:

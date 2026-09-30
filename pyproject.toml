@@ -60,7 +60,11 @@ include = ["src/futu_algo", "tests", "configs", "README.md", "LICENSE", "CHANGEL
 testpaths = ["tests"]
 addopts = "-ra"
 markers = ["e2e: browser end-to-end tests (need playwright + chromium)"]
-filterwarnings = ["error::FutureWarning", "error::DeprecationWarning:futu_algo"]
+filterwarnings = [
+    "error::FutureWarning",
+    "error::DeprecationWarning:futu_algo",
+    "ignore:Using `httpx` with `starlette.testclient`",
+]
 
 [tool.ruff]
 line-length = 100

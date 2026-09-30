@@ -32,6 +32,8 @@ def _s(x: Series | float, like: Series) -> Series:
 
 
 def _bool(x: Series) -> Series:
+    if x.dtype == bool:
+        return x
     return x.astype("boolean").fillna(False).astype(bool)
 
 

@@ -148,6 +148,8 @@ class Strategy(ABC):
 
 def as_bool(x: pd.Series) -> pd.Series:
     """Boolean series with missing values as False, without pandas' object-downcast path."""
+    if x.dtype == bool:
+        return x
     return x.astype("boolean").fillna(False).astype(bool)
 
 

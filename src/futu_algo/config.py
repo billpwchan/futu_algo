@@ -311,6 +311,9 @@ class ScreenerConfig(_Model):
 NotifyEvent = Literal["fills", "orders", "rejections", "errors", "risk", "daily_summary", "screener", "engine"]
 
 
+DEFAULT_NOTIFY_EVENTS: tuple[NotifyEvent, ...] = ("fills", "rejections", "errors", "risk", "daily_summary", "screener")
+
+
 class EmailConfig(_Model):
     enabled: bool = False
     smtp_host: str = ""
@@ -343,9 +346,7 @@ class TelegramConfig(_Model):
 class NotifyConfig(_Model):
     email: EmailConfig = Field(default_factory=EmailConfig)
     telegram: TelegramConfig = Field(default_factory=TelegramConfig)
-    events: list[NotifyEvent] = Field(
-        default_factory=lambda: ["fills", "rejections", "errors", "risk", "daily_summary", "screener"]
-    )
+    events: list[NotifyEvent] = Field(default_factory=lambda: list(DEFAULT_NOTIFY_EVENTS))
 
 
 class WebConfig(_Model):

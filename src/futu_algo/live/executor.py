@@ -45,8 +45,7 @@ def limit_price(side: Side, quote: Quote, inst: Instrument, cfg: OrderConfig, da
         base = quote.mid
     if not base:
         return None
-    direction = "up" if side == "BUY" else "down"
-    price = round_to_tick(base, inst, when, direction)
+    price = round_to_tick(base, inst, when, "up" if side == "BUY" else "down")
     if cfg.extra_ticks:
         price = shift_ticks(price, cfg.extra_ticks if side == "BUY" else -cfg.extra_ticks, inst, when)
     return price
@@ -96,6 +95,7 @@ class OrderExecutor:
         self.env = env
         self.intents: dict[int, Intent] = {}
         self.orders: dict[str, OrderInfo] = {}
+        self._seen: dict[str, tuple[object, ...]] = {}
         self._restore()
 
     # ------------------------------------------------------------------ restore
@@ -171,6 +171,10 @@ class OrderExecutor:
     def _record(self, order: OrderInfo, intent_id: int | None, now: datetime) -> int:
         """Store an order snapshot; record and announce any newly filled quantity."""
         self.orders[order.order_id] = order
+        fingerprint = (str(order.state), order.filled_qty, order.avg_fill_price, order.price, order.error)
+        if self._seen.get(order.order_id) == fingerprint:
+            return 0  # unchanged since the last sync
+        self._seen[order.order_id] = fingerprint
         new_qty, _ = self.store.upsert_order(order, intent_id, self.env)
         if new_qty > 0:
             price = order.avg_fill_price or order.price
@@ -187,6 +191,10 @@ class OrderExecutor:
         """Pull today's orders from the broker, record new fills; return (order, new_qty)."""
         fills: list[tuple[OrderInfo, int]] = []
         for order in self.broker.orders():
+            fingerprint = (str(order.state), order.filled_qty, order.avg_fill_price, order.price, order.error)
+            if self._seen.get(order.order_id) == fingerprint:
+                self.orders[order.order_id] = order
+                continue
             intent_id = self.store.order_intent(order.order_id)
             if intent_id is None and order.remark.startswith(f"{REMARK_PREFIX}:"):
                 try:
@@ -279,9 +287,11 @@ class OrderExecutor:
         intent.order_id = order.order_id
         intent.sent_at = now
         self.store.update_intent(intent.id, attempts=intent.attempts)
-        self._record(order, intent.id, now)
         px = "MKT" if price is None else f"{price:g}"
         self.bus.emit(
             ORDER, f"Sent {intent.side} {qty} {intent.symbol} @ {px} (attempt {intent.attempts})",
             symbol=intent.symbol, order_id=order.order_id, side=intent.side, quantity=qty, price=price,
         )
+        self._record(order, intent.id, now)
+        if not order.state.is_open and intent.remaining <= 0:
+            self._finish(intent, "done")

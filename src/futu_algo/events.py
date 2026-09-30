@@ -7,6 +7,7 @@ a browser that connects late still sees recent activity.
 
 from __future__ import annotations
 
+import contextlib
 import itertools
 import logging
 import queue
@@ -74,10 +75,8 @@ class EventBus:
             callbacks = list(self._callbacks)
             queues = list(self._queues)
         for q in queues:
-            try:
+            with contextlib.suppress(queue.Full):  # a slow browser tab must never block trading
                 q.put_nowait(event)
-            except queue.Full:
-                pass  # a slow browser tab must never block trading
         for cb in callbacks:
             try:
                 cb(event)
