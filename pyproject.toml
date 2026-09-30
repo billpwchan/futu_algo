@@ -58,7 +58,7 @@ include = ["src/futu_algo", "tests", "configs", "README.md", "LICENSE", "CHANGEL
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-ra"
+addopts = "-ra -m 'not e2e'"
 markers = ["e2e: browser end-to-end tests (need playwright + chromium)"]
 filterwarnings = [
     "error::FutureWarning",
