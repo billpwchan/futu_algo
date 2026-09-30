@@ -12,6 +12,7 @@ Everything that touches ``futu`` goes through here so that:
 from __future__ import annotations
 
 import logging
+import socket
 import threading
 import time
 from collections import deque
@@ -108,11 +109,50 @@ def is_quota_error(message: str) -> bool:
     return any(m in lowered for m in _QUOTA_MARKERS)
 
 
+def probe_opend(host: str, port: int, timeout: float = 3.0) -> None:
+    """Fail fast when nothing listens on OpenD's port.
+
+    futu-api's context constructors retry a refused connection forever, which would hang the
+    CLI, the console's jobs and the engine start-up; a plain TCP connect detects it in seconds.
+    """
+    try:
+        with socket.create_connection((host, port), timeout=timeout):
+            return
+    except OSError as exc:
+        raise DataSourceError(
+            f"Futu OpenD is not reachable at {host}:{port} ({exc.strerror or exc}). Start OpenD and "
+            "log in, check futu.host/futu.port, or work offline from the local cache."
+        ) from None
+
+
+_futu_configured = False
+
+
+def configure_futu_runtime() -> None:
+    """Keep futu-api quiet on the console (it prints INFO lines itself) and make its threads
+    daemons so a stuck connection never keeps the process alive. Idempotent."""
+    global _futu_configured
+    if _futu_configured:
+        return
+    try:
+        from futu import SysConfig
+        from futu.common.ft_logger import logger as ft_logger
+    except ImportError:  # pragma: no cover
+        return
+    SysConfig.set_all_thread_daemon(True)
+    ft_logger._console_level = logging.WARNING
+    ft_logger.console_logger.setLevel(logging.WARNING)
+    ft_logger.consoleHandler.setLevel(logging.WARNING)
+    _futu_configured = True
+
+
 def _default_quote_factory(host: str, port: int) -> Any:
     try:
         from futu import OpenQuoteContext
     except ImportError as exc:  # pragma: no cover - dependency is declared
         raise DataSourceError("futu-api is not installed; pip install futu-api") from exc
+    configure_futu_runtime()
+    probe_opend(host, port)
     return OpenQuoteContext(host=host, port=port)
 
 
@@ -150,6 +190,8 @@ class QuoteGateway:
                 log.info("Connecting quote context to Futu OpenD at %s:%s", self.host, self.port)
                 try:
                     self._ctx = self._factory(self.host, self.port)
+                except DataSourceError:
+                    raise
                 except Exception as exc:
                     raise DataSourceError(
                         f"Cannot connect to Futu OpenD at {self.host}:{self.port}: {exc}. "

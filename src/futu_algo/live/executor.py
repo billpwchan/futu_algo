@@ -240,6 +240,8 @@ class OrderExecutor:
 
     def _send(self, intent: Intent, now: datetime) -> None:
         inst = self.instrument(intent.symbol)
+        if self.context(intent.symbol, None).phase != Phase.CONTINUOUS:
+            return  # wait for the session without spending quote requests
         try:
             quote = self.quotes.quotes([intent.symbol]).get(intent.symbol)
         except Exception as exc:

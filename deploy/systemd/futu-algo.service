@@ -1,0 +1,26 @@
+# futu_algo web console + paper-trading engine.
+#   sudo cp deploy/systemd/futu-algo.service /etc/systemd/system/
+#   sudo systemctl daemon-reload && sudo systemctl enable --now futu-algo
+# Adjust User, WorkingDirectory and the config path. Secrets go in the .env file next to
+# the config (loaded automatically) or in EnvironmentFile below.
+[Unit]
+Description=futu_algo trading console
+After=network-online.target futu-opend.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=futu
+WorkingDirectory=/opt/futu_algo
+EnvironmentFile=-/opt/futu_algo/.env
+ExecStart=/opt/futu_algo/.venv/bin/futu-algo web -c /opt/futu_algo/config.yaml --engine
+Restart=on-failure
+RestartSec=10
+# The engine persists intents and orders in SQLite; a restart re-adopts working orders.
+TimeoutStopSec=30
+NoNewPrivileges=true
+ProtectSystem=full
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

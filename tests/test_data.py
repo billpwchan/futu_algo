@@ -203,3 +203,20 @@ def test_load_bars_builds_non_native_timeframes(tmp_path, minute_bars):
     out = dm.load_bars("HK.00700", Timeframe.parse("10M"), date(2022, 4, 12), date(2022, 4, 13))
     assert np.all(np.diff(out.index.asi8) > 0)
     assert out.index[0].strftime("%H:%M") == "09:40"
+
+
+def test_probe_fails_fast_when_opend_is_down():
+    import socket
+    import time as _time
+
+    from futu_algo.errors import DataSourceError
+    from futu_algo.futu_gateway import probe_opend
+
+    s = socket.socket()
+    s.bind(("127.0.0.1", 0))
+    port = s.getsockname()[1]
+    s.close()  # nothing listens on this port now
+    t0 = _time.monotonic()
+    with pytest.raises(DataSourceError, match="not reachable"):
+        probe_opend("127.0.0.1", port, timeout=2)
+    assert _time.monotonic() - t0 < 3

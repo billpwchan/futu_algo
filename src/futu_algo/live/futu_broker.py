@@ -21,8 +21,15 @@ from typing import Any
 
 import pandas as pd
 
-from futu_algo.errors import BrokerError, ConfigError
-from futu_algo.futu_gateway import RET_OK, QuoteGateway, RateLimiter, is_rate_limited
+from futu_algo.errors import BrokerError, ConfigError, DataSourceError
+from futu_algo.futu_gateway import (
+    RET_OK,
+    QuoteGateway,
+    RateLimiter,
+    configure_futu_runtime,
+    is_rate_limited,
+    probe_opend,
+)
 from futu_algo.live.models import (
     FUTU_STATUS,
     AccountSnapshot,
@@ -78,6 +85,12 @@ def order_from_row(row: dict[str, Any], tz: str) -> OrderInfo:
 def _default_trade_factory(host: str, port: int, firm: str, encrypt: bool) -> Any:
     from futu import OpenSecTradeContext, TrdMarket
 
+    configure_futu_runtime()
+    try:
+        probe_opend(host, port)
+    except DataSourceError as exc:
+        raise BrokerError(str(exc)) from None
+
     return OpenSecTradeContext(
         filter_trdmarket=TrdMarket.HK,
         host=host,
@@ -132,6 +145,8 @@ class FutuBroker:
             log.info("Connecting trade context (%s, %s) to %s:%s", self.env, self.firm, self.host, self.port)
             try:
                 self._ctx = self._factory(self.host, self.port, self.firm, self.encrypt)
+            except BrokerError:
+                raise
             except Exception as exc:
                 raise BrokerError(f"Cannot open Futu trade context at {self.host}:{self.port}: {exc}") from exc
             self._install_handler()
