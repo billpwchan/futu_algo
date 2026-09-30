@@ -1,0 +1,80 @@
+[build-system]
+requires = ["hatchling>=1.24"]
+build-backend = "hatchling.build"
+
+[project]
+name = "futu-algo"
+version = "2.0.0"
+description = "Algorithmic trading for Hong Kong equities on Futu OpenAPI: data, strategies, backtesting, screening and paper trading with a web console."
+readme = "README.md"
+license = "Apache-2.0"
+authors = [{ name = "Bill Chan", email = "billpwchan@hotmail.com" }]
+requires-python = ">=3.11"
+dependencies = [
+    "futu-api>=10.4",
+    "pandas>=2.2",
+    "numpy>=1.26",
+    "pyarrow>=15",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "fastapi>=0.110",
+    "uvicorn>=0.29",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=5",
+    "hypothesis>=6.100",
+    "httpx>=0.27",
+    "ruff>=0.6",
+    "mypy>=1.10",
+    "pandas-stubs",
+    "types-PyYAML",
+]
+e2e = ["playwright>=1.44"]
+
+[project.scripts]
+futu-algo = "futu_algo.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/billpwchan/futu_algo"
+Issues = "https://github.com/billpwchan/futu_algo/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/futu_algo"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/futu_algo", "tests", "configs", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["e2e: browser end-to-end tests (need playwright + chromium)"]
+filterwarnings = ["error::FutureWarning", "error::DeprecationWarning:futu_algo"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "PD002", "NPY"]
+ignore = ["RUF001", "RUF002", "RUF003", "E501"]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+files = ["src/futu_algo"]
+ignore_missing_imports = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+check_untyped_defs = true
