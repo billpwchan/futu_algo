@@ -123,7 +123,7 @@ class App:
         clock: Callable[[], datetime] | None = None,
     ) -> None:
         self.cfg = cfg
-        self.bus = bus or EventBus()
+        self.bus = bus or EventBus(clock=clock)
         self._quote_factory = quote_factory
         self._trade_factory = trade_factory
         self._clock = clock
@@ -190,12 +190,12 @@ class App:
     def state(self) -> StateStore:
         with self._lock:
             if self._state is None:
-                self._state = StateStore(self.cfg.path(self.cfg.trading.state_db))
+                self._state = StateStore(self.cfg.path(self.cfg.trading.state_db), clock=self._clock)
                 self._persist_unsub = self.bus.subscribe(self._persist_event)
             return self._state
 
     # Kinds kept in the SQLite audit trail. Bars and routine log lines are too chatty.
-    _PERSISTED = frozenset({"engine", "signal", "order", "fill", "rejection", "risk", "error", "account", "daily_summary", "screener"})
+    _PERSISTED = frozenset({"engine", "signal", "order", "fill", "rejection", "risk", "error", "account", "daily_summary", "screener", "backtest"})
 
     def _persist_event(self, event: Any) -> None:
         if self._state is None or (event.kind not in self._PERSISTED and event.level not in ("warning", "error")):

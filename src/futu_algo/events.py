@@ -63,7 +63,8 @@ class Event:
 
 
 class EventBus:
-    def __init__(self, history: int = 1000) -> None:
+    def __init__(self, history: int = 1000, clock: Callable[[], datetime] | None = None) -> None:
+        self.clock = clock
         self._lock = threading.Lock()
         self._history: deque[Event] = deque(maxlen=history)
         self._callbacks: list[Callable[[Event], None]] = []
@@ -93,7 +94,11 @@ class EventBus:
         symbol: str | None = None,
         **data: Any,
     ) -> Event:
-        return self.publish(Event(kind=kind, message=message, level=level, symbol=symbol, data=data))
+        if self.clock is not None:
+            event = Event(kind=kind, message=message, level=level, symbol=symbol, data=data, time=self.clock())
+        else:
+            event = Event(kind=kind, message=message, level=level, symbol=symbol, data=data)
+        return self.publish(event)
 
     def subscribe(self, callback: Callable[[Event], None]) -> Callable[[], None]:
         with self._lock:

@@ -69,9 +69,9 @@ def replay(
         capital, build_cost_model(cfg.costs), lambda s: instruments[s],
         fill_mode="next_bar_open", clock=clock, currency=market.currency,
     )
-    bus = EventBus(history=5000)
+    bus = EventBus(history=5000, clock=clock)
     engine = LiveEngine(
-        cfg, broker=broker, quotes=broker, store=StateStore(store_path), bus=bus,
+        cfg, broker=broker, quotes=broker, store=StateStore(store_path, clock=clock), bus=bus,
         instruments=instruments, clock=clock,
     )
     timeline: dict[pd.Timestamp, list[Bar]] = {}

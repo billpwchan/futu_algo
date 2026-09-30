@@ -117,5 +117,6 @@ export default {
 };
 
 function safeParse(s) {
+  if (s == null || typeof s === 'object') return s ?? null;
   try { return JSON.parse(s); } catch { return s ? { raw: s } : null; }
 }

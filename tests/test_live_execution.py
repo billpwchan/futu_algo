@@ -179,3 +179,22 @@ def test_sim_broker_next_bar_open_and_lots():
     assert filled.state == "filled" and filled.avg_fill_price == 421.0
     acct = b.account()
     assert acct.cash < 1e6 - 200 * 421.0  # fees charged
+
+
+def test_one_snapshot_request_per_sync_for_all_intents(clock):
+    env = Env(clock)
+    env.quote("HK.00700", 420.0, 420.2)
+    env.quote("HK.09988", 80.0, 80.05)
+    calls: list[list[str]] = []
+    real = env.broker.quotes
+
+    def counting(symbols):
+        calls.append(list(symbols))
+        return real(symbols)
+
+    env.executor.quotes = type("Q", (), {"quotes": staticmethod(counting)})()
+    env.executor.submit("HK.00700", "BUY", 100, "signal")
+    env.executor.submit("HK.09988", "BUY", 100, "signal")
+    env.executor.sync(clock())
+    assert calls == [["HK.00700", "HK.09988"]]
+    assert len(env.store.fills()) == 2

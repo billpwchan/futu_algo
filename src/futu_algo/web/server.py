@@ -105,6 +105,15 @@ def _deep_merge(base: dict[str, Any], extra: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _loads(text: Any) -> Any:
+    if not isinstance(text, str):
+        return text
+    try:
+        return json.loads(text)
+    except ValueError:
+        return text
+
+
 def _job_payload(job: Job) -> dict[str, Any]:
     return job.to_dict()
 
@@ -178,7 +187,7 @@ def create_app(app: App, *, token: str | None = None) -> FastAPI:
 
     @api.get("/api/health")
     def health() -> dict[str, Any]:
-        return {"ok": True, "version": __version__}
+        return {"ok": True, "version": __version__, "token_required": bool(token)}
 
     @api.get("/api/status")
     def status() -> JSONResponse:
@@ -278,7 +287,7 @@ def create_app(app: App, *, token: str | None = None) -> FastAPI:
         rows = app.state.signals(limit=limit * (5 if actions_only else 1), symbol=symbol)
         if actions_only:
             rows = [r for r in rows if r["action"] not in ("hold", "warmup")][:limit]
-        return _json(rows)
+        return _json([{**r, "detail": _loads(r.get("detail"))} for r in rows])
 
     @api.get("/api/intents")
     def intents(limit: int = 200) -> JSONResponse:
@@ -286,18 +295,20 @@ def create_app(app: App, *, token: str | None = None) -> FastAPI:
 
     @api.get("/api/equity")
     def equity(days: int = 1) -> JSONResponse:
-        since = (datetime.now(UTC) - timedelta(days=days)).isoformat(timespec="seconds")
+        now = app.engine.clock() if app.engine else datetime.now(UTC)
+        since = (pd.Timestamp(now).tz_convert("UTC") - timedelta(days=days)).isoformat(timespec="seconds")
         rows = app.state.equity_curve(since_iso=since)
         return _json(rows)
 
     @api.get("/api/events")
     def events(limit: int = 200, kinds: str | None = None) -> JSONResponse:
-        return _json(app.state.events(limit=limit, kinds=kinds.split(",") if kinds else None))
+        rows = app.state.events(limit=limit, kinds=kinds.split(",") if kinds else None)
+        return _json([{**r, "data": _loads(r.get("data"))} for r in rows])
 
     @api.get("/api/stream")
     async def stream(request: Request) -> StreamingResponse:
         q = app.bus.open_queue(maxsize=2000)
-        backlog = app.bus.recent(100)
+        backlog = [e for e in app.bus.recent(1000) if e.kind not in ("bar", "log")][-150:]
 
         async def gen() -> Any:
             try:
@@ -422,7 +433,10 @@ def create_app(app: App, *, token: str | None = None) -> FastAPI:
 
     @api.post("/api/backtests")
     def run_backtest_job(body: BacktestBody) -> JSONResponse:
-        merged = _deep_merge(cfg.backtest.model_dump(mode="json"), body.overrides)
+        base = cfg.backtest.model_dump(mode="json")
+        if "strategy" in body.overrides:
+            base.pop("strategy")  # a different strategy must not inherit the old one's params
+        merged = _deep_merge(base, body.overrides)
         try:
             bt = BacktestConfig.model_validate(merged)
         except Exception as exc:

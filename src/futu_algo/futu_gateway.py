@@ -72,6 +72,8 @@ DEFAULT_LIMITS: dict[str, tuple[int, float]] = {
     "plate": (10, 30.0),
     "subscribe": (60, 30.0),
     "trade_query": (10, 30.0),
+    # get_cur_kline reads OpenD's subscription cache; Futu does not rate-limit it.
+    "cur_kline": (1000, 30.0),
     "trade_order": (15, 30.0),
     "default": (60, 30.0),
 }

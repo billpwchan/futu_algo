@@ -28,6 +28,11 @@ console or the command line.
 | **Notifications** | Email and Telegram for fills, rejections, errors, risk events, the daily summary and screener results. |
 | **Web console** | Dashboard, watchlist, live charts with indicators and fills, backtest runner and reports, screener, orders, data cache, config editor, event log. |
 
+<table><tr>
+<td><img src="docs/images/console-chart.png" alt="Live chart with MACD and fills"></td>
+<td><img src="docs/images/console-backtest.png" alt="Backtest report"></td>
+</tr></table>
+
 The live engine and the backtester share the same strategy code and entry rules. The test suite
 replays real one-minute bars through both and requires every fill, fee and the final equity to
 match exactly.

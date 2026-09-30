@@ -132,3 +132,15 @@ def test_config_validation_and_save(tmp_path):
     assert list(tmp_path.glob("c.yaml.bak-*"))
     assert c.post("/api/notify/test", headers=H, json={}).status_code == 409
     app.shutdown()
+
+
+def test_switching_strategy_does_not_inherit_params(client, demo):
+    from futu_algo.config import StrategySpec
+
+    demo.cfg.backtest.strategy = StrategySpec(name="macd", params={"fast_period": 10})
+    job = client.post("/api/backtests", headers=H, json={"overrides": {"strategy": {"name": "rsi", "params": {"period": 9}}}})
+    assert job.status_code == 200, job.text
+    done = _wait_job(client, job.json()["id"])
+    assert done["status"] == "done", done
+    result = client.get(f"/api/backtests/{done['result']['id']}").json()
+    assert result["strategy"]["params"]["period"] == 9

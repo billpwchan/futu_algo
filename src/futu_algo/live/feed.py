@@ -248,7 +248,7 @@ class FutuBarFeed:
     def recent_bars(self, symbol: str, count: int) -> pd.DataFrame:
         """Up to 1,000 most recent base bars from the subscription cache (last may be in progress)."""
         _, data = self.gateway.call(
-            "default",
+            "cur_kline",
             f"get_cur_kline({symbol})",
             lambda ctx: ctx.get_cur_kline(symbol, min(max(count, 2), 1000), self.subtype),
         )

@@ -427,8 +427,10 @@ class LiveEngine:
             if self.executor.intents:
                 # Orders may have been sent after the positions were read.
                 self.executor.sync(now)
-            if time.monotonic() - self._last_equity >= 60 and self.account is not None:
-                self._last_equity = time.monotonic()
+            trading_hours = self.phase(now) not in (Phase.CLOSED, Phase.AFTER_HOURS)
+            minute = now.timestamp() // 60  # engine clock, so replays and demo mode record too
+            if trading_hours and minute != self._last_equity and self.account is not None:
+                self._last_equity = minute
                 a = self.account
                 self.store.add_equity(now, a.equity, a.cash, a.market_value, self.env)
 
@@ -522,6 +524,7 @@ class LiveEngine:
             f"{self.trading_day} ({self.env}): equity {self.account.equity:,.2f}, P/L {pnl:+,.2f}, "
             f"{len(fills)} fill(s), {len(self.positions)} position(s)",
             data=summary,
+            time=now,
         ))
         return summary
 

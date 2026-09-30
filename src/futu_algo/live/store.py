@@ -11,11 +11,13 @@ from __future__ import annotations
 import json
 import sqlite3
 import threading
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+import pandas as pd
 
 from futu_algo.live.models import OrderInfo
 
@@ -114,8 +116,9 @@ def _iso(dt: datetime | None) -> str | None:
 
 
 class StateStore:
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, clock: Callable[[], datetime] | None = None) -> None:
         self.path = Path(path)
+        self._clock = clock
         if str(path) != ":memory:":
             self.path.parent.mkdir(parents=True, exist_ok=True)
         self._conn = sqlite3.connect(str(path), check_same_thread=False, isolation_level=None)
@@ -130,6 +133,12 @@ class StateStore:
     def close(self) -> None:
         with self._lock:
             self._conn.close()
+
+    def _now(self) -> str:
+        """Timestamps follow the engine clock (virtual in replays and demo mode), in UTC."""
+        if self._clock is None:
+            return _now()
+        return pd.Timestamp(self._clock()).tz_convert("UTC").isoformat(timespec="seconds")
 
     @contextmanager
     def _tx(self) -> Iterator[sqlite3.Connection]:
@@ -169,7 +178,7 @@ class StateStore:
             c.execute(
                 "INSERT INTO signals(time, symbol, bar_time, strategy, signal, close, action, detail) "
                 "VALUES(?,?,?,?,?,?,?,?)",
-                (_now(), symbol, bar_time.isoformat(), strategy,
+                (self._now(), symbol, bar_time.isoformat(), strategy,
                  None if signal is None or signal != signal else float(signal),
                  close, action, json.dumps(detail or {}, default=str)),
             )
@@ -182,7 +191,7 @@ class StateStore:
     # ------------------------------------------------------------------ intents
 
     def add_intent(self, symbol: str, side: str, quantity: int, reason: str, bar_time: datetime | None) -> int:
-        now = _now()
+        now = self._now()
         with self._tx() as c:
             cur = c.execute(
                 "INSERT INTO intents(created, updated, symbol, side, quantity, reason, status, bar_time) "
@@ -194,7 +203,7 @@ class StateStore:
     def update_intent(self, intent_id: int, **fields: Any) -> None:
         if not fields:
             return
-        fields["updated"] = _now()
+        fields["updated"] = self._now()
         cols = ", ".join(f"{k} = ?" for k in fields)
         with self._tx() as c:
             c.execute(f"UPDATE intents SET {cols} WHERE id = ?", (*fields.values(), intent_id))
@@ -227,7 +236,7 @@ class StateStore:
                 "intent_id=COALESCE(orders.intent_id, excluded.intent_id)",
                 (order.order_id, intent_id, order.symbol, order.side, order.quantity, order.price,
                  order.order_type, str(order.state), order.filled_qty, order.avg_fill_price,
-                 _iso(order.created) or _now(), _iso(order.updated) or _now(), order.remark,
+                 _iso(order.created) or self._now(), _iso(order.updated) or self._now(), order.remark,
                  order.error, env),
             )
             new_qty = max(order.filled_qty - prev_filled, 0)
@@ -259,7 +268,7 @@ class StateStore:
         with self._tx() as c:
             c.execute(
                 "INSERT INTO fills(time, order_id, symbol, side, quantity, price, env) VALUES(?,?,?,?,?,?,?)",
-                (_iso(when) or _now(), order_id, symbol, side, quantity, price, env),
+                (_iso(when) or self._now(), order_id, symbol, side, quantity, price, env),
             )
 
     def fills(self, limit: int = 200, since_iso: str | None = None) -> list[dict[str, Any]]:

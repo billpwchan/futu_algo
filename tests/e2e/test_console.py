@@ -111,8 +111,8 @@ def test_backtest_runs_from_the_browser(console, browser):
     page.get_by_role("button", name="Run backtest").click()
     page.wait_for_url("**/#/backtest/*", timeout=60_000)
     page.wait_for_timeout(1500)
-    text = page.inner_text("body")
-    assert "Sharpe" in text and "Max drawdown" in text
+    text = page.inner_text("body").lower()  # labels are upper-cased by CSS
+    assert "sharpe" in text and "max drawdown" in text and "trades" in text
     assert page.locator("canvas").count() > 0
     assert not errors, errors
     ctx.close()

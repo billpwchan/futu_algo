@@ -96,6 +96,7 @@ class OrderExecutor:
         self.intents: dict[int, Intent] = {}
         self.orders: dict[str, OrderInfo] = {}
         self._seen: dict[str, tuple[object, ...]] = {}
+        self._quote_cache: dict[str, Quote] | None = None
         self._restore()
 
     # ------------------------------------------------------------------ restore
@@ -208,9 +209,28 @@ class OrderExecutor:
 
     def sync(self, now: datetime) -> list[tuple[OrderInfo, int]]:
         fills = self.refresh_orders(now)
+        self._quote_cache = None
         for intent in list(self.intents.values()):
             self._advance(intent, now)
+        self._quote_cache = None
         return fills
+
+    def _quote(self, symbol: str) -> Quote | None:
+        """One snapshot request per sync for every intent that needs a price."""
+        if self._quote_cache is None:
+            wanted = sorted({i.symbol for i in self.intents.values() if i.order_id is None} | {symbol})
+            try:
+                self._quote_cache = self.quotes.quotes(wanted)
+            except Exception as exc:
+                log.warning("No quotes for %s: %s", wanted, exc)
+                self._quote_cache = {}
+        cache = self._quote_cache if self._quote_cache is not None else {}
+        if symbol not in cache:
+            try:
+                cache.update(self.quotes.quotes([symbol]))
+            except Exception as exc:
+                log.warning("No quote for %s: %s", symbol, exc)
+        return cache.get(symbol)
 
     def _advance(self, intent: Intent, now: datetime) -> None:
         order = self.orders.get(intent.order_id) if intent.order_id else None
@@ -242,11 +262,7 @@ class OrderExecutor:
         inst = self.instrument(intent.symbol)
         if self.context(intent.symbol, None).phase != Phase.CONTINUOUS:
             return  # wait for the session without spending quote requests
-        try:
-            quote = self.quotes.quotes([intent.symbol]).get(intent.symbol)
-        except Exception as exc:
-            log.warning("No quote for %s: %s", intent.symbol, exc)
-            quote = None
+        quote = self._quote(intent.symbol)
         ctx = self.context(intent.symbol, quote)
         qty = intent.remaining
         if intent.side == "SELL":
