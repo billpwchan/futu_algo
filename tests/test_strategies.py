@@ -115,3 +115,14 @@ def test_user_strategy_file(tmp_path):
     s = create_strategy("above_ma_test")
     _, sig = s.run(synthetic_bars(30))
     assert sig.notna().sum() == 26
+
+
+def test_strategy_names_are_never_imported_as_paths(tmp_path):
+    """Names come from the web API; a path-like name must not execute a file."""
+    marker = tmp_path / "ran"
+    evil = tmp_path / "evil.py"
+    evil.write_text(f"open({str(marker)!r}, 'w').write('x')\n", encoding="utf-8")
+    for spec in (f"{evil}:Evil", "os:path"):
+        with pytest.raises(StrategyError, match="Unknown strategy"):
+            create_strategy(spec)
+    assert not marker.exists()

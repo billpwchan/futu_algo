@@ -26,7 +26,7 @@ from futu_algo.config import AppConfig
 from futu_algo.data.manager import DataManager
 from futu_algo.data.source import FutuSource
 from futu_algo.data.store import ParquetStore
-from futu_algo.errors import ConfigError
+from futu_algo.errors import ConfigError, FutuAlgoError
 from futu_algo.events import ENGINE, EventBus
 from futu_algo.futu_gateway import QuoteGateway, configure_encryption
 from futu_algo.live.engine import LiveEngine
@@ -89,10 +89,16 @@ class JobManager:
             try:
                 job.result = fn(job)
                 job.status = "done"
-            except Exception as exc:
+            except FutuAlgoError as exc:
+                # Domain errors are written for the user ("no data for HK.00700 ...").
                 job.status = "failed"
-                job.error = str(exc)
-                log.warning("Job %s (%s) failed: %s\n%s", job.id, title, exc, traceback.format_exc())
+                job.error = exc.public_message
+                log.warning("Job %s (%s) failed: %s", job.id, title, exc)
+            except Exception:
+                # Anything else may carry internals (paths, library state): log, don't expose.
+                job.status = "failed"
+                job.error = f"Internal error in {kind} job {job.id}; see the server log."
+                log.error("Job %s (%s) crashed\n%s", job.id, title, traceback.format_exc())
             finally:
                 job.finished = datetime.now(UTC).isoformat(timespec="seconds")
 

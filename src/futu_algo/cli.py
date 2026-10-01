@@ -155,8 +155,8 @@ def cmd_check(args: argparse.Namespace) -> int:
     for name in ("email", "telegram"):
         ch = getattr(cfg.notify, name)
         if ch.enabled:
-            env = ch.password_env if name == "email" else ch.token_env
-            print(f"  notify.{name}: enabled ({env} {'set' if secret(env) else 'NOT SET'})")
+            has_credential = bool(secret(ch.password_env if name == "email" else ch.token_env))
+            print(f"  notify.{name}: enabled, credential {'found' if has_credential else 'MISSING'}")
     app.shutdown()
     return 0 if ok else 2
 

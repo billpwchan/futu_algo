@@ -144,3 +144,22 @@ def test_scheduler_runs_jobs_once_per_day(tmp_path):
     time.sleep(0.3)
     assert ran == ["screen"]
     app.shutdown()
+
+
+def test_job_errors_hide_unexpected_exception_details():
+    from futu_algo.app import JobManager
+    from futu_algo.errors import DataError
+
+    jobs = JobManager()
+
+    def boom(_job):
+        raise RuntimeError("secret /home/user/path detail")
+
+    def domain(_job):
+        raise DataError("No bars for HK.00700")
+
+    a, b = jobs.submit("backtest", "a", boom), jobs.submit("backtest", "b", domain)
+    assert wait_for(lambda: a.status == "failed" and b.status == "failed", 5)
+    assert "secret" not in a.error and "server log" in a.error
+    assert b.error == "No bars for HK.00700"
+    jobs.shutdown()

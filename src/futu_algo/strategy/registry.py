@@ -1,11 +1,11 @@
 """Strategy registry.
 
-Built-ins register themselves with ``@register``. User strategies can be loaded by
+Built-ins register themselves with ``@register``. User strategies are loaded from the files
+or directories listed in the config's ``strategy_paths``: every ``Strategy`` subclass with a
+``name`` in those files is registered under that name.
 
-* ``module.path:ClassName`` (importable module), or
-* ``path/to/file.py:ClassName`` (a file anywhere on disk), or
-* dropping ``.py`` files in a directory listed in ``strategy_paths``; every
-  ``Strategy`` subclass with a ``name`` in those files is registered.
+Strategies are looked up by registered name only. Names arrive from the web console's API,
+so a name must never be interpreted as a file path or module to import.
 """
 
 from __future__ import annotations
@@ -63,15 +63,6 @@ def get_strategy_class(spec: str) -> type[Strategy]:
     _load_builtins()
     if spec in _REGISTRY:
         return _REGISTRY[spec]
-    if ":" in spec:
-        target, _, class_name = spec.rpartition(":")
-        module = (
-            _load_file(Path(target)) if target.endswith(".py") else importlib.import_module(target)
-        )
-        cls = getattr(module, class_name, None)
-        if not (inspect.isclass(cls) and issubclass(cls, Strategy)):
-            raise StrategyError(f"{spec!r} does not name a Strategy subclass")
-        return cls
     raise StrategyError(f"Unknown strategy {spec!r}. Available: {', '.join(sorted(_REGISTRY))}")
 
 

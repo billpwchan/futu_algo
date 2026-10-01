@@ -2,7 +2,15 @@
 
 
 class FutuAlgoError(Exception):
-    """Base class for every error raised by the package."""
+    """Base class for every error raised by the package.
+
+    Messages are written for the person running the system (what failed and what to do), so
+    the web console may show them; unexpected exceptions are logged instead.
+    """
+
+    @property
+    def public_message(self) -> str:
+        return " ".join(str(a) for a in self.args) or type(self).__name__
 
 
 class ConfigError(FutuAlgoError):
