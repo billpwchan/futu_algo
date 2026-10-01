@@ -1,0 +1,19 @@
+# Futu OpenD (command-line build) as a service. Download OpenD from
+# https://www.futunn.com/download/OpenAPI and configure FutuOpenD.xml (login account,
+# password MD5, api port, optional RSA key) before enabling.
+[Unit]
+Description=Futu OpenD
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=futu
+WorkingDirectory=/opt/futu-opend
+ExecStart=/opt/futu-opend/FutuOpenD -cfg_file=/opt/futu-opend/FutuOpenD.xml
+Restart=always
+RestartSec=5
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

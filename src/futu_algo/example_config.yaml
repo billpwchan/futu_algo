@@ -1,0 +1,161 @@
+# futu_algo configuration
+#
+# Relative paths are resolved against this file's directory. Secrets are never stored here:
+# fields ending in `_env` name an environment variable, and a `.env` file next to this file is
+# loaded automatically (see .env.example).
+
+futu:
+  host: 127.0.0.1          # OpenD address
+  port: 11111              # OpenD API port
+  rsa_private_key: null    # PKCS#1 key path; OpenD requires it for trading over a non-local address
+  security_firm: FUTUSECURITIES   # FUTUSECURITIES (Futu HK), FUTUINC (moomoo US), FUTUSG, ...
+  trade_password_md5_env: FUTU_TRADE_PASSWORD_MD5   # only needed for REAL accounts
+
+data:
+  dir: data                # Parquet cache: bars/<KTYPE>/<adjust>/<MARKET>/<code>.parquet
+  adjust: qfq              # qfq (forward-adjusted, like TDX), hfq or none
+  offline: false           # true: never contact OpenD for history; use the cache only
+  instrument_ttl_days: 7   # refresh lot sizes / names after this many days
+  lot_sizes: {}            # per-symbol board-lot overrides, e.g. {HK.00700: 100}
+
+costs:
+  model: market            # market: dated HK statutory fees + Futu broker fees; simple: flat rate
+  hk:
+    commission_rate: 0.0003
+    commission_min: 3.0
+    platform_fee: 15.0     # HKD per order (Futu HK fixed plan)
+    include_statutory: true
+
+# ---------------------------------------------------------------------------- backtesting
+backtest:
+  symbols: [HK.00700, HK.09988, HK.00005, HK.01299]
+  strategy:
+    name: macd
+    params: {fast_period: 12, slow_period: 26, signal_period: 9}
+  timeframe: DAY           # 1M 3M 5M 15M 30M 60M, any minute multiple (10M, 2H, 4H), DAY, WEEK, MON
+  start: 2023-01-01
+  end: null                # null = today
+  capital: 1000000
+  mode: portfolio          # portfolio: shared cash; scan: each symbol alone with full capital
+  benchmark: HK.800000     # Hang Seng Index; null to compare with buy & hold
+  sizing:
+    method: equal_weight   # equal_weight | fixed_value | fixed_lots | percent_equity | all_in
+    max_positions: 4
+  execution:
+    fill: next_open        # next_open (no look-ahead) | close (optimistic, like TDX)
+    slippage_ticks: 1      # adverse HKEX ticks per fill
+    entry_requires_fresh_signal: true
+  exits:
+    stop_loss: null        # e.g. 0.08 = 8% below entry
+    trailing_stop: null
+    take_profit: null
+    max_holding_bars: null
+  check_lookahead: true
+  output_dir: reports
+
+# ---------------------------------------------------------------------------- live trading
+trading:
+  env: SIMULATE            # SIMULATE = Futu paper account. REAL is gated (allow_real + FUTU_ALGO_ALLOW_REAL=1)
+  mode: paper              # paper: orders go to the Futu account; dry_run: local fills, nothing sent to Futu
+  timeframe: 1M            # bar size the strategies trade on (1-minute bars via Futu push)
+  strategy:                # default strategy for every symbol in the universe
+    name: macd
+    params: {}
+  universe:                # symbols to trade; a symbol may override the strategy
+    - HK.00700
+    - symbol: HK.09988
+      strategy: {name: kdj, params: {over_sell: 25}}
+    - symbol: HK.00005
+      strategy: {name: rsi}
+  capital: null            # cap the equity used for sizing (null = whole account)
+  sizing:
+    method: fixed_lots
+    lots: 1
+    max_positions: 5
+  exits:
+    stop_loss: null
+    trailing_stop: null
+    take_profit: null
+    max_holding_bars: null
+  order:
+    price: aggressive      # aggressive (cross the spread) | passive | mid | market
+    extra_ticks: 0
+    timeout_seconds: 30    # re-price unfilled orders after this long
+    max_replaces: 2
+  risk:
+    max_order_value: null
+    max_position_value: 200000
+    max_total_exposure: 1.0        # market value / equity
+    max_orders_per_day: 100
+    max_daily_loss: null           # HKD; halts new entries for the day
+    max_daily_loss_pct: 0.03
+    price_band_pct: 0.05           # reject limits more than 5% from the last price
+    no_entries_minutes_before_close: 5
+    flatten_minutes_before_close: null   # e.g. 3 to go flat before every close
+  entry_requires_fresh_signal: true
+  warmup_from_cache: true
+  poll_seconds: 3
+  bar_grace_seconds: 2
+  state_db: state/futu_algo.sqlite
+
+# ---------------------------------------------------------------------------- screener
+# Filters run on Futu's servers (get_stock_filter): no historical K-line quota is used.
+# kind: simple | accumulate | financial | pattern | indicator; field: a Futu StockField name.
+screener:
+  presets:
+    liquid_uptrend:
+      description: Liquid HK stocks with MA5 > MA10 > MA20 > MA30 > MA60 on daily bars
+      filters:
+        - {kind: simple, field: CUR_PRICE, min: 1}
+        - {kind: accumulate, field: TURNOVER, min: 100000000, days: 10, sort: desc}
+        - {kind: pattern, field: MA_ALIGNMENT_LONG, ktype: K_DAY}
+      max_results: 100
+    macd_golden_cross:
+      description: MACD golden cross today, turnover above HK$50M, confirmed by the macd strategy
+      filters:
+        - {kind: pattern, field: MACD_GOLD_CROSS_LOW, ktype: K_DAY}
+        - {kind: accumulate, field: TURNOVER, min: 50000000, days: 5}
+      confirm_strategy: {name: macd}
+      max_confirm: 20
+    value:
+      description: PE (TTM) between 0 and 12, ROE above 12%
+      filters:
+        - {kind: simple, field: PE_TTM, min: 0, max: 12}
+        - {kind: financial, field: RETURN_ON_EQUITY_RATE, min: 12, quarter: ANNUAL}
+        - {kind: simple, field: MARKET_VAL, min: 5000000000, sort: desc}
+  schedule:
+    - {preset: liquid_uptrend, at: "08:45", notify: true}
+  results_dir: reports/screener
+
+# ---------------------------------------------------------------------------- operations
+notify:
+  email:
+    enabled: false
+    smtp_host: smtp.example.com
+    smtp_port: 587
+    security: starttls     # starttls | ssl | none
+    username: you@example.com
+    password_env: FUTU_ALGO_SMTP_PASSWORD
+    sender: you@example.com
+    recipients: [you@example.com]
+  telegram:
+    enabled: false
+    token_env: FUTU_ALGO_TELEGRAM_TOKEN
+    chat_id: ""
+  events: [fills, rejections, errors, risk, daily_summary, screener]
+
+web:
+  host: 127.0.0.1          # binding elsewhere requires a token
+  port: 8765
+  token_env: FUTU_ALGO_WEB_TOKEN
+  autostart_engine: false
+
+schedule:                  # exchange-local times on trading days
+  refresh_instruments: "08:50"
+  daily_summary: "16:20"
+
+logging:
+  level: INFO
+  dir: logs
+
+strategy_paths: []         # extra .py files or folders with your own Strategy subclasses

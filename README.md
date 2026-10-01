@@ -1,151 +1,183 @@
-<a href="https://github.com/billpwchan"><img src="https://raw.githubusercontent.com/billpwchan/billpwchan/output/banner-futu_algo.svg" alt="futu_algo: algorithmic trading framework on Futu OpenAPI" width="100%"></a>
+<a href="https://github.com/billpwchan/billpwchan"><img src="https://raw.githubusercontent.com/billpwchan/billpwchan/output/banner-futu_algo.svg" alt="futu_algo: algorithmic trading framework on Futu OpenAPI" width="100%"></a>
 
 # futu_algo
 
-An algorithmic trading framework for Hong Kong equities built on [Futu OpenD and Futu OpenAPI](https://openapi.futunn.com/). It covers the whole loop for a retail quant: download and store historical K-lines, screen the market, backtest a strategy, then run it live against your Futu account.
+Algorithmic trading for Hong Kong equities on [Futu OpenAPI](https://openapi.futunn.com/): a
+local data cache, TDX-style strategies, a cost-accurate backtester, a stock screener and a
+paper-trading engine that trades exactly what the backtest traded, all driven from a web
+console or the command line.
 
-基於富途 OpenD / OpenAPI 的港股量化交易框架：數據下載與存儲、選股、回測、實盤交易，一個倉庫完成。
+基於富途 OpenAPI 的港股量化交易系統：本地 K 線快取、通達信風格策略、按港股真實費用計算的回測、
+富途伺服器端選股，以及與回測逐筆一致的模擬盤實盤引擎，透過網頁控制台或命令列操作。
 
 [![License](https://img.shields.io/github/license/billpwchan/futu_algo?style=flat-square&color=161b22)](LICENSE)
-[![Stars](https://img.shields.io/github/stars/billpwchan/futu_algo?style=flat-square&color=161b22)](https://github.com/billpwchan/futu_algo/stargazers)
-[![Futu OpenAPI](https://img.shields.io/badge/Futu%20OpenAPI-6.1-161b22?style=flat-square)](https://openapi.futunn.com/)
+[![Python](https://img.shields.io/badge/python-3.11%2B-161b22?style=flat-square)](pyproject.toml)
+[![CI](https://img.shields.io/github/actions/workflow/status/billpwchan/futu_algo/ci.yml?style=flat-square&color=161b22&label=CI)](.github/workflows/ci.yml)
+
+![Web console dashboard](docs/images/console-dashboard.png)
 
 ## What it does
 
-| Capability | Details |
+| | |
 |:--|:--|
-| **Market data** | Downloads K-line history to CSV and SQLite: 1-minute bars for up to 2 years, daily bars for up to 10 years. Incremental updates resume from the last stored bar. |
-| **Stock screening** | Composable filters (`Volume_Threshold`, `Price_Threshold`, `MA_Simple`, `Triple_Cross`) across HK and mainland China markets, with optional email digests. |
-| **Strategies** | A small template (indicators, buy, sell) with `MACD_Cross`, `KDJ_Cross`, `RSI_Threshold` and `EMA_Ribbon` included. Each stock in the pool can run its own strategy. |
-| **Backtesting** | Replays stored history through the same strategy classes, with a Pyfolio-based summary. |
-| **Live trading** | Subscribes to real-time quotes and decides orders in about 0.01 s per stock for a three-indicator strategy (MACD, KDJ, close). Supports `SIMULATE` and `REAL` trading environments. |
+| **Data** | Downloads Futu K-lines into a Parquet cache, paging past 1,000-bar pages, within Futu's rate limits and history quota. Any minute multiple (10M, 2H, 4H) is built session by session, never across the lunch break. |
+| **Strategies** | `macd`, `kdj`, `rsi`, `ma_cross`, `ema_ribbon`, `boll`, `donchian`, on TDX-exact indicators. Write your own in a few lines; every backtest checks it for future functions. |
+| **Backtesting** | Next-open fills in whole board lots, HK stamp duty and levies on the schedule in force each day, HKEX tick-table slippage, stops and targets, portfolio or per-symbol mode, benchmark against the Hang Seng Index. |
+| **Paper trading** | Runs on live one-minute (or any) bars pushed by OpenD, sends tick-rounded limit orders to your Futu paper account, re-prices unfilled orders, reconciles fills, enforces risk limits and survives restarts. |
+| **Screener** | Price, liquidity, valuation, financial and chart-pattern filters run on Futu's servers over the whole HK market without using history quota, optionally confirmed by a strategy. |
+| **Notifications** | Email and Telegram for fills, rejections, errors, risk events, the daily summary and screener results. |
+| **Web console** | Dashboard, watchlist, live charts with indicators and fills, backtest runner and reports, screener, orders, data cache, config editor, event log. |
 
-## How it fits together
+<table><tr>
+<td><img src="docs/images/console-chart.png" alt="Live chart with MACD and fills"></td>
+<td><img src="docs/images/console-backtest.png" alt="Backtest report"></td>
+</tr></table>
 
-```mermaid
-flowchart LR
-  OpenD[Futu OpenD] --> Data[data_engine<br/>K-line download]
-  Data --> Store[(CSV + SQLite)]
-  Store --> Filter[stock_filter_engine<br/>screening]
-  Store --> Backtest[backtesting_engine]
-  Filter --> Email[email_engine<br/>digest]
-  OpenD --> Trading[trading_engine<br/>real-time quotes]
-  Trading --> Orders[order_engine]
-  Orders --> OpenD
-```
+The live engine and the backtester share the same strategy code and entry rules. The test suite
+replays real one-minute bars through both and requires every fill, fee and the final equity to
+match exactly.
 
 ## Quick start
 
-1. **Install and log in to [Futu OpenD](https://www.futunn.com/download/OpenAPI)** (Windows, macOS, CentOS, Ubuntu). You need at least LV1 quote rights for the markets you trade; see the [quote permission guide](https://openapi.futunn.com/futu-api-doc/qa/quote.html).
-2. **Create the environment:**
-   ```bash
-   conda env create -f environment.yml
-   ```
-3. **Create `config.ini`** in the repository root (full template below).
-4. **Download data:**
-   ```bash
-   python main_backend.py --force_update
-   ```
+Requirements: Python 3.11+, and for real market data [Futu OpenD](https://www.futunn.com/download/OpenAPI)
+running and logged in, with quote rights for HK stocks (LV1 or above).
 
-<details>
-<summary><b>config.ini template</b></summary>
+```bash
+git clone https://github.com/billpwchan/futu_algo.git
+cd futu_algo
+python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\activate
+pip install -e .
 
-```ini
-[FutuOpenD.Config]
-Host = <OpenD Host>
-Port = <OpenD Port>
-WebSocketPort = <OpenD WebSocketPort>
-WebSocketKey = <OpenD WebSocketKey>
-TrdEnv = <SIMULATE or REAL>
-
-[FutuOpenD.Credential]
-Username = <Futu Login Username>
-Password_md5 = <Futu Login Password Md5 Value>
-
-[FutuOpenD.DataFormat]
-HistoryDataFormat = ["code","time_key","open","close","high","low","pe_ratio","turnover_rate","volume","turnover","change_rate","last_close"]
-SubscribedDataFormat = None
-
-[TradePreference]
-LotSizeMultiplier = <# of Stocks to Buy per Signal>
-MaxPercPerAsset = <Maximum % of Capital Allocated per Asset>
-StockList = <Subscribed Stocks in List Format>
-
-[Backtesting.Commission.HK]
-FixedCharge = <Fixed Transaction Fee and Tax in HKD - 15.5>
-PercCharge = <Percentage Transaction Fee in % - 0.1097>
-
-[Email]
-Port = <Server SMTP Setting>
-SmtpServer = <Server SMTP Setting>
-Sender = <Sender Email Address - account1@example.com>
-Login = <Sender Email Address - account1@example.com>
-Password = <Sender Email Password>
-SubscriptionList = ["account1@example.com", "account2@example.com"]
-
-[TuShare.Credential]
-token = <TuShare API Token>
+futu-algo web --demo --speed 30      # try everything on a simulated OpenD, no account needed
 ```
 
-The format may change between commits; if an exception mentions a missing key, compare against this template.
-</details>
+Open http://127.0.0.1:8765/. Demo mode runs a synthetic market with a virtual clock inside the HK
+session; the engine starts automatically and trades eight made-up stocks on one-minute bars.
 
-## Command-line usage
+With OpenD:
 
-| Task | Command |
+```bash
+futu-algo init config.yaml           # commented starter config + .env.example
+futu-algo check -c config.yaml       # validates the config, OpenD, quota and the paper account
+futu-algo backtest -c config.yaml    # downloads data once, prints a summary, saves a report
+futu-algo web -c config.yaml         # console; start the engine from the dashboard
+```
+
+## Commands
+
+| Command | What it does |
 |:--|:--|
-| Update K-line data before the open (resumes, never overwrites) | `python main_backend.py --update` |
-| Rebuild all data from scratch (slow, use with care) | `python main_backend.py --force_update` |
-| Trade live with a strategy on 1-minute bars | `python main_backend.py --strategy MACD_Cross` |
-| Trade on daily bars | `python main_backend.py --strategy MACD_Cross --time_interval K_DAY` |
-| Trade the top 30 HSI constituents when no stock list is configured | `python main_backend.py --strategy MACD_Cross --include_hsi --time_interval K_DAY` |
-| Backtest a strategy | `python main_backend.py --backtesting MACD_Cross` |
-| Screen HK and China A-shares and email the result | `python main_backend.py --filter Volume_Threshold Price_Threshold --email_name MACD_Cross_Technique --market HK CHINA` |
+| `futu-algo web -c config.yaml [--engine]` | Web console; `--engine` also starts paper trading |
+| `futu-algo web --demo [--speed 30]` | Console on a simulated OpenD and synthetic market |
+| `futu-algo trade -c config.yaml [--dry-run]` | Headless paper trading; `--dry-run` fills locally and sends nothing to Futu |
+| `futu-algo backtest -c config.yaml -s rsi -p period=9 --symbols HK.00700 HK.09988` | Backtest; flags override the config |
+| `futu-algo replay -c config.yaml --start 2026-09-01` | Replay cached bars through the live engine to preview what it would have done |
+| `futu-algo screen -c config.yaml -p liquid_uptrend [--notify]` | Run a screener preset |
+| `futu-algo data fetch\|list\|quota -c config.yaml` | Manage the bar cache and check the history quota |
+| `futu-algo strategies [--json]` | Strategies and their parameters |
+| `futu-algo account\|positions\|orders -c config.yaml` | Inspect the Futu account |
+| `futu-algo cancel-all\|flatten -c config.yaml` | Emergency controls |
 
-Supported intervals: `K_1M`, `K_3M`, `K_5M`, `K_15M`, `K_30M`, `K_60M`, `K_DAY`, `K_WEEK`, `K_MON`, `K_QUARTER`, `K_YEAR`.
+Any config value can be overridden on the command line with `--set trading.timeframe=5M`.
+
+## Configuration
+
+Everything lives in one YAML file; `futu-algo init` writes a fully commented one
+([example](src/futu_algo/example_config.yaml)). Relative paths are resolved against the
+config's directory. Secrets are never stored in it: fields ending in `_env` name environment
+variables, and a `.env` file next to the config is loaded automatically.
+
+```yaml
+trading:
+  env: SIMULATE            # Futu paper account
+  mode: paper              # or dry_run: local fills, nothing sent to Futu
+  timeframe: 1M
+  strategy: {name: macd}
+  universe:
+    - HK.00700
+    - symbol: HK.09988
+      strategy: {name: kdj, params: {over_sell: 25}}
+  sizing: {method: fixed_value, value: 50000, max_positions: 5}
+  risk: {max_daily_loss_pct: 0.03, max_position_value: 200000}
+```
+
+Paper trading (`SIMULATE`) is the supported environment. `REAL` is implemented but gated: it
+needs `trading.allow_real: true` **and** `FUTU_ALGO_ALLOW_REAL=1` in the environment.
 
 ## Writing a strategy
 
-Add a file to `strategies/` that subclasses the base class in `strategies/Strategies.py`, compute your indicators, and implement the buy and sell rules. The file name becomes the value you pass to `--strategy` and `--backtesting`. `MACD_Cross.py` is the shortest complete example.
+A strategy returns indicator columns and a signal per bar: `1` = be long, `0` = be flat,
+`NaN` = no change. TDX functions keep TDX semantics, so formulas port line by line.
 
-## Project status
+```python
+import pandas as pd
+from pydantic import Field
+from futu_algo.indicators import CROSS, LLV, MA, REF
+from futu_algo.strategy import Strategy, StrategyParams, events
 
-The core loop (data, screening, backtesting, live trading) is stable and used by the community around Futu OpenAPI. The PyQt GUI (`python main.py`) is unfinished. Active development of the trading stack continues in the sibling projects below.
+
+class Params(StrategyParams):
+    fast: int = Field(20, ge=2)
+    slow: int = Field(60, ge=3)
+
+
+class PullbackTrend(Strategy):
+    name = "pullback_trend"
+    title = "MA trend with pullback entry"
+    Params = Params
+
+    def warmup_bars(self) -> int:
+        return self.params.slow
+
+    def indicators(self, bars: pd.DataFrame) -> pd.DataFrame:
+        c = bars["close"]
+        return pd.DataFrame(
+            {"fast": MA(c, self.params.fast), "slow": MA(c, self.params.slow), "low20": LLV(bars["low"], 20)},
+            index=bars.index,
+        )
+
+    def signals(self, bars, ind):
+        buy = CROSS(ind["fast"], ind["slow"]) & (bars["close"] > REF(ind["low20"], 1) * 1.05)
+        return events(buy, CROSS(ind["slow"], ind["fast"]))
+```
+
+Put the file in a folder listed under `strategy_paths` and use `name: pullback_trend` in the
+config. The same class runs in backtests, replays and live trading.
+
+## Deployment
+
+Linux with systemd: [`deploy/systemd/futu-opend.service`](deploy/systemd/futu-opend.service)
+runs the command-line OpenD and [`deploy/systemd/futu-algo.service`](deploy/systemd/futu-algo.service)
+runs the console and engine. A [`Dockerfile`](Dockerfile) is included for running futu_algo
+next to an OpenD instance. If OpenD is on another machine, it requires an RSA key
+(`futu.rsa_private_key`) for trading, and the console needs `FUTU_ALGO_WEB_TOKEN` before it will
+listen on a non-local address.
+
+## Development
+
+```bash
+pip install -e ".[dev]"
+pytest -m "not e2e"         # unit, integration and parity tests
+ruff check . && mypy
+pip install -e ".[e2e]" && pytest -m e2e    # browser tests of the console (Chromium)
+```
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains the design, the timing model and the
+known limitations. [CHANGELOG.md](CHANGELOG.md) records why 1.x was replaced.
 
 ## Part of a three-repo trading stack
 
-**[futu_tick_downloader](https://github.com/billpwchan/futu_tick_downloader)** (tick capture) → **[strategy_powerbacktest](https://github.com/billpwchan/strategy_powerbacktest)** (backtesting) → **futu_algo** (live trading)
+**[futu_tick_downloader](https://github.com/billpwchan/futu_tick_downloader)** (tick capture) ·
+**[strategy_powerbacktest](https://github.com/billpwchan/strategy_powerbacktest)** (research
+backtesting) · **futu_algo** (screening, backtesting and paper trading, standalone)
 
-Built by [Bill Chan](https://github.com/billpwchan). If it saves you time, you can [buy me a coffee](https://www.buymeacoffee.com/billpwchan98).
+Built by [Bill Chan](https://github.com/billpwchan). Licensed under Apache 2.0. Charts use
+[TradingView Lightweight Charts™](https://www.tradingview.com/lightweight-charts/) (Apache 2.0).
 
 <details>
 <summary><b>Disclaimer</b></summary>
 
-Futures, stocks and options trading involves substantial risk of loss and is not suitable for every investor. The
-valuation of futures, stocks and options may fluctuate, and, as a result, clients may lose more than their original
-investment. The impact of seasonal and geopolitical events is already factored into market prices. The highly leveraged
-nature of futures trading means that small market movements will have a great impact on your trading account and this
-can work against you, leading to large losses or can work for you, leading to large gains.
-
-If the market moves against you, you may sustain a total loss greater than the amount you deposited into your account.
-You are responsible for all the risks and financial resources you use and for the chosen trading system. You should not
-engage in trading unless you fully understand the nature of the transactions you are entering into and the extent of
-your exposure to loss. If you do not fully understand these risks you must seek independent advice from your financial
-advisor.
-
-All trading strategies are used at your own risk.
-
-Any content in this repository should not be relied upon as advice or construed as providing recommendations of any
-kind. It is your responsibility to confirm and decide which trades to make. Trade only with risk capital; that is, trade
-with money that, if lost, will not adversely impact your lifestyle and your ability to meet your financial obligations.
-Past results are no indication of future performance. In no event should the content of this correspondence be construed
-as an express or implied promise or guarantee.
-
-This repository and its author are not responsible for any losses incurred as a result of using any of our trading
-strategies. Loss-limiting strategies such as stop loss orders may not be effective because market conditions or
-technological issues may make it impossible to execute such orders. Likewise, strategies using combinations of options
-and/or futures positions such as “spread” or “straddle” trades may be just as risky as simple long and short positions.
-Information provided in this correspondence is intended solely for informational purposes and is obtained from sources
-believed to be reliable. Information is in no way guaranteed. No guarantee of any kind is implied or possible where
-projections of future conditions are attempted.
+For education and research. Trading stocks involves substantial risk of loss. Backtest and paper
+trading results do not predict live performance. Nothing in this repository is investment
+advice; the author takes no responsibility for trading results. Use at your own risk.
 </details>
