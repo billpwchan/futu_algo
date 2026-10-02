@@ -141,6 +141,8 @@ def test_data_endpoints(client):
     assert any(s["symbol"] == "HK.00005" for s in series)
     assert client.get("/api/data/quota").json()["used"] >= 1
     assert client.get("/api/data/bars/HK.00005?ktype=K_DAY").json()["rows"] > 50
+    for ktype in ("../../etc", "K_DAY/../..", "..", "k_day", "K_2H"):
+        assert client.get("/api/data/bars/HK.00005", params={"ktype": ktype}).status_code == 400, ktype
 
 
 def test_config_validation_and_save(tmp_path):

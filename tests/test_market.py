@@ -17,7 +17,7 @@ from futu_algo.market import (
 )
 from futu_algo.market.calendar import minutes_to_close
 from futu_algo.market.instrument import MARKETS
-from futu_algo.timeframe import Timeframe
+from futu_algo.timeframe import FUTU_KTYPES, NATIVE_MINUTES, Timeframe
 
 HK = MARKETS["HK"]
 TENCENT = Instrument("HK.700", 100)
@@ -144,6 +144,8 @@ def test_timeframes():
     assert Timeframe.parse("120M").base == Timeframe.parse("60M")
     assert Timeframe.parse("DAY").futu_ktype == "K_DAY"
     assert Timeframe.parse("1M").futu_ktype == "K_1M"
+    native = [Timeframe("min", n) for n in NATIVE_MINUTES] + [Timeframe(u) for u in ("day", "week", "month")]
+    assert {tf.futu_ktype for tf in native} == FUTU_KTYPES
     assert HK.bars_per_day(60) == 6  # 10:30 11:30 12:00 14:00 15:00 16:00
     assert HK.open_time == time(9, 30)
     with pytest.raises(ConfigError):

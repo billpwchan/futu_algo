@@ -46,7 +46,7 @@ from futu_algo.events import BACKTEST, Event
 from futu_algo.market.calendar import minutes_to_close
 from futu_algo.screener.engine import list_results, load_result
 from futu_algo.strategy.registry import available, create_strategy
-from futu_algo.timeframe import Timeframe
+from futu_algo.timeframe import FUTU_KTYPES, Timeframe
 
 log = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
@@ -555,6 +555,8 @@ def create_app(app: App, *, token: str | None = None, allowed_hosts: Iterable[st
     def data_bars(symbol: str, ktype: str = "K_DAY") -> JSONResponse:
         from futu_algo.market.instrument import normalize_symbol
 
+        if ktype not in FUTU_KTYPES:
+            raise HTTPException(400, f"Unknown ktype; use one of {', '.join(sorted(FUTU_KTYPES))}")
         key = SeriesKey(normalize_symbol(symbol), ktype, cfg.data.adjust)
         frame = app.store.read(key)
         if frame is None:

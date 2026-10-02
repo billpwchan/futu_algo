@@ -20,6 +20,8 @@ from futu_algo.market.instrument import MarketSpec
 Unit = Literal["min", "day", "week", "month"]
 
 NATIVE_MINUTES: tuple[int, ...] = (1, 3, 5, 15, 30, 60)
+# Every value of Timeframe.futu_ktype, i.e. every K-line type the bar cache stores.
+FUTU_KTYPES: frozenset[str] = frozenset([*(f"K_{n}M" for n in NATIVE_MINUTES), "K_DAY", "K_WEEK", "K_MON"])
 
 _MINUTE_RE = re.compile(r"^(\d+)\s*(M|MIN|MINS|MINUTE|MINUTES|T)$")
 _HOUR_RE = re.compile(r"^(\d+)\s*(H|HR|HOUR|HOURS)$")
