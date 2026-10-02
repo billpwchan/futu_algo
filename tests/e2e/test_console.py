@@ -109,7 +109,9 @@ def test_backtest_runs_from_the_browser(console, browser):
     ctx, page, errors = _open(browser, f"{console}/#/backtest")
     page.wait_for_load_state("networkidle")
     page.get_by_role("button", name="Run backtest").click()
-    page.wait_for_url("**/#/backtest/*", timeout=60_000)
+    # The backtest's history requests share the Futu rate limit with the demo engine running in the
+    # same app, so how long the job takes depends on the engine's load: allow a slow CI runner.
+    page.wait_for_url("**/#/backtest/*", timeout=180_000)
     page.wait_for_timeout(1500)
     text = page.inner_text("body").lower()  # labels are upper-cased by CSS
     assert "sharpe" in text and "max drawdown" in text and "trades" in text
