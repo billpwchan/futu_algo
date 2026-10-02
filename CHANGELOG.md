@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.1.0 (2026-10)
+
+A redesign of the web console. The API is unchanged.
+
+- New visual system: dark-first with a matching light theme, self-hosted Geist and Geist Mono
+  fonts with tabular figures in tables, one accent colour for controls and a chart palette checked
+  for colour-vision deficiency in both themes. Red-up/green-down still applies everywhere.
+- New shell: grouped navigation, an engine status card, an HK session timeline with the time to
+  the close, a command palette (Ctrl/⌘+K) for pages, symbols and engine actions, and keyboard
+  shortcuts (G then a letter, T for the theme, ? for help).
+- Dashboard: equity as the headline figure with today's P/L, the intraday curve shaded against
+  the day's starting equity, an allocation breakdown, position weights and an activity timeline.
+- Watchlist: quote board with session change, intraday sparklines, warm-up progress and summary
+  figures (breadth, decisions today).
+- Chart: a full-height workspace with timeframe switcher, quote panel, strategy parameters and the
+  engine's decisions.
+- Backtest: strategy cards and a stepped form with a sticky run bar; saved runs as a list; the
+  report is now a tear sheet with headline metrics, equity against starting capital, a trade
+  return histogram and a trades CSV export.
+- Orders, Screener, Data, Settings and Logs restyled, with order statistics, filter tokens, a quota
+  meter, theme previews and level-coded logs.
+- Fixed: toasts for events already in the stream backlog were shown again on page load when the
+  engine clock differed from the browser clock (demo mode).
+
 ## 2.0.0 (2026-10)
 
 A full rewrite as the installable package `futu_algo` (`pip install -e .`, command

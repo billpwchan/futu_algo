@@ -1,6 +1,6 @@
 // Logs: persisted events with kind / level filters and live append from the stream.
 
-import { h, mount, storage, fmtDateTime } from '../core.js';
+import { h, mount, icon, storage, fmtDateTime } from '../core.js';
 import { api, KINDS, stream } from '../api.js';
 import { card, chips, segmented, errorBox, loading, btn } from '../ui.js';
 import { kindBadge, levelBadge } from '../common.js';
@@ -29,7 +29,7 @@ export default {
     const count = h('span', { class: 'toolbar-meta' });
     const pauseBtn = btn('Pause', { size: 'sm', tone: 'ghost', iconName: 'pause', onclick: () => { paused = !paused; renderPause(); if (!paused) render(); } });
     function renderPause() {
-      pauseBtn.replaceChildren(document.createTextNode(paused ? `Resume${pending ? ` (${pending} new)` : ''}` : 'Pause'));
+      pauseBtn.replaceChildren(icon(paused ? 'play' : 'pause', 14), h('span', {}, paused ? `Resume${pending ? ` (${pending} new)` : ''}` : 'Pause'));
       pauseBtn.classList.toggle('active', paused);
     }
 
@@ -40,10 +40,10 @@ export default {
       const data = ev.data && typeof ev.data === 'object' && Object.keys(ev.data).length ? ev.data : null;
       const msg = h('td', { class: 'log-msg' }, ev.message);
       const tr = h('tr', { class: [`lvl-${ev.level}`, data && 'clickable'], title: data ? 'Click for details' : null },
-        h('td', { class: 'num nowrap', title: fmtDateTime(ev.time) }, fmtDateTime(ev.time)),
+        h('td', { class: 'log-time nowrap', title: `${fmtDateTime(ev.time)} HKT` }, fmtDateTime(ev.time)),
         h('td', {}, levelBadge(ev.level)),
         h('td', {}, kindBadge(ev.kind)),
-        h('td', { class: 'mono hide-sm' }, ev.symbol || ''),
+        h('td', { class: 'hide-sm' }, ev.symbol ? h('a', { class: 'sym', href: `#/chart/${encodeURIComponent(ev.symbol)}` }, ev.symbol) : ''),
         msg);
       if (data) {
         tr.tabIndex = 0;
@@ -61,13 +61,13 @@ export default {
       pending = 0;
       renderPause();
       count.textContent = `${rows.length} of ${events.length} events`;
-      if (!rows.length) mount(list, h('tr', { class: 'empty-row' }, h('td', { colspan: 5 }, 'No events match the filters')));
+      if (!rows.length) mount(list, h('tr', { class: 'empty-row' }, h('td', { colspan: 5 }, events.length ? 'No events match the filters' : 'No events recorded yet')));
       else mount(list, rows.slice(0, 500).map(row));
     }
 
     const kindChips = chips(KINDS.map((k) => ({ value: k, label: k === 'daily_summary' ? 'summary' : k })), kinds, () => { persist(); load(); }, { label: 'Kinds' });
     const levelSeg = segmented(LEVELS.map((l) => ({ value: l, label: l === 'debug' ? 'Debug+' : l === 'info' ? 'Info+' : l === 'warning' ? 'Warn+' : 'Error' })), minLevel, (v) => { minLevel = v; persist(); render(); }, { label: 'Minimum level', size: 'sm' });
-    const search = h('input', { class: 'input input-sm', type: 'search', placeholder: 'Search messages…', 'aria-label': 'Search messages', oninput: (e) => { text = e.target.value.trim().toLowerCase(); render(); } });
+    const search = h('div', { class: 'input-icon' }, icon('search', 13), h('input', { class: 'input input-sm', type: 'search', placeholder: 'Search messages…', 'aria-label': 'Search messages', oninput: (e) => { text = e.target.value.trim().toLowerCase(); render(); } }));
     const holder = h('div', {}, loading());
 
     mount(root, card({

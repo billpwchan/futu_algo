@@ -3,7 +3,7 @@
 import { h, mount, fmtInt, fmtDate, fmtWhen, fmtDateTime, normalizeSymbol, todayHK } from '../core.js';
 import { api, post, waitJob } from '../api.js';
 import { app, go } from '../state.js';
-import { card, kpi, btn, busy, dataTable, empty, errorBox, field, select, skeleton, callout, toast } from '../ui.js';
+import { card, btn, busy, dataTable, empty, errorBox, field, select, skeleton, callout, toast, meter } from '../ui.js';
 import { symLink, TIMEFRAMES } from '../common.js';
 
 const KTYPE_TF = { K_1M: '1M', K_3M: '3M', K_5M: '5M', K_15M: '15M', K_30M: '30M', K_60M: '60M', K_DAY: 'DAY', K_WEEK: 'WEEK', K_MON: 'MON' };
@@ -11,7 +11,7 @@ const KTYPE_TF = { K_1M: '1M', K_3M: '3M', K_5M: '5M', K_15M: '15M', K_30M: '30M
 export default {
   title: () => 'Data',
   async mount(root, { ctx }) {
-    const quotaHolder = h('div', { class: 'kpis kpis-3' }, skeleton(2));
+    const quotaHolder = h('div', {}, card({ body: skeleton(3) }));
     const seriesHolder = h('div', {}, card({ title: 'Cached series', body: skeleton(6) }));
     const formHolder = h('div');
     mount(root, quotaHolder, h('div', { class: 'grid-2-1' }, seriesHolder, formHolder));
@@ -24,10 +24,20 @@ export default {
         if (q.error) { mount(quotaHolder, callout('warning', 'Quota unavailable', q.error)); return; }
         const total = (q.used ?? 0) + (q.remaining ?? 0);
         const pctUsed = total ? q.used / total : 0;
-        mount(quotaHolder,
-          kpi('History quota used', fmtInt(q.used), { sub: `of ${fmtInt(total)} symbols (30-day window)`, tone: pctUsed > 0.85 ? 'down' : '' }),
-          kpi('Remaining', fmtInt(q.remaining), { sub: h('span', { class: 'meter', role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': String(total), 'aria-valuenow': String(q.used), 'aria-label': 'Quota used' }, h('span', { class: 'meter-fill', style: { width: `${Math.round(pctUsed * 100)}%` } })) }),
-          kpi('Symbols this window', fmtInt(q.symbols?.length ?? 0), { sub: (q.symbols || []).slice(0, 4).join(', ') + ((q.symbols || []).length > 4 ? ' …' : '') }));
+        const symbols = q.symbols || [];
+        mount(quotaHolder, card({
+          title: 'History quota', subtitle: 'Distinct symbols downloaded from Futu in the last 30 days',
+          body: h('div', { class: 'grid-1-2' },
+            h('div', { class: 'quota-main' },
+              h('div', { class: 'quota-figure' }, fmtInt(q.used), h('small', {}, ` of ${fmtInt(total)} used`)),
+              meter(pctUsed, { label: 'History quota used', warnAt: 0.75, badAt: 0.9 }),
+              h('div', { class: 'muted small' }, `${fmtInt(q.remaining)} symbols left. Re-fetching a symbol already in the window is free.`)),
+            h('div', { class: 'stack-xs' },
+              h('div', { class: 'section-label' }, `In this window (${fmtInt(symbols.length)})`),
+              symbols.length
+                ? h('div', { class: 'chips' }, symbols.slice(0, 40).map((sym) => h('a', { class: 'chip', href: `#/chart/${encodeURIComponent(sym)}?tf=DAY` }, sym)), symbols.length > 40 ? h('span', { class: 'muted small' }, `+${symbols.length - 40} more`) : null)
+                : h('p', { class: 'muted small' }, 'No symbols downloaded in the last 30 days.'))),
+        }));
       } catch (err) {
         if (ctx.alive) mount(quotaHolder, errorBox(err, loadQuota));
       }
@@ -43,8 +53,8 @@ export default {
           rowTitle: (r) => `Open ${r.symbol} chart`,
           columns: [
             { key: 'symbol', label: 'Symbol', render: (r) => symLink(r.symbol, { tf: KTYPE_TF[r.ktype] }) },
-            { key: 'ktype', label: 'K-type', cls: 'mono' },
-            { key: 'adjust', label: 'Adjust', cls: 'mono hide-sm' },
+            { key: 'ktype', label: 'K-type', render: (r) => h('span', { class: 'badge badge-neutral kind-badge' }, KTYPE_TF[r.ktype] || r.ktype) },
+            { key: 'adjust', label: 'Adjust', cls: 'mono muted hide-sm' },
             { key: 'rows', label: 'Rows', num: true, render: (r) => fmtInt(r.rows) },
             { key: 'coverage', label: 'Coverage', value: (r) => (r.coverage || [])[0], render: (r) => h('span', { class: 'num' }, (r.coverage || []).map(fmtDate).join(' → ')) },
             { key: 'last_bar', label: 'Last bar', render: (r) => h('span', { class: 'num', title: fmtDateTime(r.last_bar) }, fmtDate(r.last_bar)) },
@@ -54,9 +64,9 @@ export default {
         });
         t.update(rows || []);
         mount(seriesHolder, card({
-          title: 'Cached series', subtitle: `${(rows || []).length} series in the local store`, flush: true,
+          title: 'Cached series', subtitle: `${fmtInt((rows || []).length)} series · ${fmtInt((rows || []).reduce((a, r) => a + (r.rows || 0), 0))} bars in the local Parquet store`, flush: true,
           actions: btn('', { size: 'sm', tone: 'ghost', iconName: 'refresh', attrs: { 'aria-label': 'Reload' }, onclick: () => { loadSeries(); loadQuota(); } }),
-          body: rows?.length ? t.el : empty('No cached data', 'Bars are cached the first time a backtest, chart or the engine needs them. Use the form to prefetch.'),
+          body: rows?.length ? t.el : empty('No cached data', 'Bars are cached the first time a backtest, chart or the engine needs them. Use the form to prefetch.', null, 'database'),
         }));
       } catch (err) {
         if (ctx.alive) mount(seriesHolder, card({ title: 'Cached series', body: errorBox(err, loadSeries) }));
@@ -115,7 +125,7 @@ export default {
     h('div', { class: 'form-actions' }, fetchBtn, progress),
     result);
     mount(formHolder, card({
-      title: 'Fetch history', subtitle: 'Downloads into the local cache (uses history quota for new symbols)',
+      title: 'Fetch history', subtitle: 'Download K-lines into the local cache; new symbols use history quota',
       body: app.status?.offline ? h('div', { class: 'stack-sm' }, callout('info', null, 'The server runs offline; fetching needs an OpenD connection.'), form) : form,
     }));
 

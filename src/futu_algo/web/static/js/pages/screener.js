@@ -3,11 +3,15 @@
 import { h, mount, fmtCompact, fmtPrice, fmtPctPts, fmtNum, fmtInt, fmtDateTime, fmtWhen, signCls, humanize } from '../core.js';
 import { api, post, waitJob } from '../api.js';
 import { app, go } from '../state.js';
-import { card, btn, busy, dataTable, empty, errorBox, loading, badge, callout, skeleton, downloadText, toCSV, toast } from '../ui.js';
+import { card, btn, busy, dataTable, empty, errorBox, loading, callout, skeleton, downloadText, toCSV, toast, switchControl, kpi } from '../ui.js';
 import { symLink } from '../common.js';
 
 const PRICE_KEYS = new Set(['cur_price', 'last_price', 'price', 'close', 'open', 'high', 'low']);
 const INT_KEYS = new Set(['lot_size', 'volume_today', 'volume']);
+
+function ftoken(kind, text, accent) {
+  return h('li', { class: ['ftoken', accent && 'accent'], title: text }, h('b', {}, kind), h('span', {}, text));
+}
 
 function filterText(f) {
   const range = [f.min != null ? `≥ ${fmtCompact(f.min)}` : null, f.max != null ? `≤ ${fmtCompact(f.max)}` : null].filter(Boolean).join(' ');
@@ -39,7 +43,8 @@ export default {
 
     let presets;
     let selected = null;
-    const notifyChk = h('input', { type: 'checkbox', id: 'screen-notify' });
+    const notifySw = switchControl('Email / Telegram the results', false, { id: 'screen-notify' });
+    const notifyChk = notifySw.input;
     const progress = h('div', { class: 'job-progress', hidden: true, 'aria-live': 'polite' });
 
     async function loadHistory() {
@@ -50,15 +55,16 @@ export default {
           caption: 'Screener history', emptyText: 'No saved results', dense: true, maxHeight: '360px',
           onRowClick: (r) => go(`#/screener/${encodeURIComponent(r.id)}`),
           rowClass: (r) => (r.id === params[0] ? 'row-selected' : null),
+          sort: { key: 'run_at', dir: 'desc' },
           columns: [
             { key: 'run_at', label: 'Run', render: (r) => h('span', { class: 'num', title: fmtDateTime(r.run_at) }, fmtWhen(r.run_at)) },
-            { key: 'preset', label: 'Preset', cls: 'mono' },
+            { key: 'preset', label: 'Preset', render: (r) => h('span', { class: 'sym' }, r.preset) },
             { key: 'count', label: 'Rows', num: true },
-            { key: 'matched', label: 'Matched', num: true },
+            { key: 'matched', label: 'Matched', num: true, render: (r) => fmtInt(r.matched) },
           ],
         });
         t.update(rows);
-        mount(historyHolder, card({ title: 'History', subtitle: `${rows.length} saved result(s)`, body: rows.length ? t.el : empty('No results yet', 'Run a preset to screen the HK market.'), flush: true }));
+        mount(historyHolder, card({ title: 'History', subtitle: rows.length ? `${rows.length} saved result${rows.length === 1 ? '' : 's'}` : null, body: rows.length ? t.el : empty('No results yet', 'Run a preset to screen the HK market.', null, 'clock'), flush: true }));
       } catch (err) {
         if (ctx.alive) mount(historyHolder, card({ title: 'History', body: errorBox(err, loadHistory) }));
       }
@@ -67,7 +73,7 @@ export default {
     function renderPresets() {
       const names = Object.keys(presets);
       if (!names.length) {
-        mount(presetsHolder, card({ title: 'Presets', body: empty('No screener presets', 'Define presets under screener.presets in the config.') }));
+        mount(presetsHolder, card({ title: 'Presets', body: empty('No screener presets', 'Define presets under screener.presets in the config.', h('a', { class: 'btn', href: '#/settings' }, 'Open settings'), 'filter') }));
         return;
       }
       const runBtn = btn('Run screen', { tone: 'primary', iconName: 'play', onclick: (e) => busy(e.currentTarget, run) });
@@ -77,21 +83,19 @@ export default {
         return h('label', { class: 'preset' },
           input,
           h('div', { class: 'preset-body' },
-            h('div', { class: 'preset-name mono' }, name),
+            h('div', { class: 'preset-name' }, name),
             p.description ? h('div', { class: 'preset-desc' }, p.description) : null,
             h('ul', { class: 'preset-filters' },
-              (p.filters || []).map((f) => h('li', {}, badge(f.kind, 'neutral'), h('span', { class: 'mono' }, filterText(f)))),
-              p.plate ? h('li', {}, badge('plate', 'neutral'), h('span', { class: 'mono' }, p.plate)) : null,
-              p.confirm_strategy ? h('li', {}, badge('confirm', 'accent'), h('span', {}, `${p.confirm_strategy.name} long on ${p.confirm_timeframe} (top ${p.max_confirm})`)) : null),
-            h('div', { class: 'preset-meta muted' }, `${p.market} · max ${p.max_results} results`)));
+              (p.filters || []).map((f) => ftoken(f.kind, filterText(f))),
+              p.plate ? ftoken('plate', p.plate) : null,
+              p.confirm_strategy ? ftoken('confirm', `${p.confirm_strategy.name} long on ${p.confirm_timeframe}, top ${p.max_confirm}`, true) : null),
+            h('div', { class: 'preset-meta' }, `${p.market} · up to ${p.max_results} results`)));
       }));
       mount(presetsHolder, card({
-        title: 'Presets', subtitle: 'Filters run on Futu servers across the whole market (no K-line quota)',
+        title: 'Presets', subtitle: 'Runs on Futu servers; uses no history quota',
         body: h('div', { class: 'stack-sm' }, list,
-          h('div', { class: 'form-actions' },
-            runBtn,
-            h('label', { class: 'check' }, notifyChk, h('span', {}, 'Email / Telegram the results')),
-            progress),
+          notifySw,
+          h('div', { class: 'form-actions' }, runBtn, progress),
           (app.status?.notifications || []).length ? null : h('p', { class: 'muted small' }, 'No notification channel is enabled, so results will not be sent.')),
       }));
     }
@@ -113,6 +117,7 @@ export default {
           go(`#/screener/${encodeURIComponent(final.result.id)}`);
         } else {
           mount(resultHolder, card({ title: 'Screen failed', body: callout('error', null, final.error || 'Unknown error') }));
+          return;
         }
       } catch (err) {
         progress.hidden = true;
@@ -136,17 +141,25 @@ export default {
             cls: k === 'name' ? 'truncate' : null,
           };
         });
-        const t = dataTable({ caption: `Screener result ${id}`, columns: cols, emptyText: 'No stock passed the filters', sort: keys.includes('change_pct') ? null : null, maxHeight: '70vh', dense: true });
+        const t = dataTable({ caption: `Screener result ${id}`, columns: cols, emptyText: 'No stock passed the filters', maxHeight: '68vh', dense: true, onRowClick: (row) => row.symbol && go(`#/chart/${encodeURIComponent(row.symbol)}?tf=DAY`), rowTitle: (row) => (row.symbol ? `Open the ${row.symbol} chart` : '') });
         t.update(rows);
+        const chg = rows.map((row) => row.change_pct).filter((v) => typeof v === 'number');
+        const up = chg.filter((v) => v > 0).length;
         mount(resultHolder, card({
-          title: h('span', {}, 'Result · ', h('span', { class: 'mono' }, r.preset)),
-          subtitle: `${fmtDateTime(r.run_at)} HKT · ${rows.length} row(s) of ${r.matched ?? '?'} matched${r.confirmed_with ? ` · confirmed with ${r.confirmed_with}` : ''}`,
-          actions: btn('CSV', { size: 'sm', tone: 'secondary', iconName: 'download', disabled: !rows.length, onclick: () => downloadText(`${id}.csv`, toCSV(keys, t.rows)) }),
-          body: h('div', {}, r.warnings?.length ? h('div', { class: 'card-pad stack-sm' }, r.warnings.map((w) => callout('warning', null, w))) : null, t.el),
+          title: h('span', {}, 'Result ', h('span', { class: 'sym' }, r.preset)),
+          subtitle: `${fmtDateTime(r.run_at)} HKT${r.confirmed_with ? ` · confirmed with ${r.confirmed_with}` : ''}`,
+          actions: btn('CSV', { size: 'sm', iconName: 'download', disabled: !rows.length, onclick: () => downloadText(`${id}.csv`, toCSV(keys, t.rows)) }),
+          body: h('div', {},
+            h('div', { class: 'kpis', style: { border: '0', borderRadius: '0', borderBottom: '1px solid var(--border)' } },
+              kpi('Matched', fmtInt(r.matched ?? rows.length), { sub: 'passed the server filters' }),
+              kpi('Shown', fmtInt(rows.length), { sub: r.confirmed_with ? 'after strategy confirmation' : 'rows in this result' }),
+              chg.length ? kpi('Up today', `${fmtInt(up)} / ${fmtInt(chg.length)}`, { sub: 'by change %' }) : null),
+            r.warnings?.length ? h('div', { class: 'card-pad stack-sm' }, r.warnings.map((w) => callout('warning', null, w))) : null,
+            t.el),
           flush: true,
         }));
       } catch (err) {
-        if (ctx.alive) mount(resultHolder, card({ title: 'Result', body: err.status === 404 ? empty('Result not found', `No saved screener result ${id}.`) : errorBox(err, () => showResult(id)) }));
+        if (ctx.alive) mount(resultHolder, card({ title: 'Result', body: err.status === 404 ? empty('Result not found', `No saved screener result ${id}.`, null, 'filter') : errorBox(err, () => showResult(id)) }));
       }
     }
 
@@ -163,7 +176,7 @@ export default {
     }
     loadHistory();
     if (params[0]) showResult(params[0]);
-    else mount(resultHolder, card({ title: 'Result', body: empty('No result selected', 'Run a preset or open a past result from the history.') }));
+    else mount(resultHolder, card({ title: 'Result', body: empty('No result selected', 'Run a preset, or open a past result from the history.', null, 'filter') }));
     ctx.on('screener', () => loadHistory());
   },
 };
