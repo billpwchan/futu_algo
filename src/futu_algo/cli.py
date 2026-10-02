@@ -119,11 +119,13 @@ def cmd_check(args: argparse.Namespace) -> int:
     print(f"  trading: {cfg.trading.env}/{cfg.trading.mode}, {cfg.trading.timeframe}, {len(cfg.trading.symbols)} symbol(s)")
     app = App(cfg)
     ok = True
+    real_gate_open = True
     try:
         app.check_real_allowed()
     except FutuAlgoError as exc:
         print(f"  REAL trading gate: {exc}")
         ok = False
+        real_gate_open = False
     try:
         _, state = app.gateway.call("default", "get_global_state", lambda ctx: ctx.get_global_state())
         print(f"  OpenD quote connection OK at {cfg.futu.host}:{cfg.futu.port}: market_hk={state.get('market_hk')}, logined={state.get('qot_logined')}")
@@ -137,7 +139,9 @@ def cmd_check(args: argparse.Namespace) -> int:
     except FutuAlgoError as exc:
         print(f"  OpenD quote connection FAILED: {exc}")
         ok = False
-    if cfg.trading.mode == "paper":
+    if cfg.trading.mode == "paper" and not real_gate_open:
+        print("  Trade connection: skipped; the REAL account is not connected or unlocked while the gate is closed")
+    elif cfg.trading.mode == "paper":
         try:
             from futu_algo.live.futu_broker import FutuBroker
 

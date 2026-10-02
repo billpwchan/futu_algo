@@ -1,3 +1,4 @@
+import socket
 from datetime import date
 
 import pandas as pd
@@ -71,6 +72,29 @@ def test_web_refuses_public_bind_without_token(workspace, capsys, monkeypatch):
     monkeypatch.delenv("FUTU_ALGO_WEB_TOKEN", raising=False)
     assert main(["web", "-c", str(workspace), "--host", "0.0.0.0"]) == 1
     assert "token" in capsys.readouterr().err
+
+
+def test_check_does_not_unlock_real_account_when_gate_is_closed(tmp_path, capsys, monkeypatch):
+    import futu_algo.live.futu_broker
+
+    def no_broker(*args, **kwargs):
+        raise AssertionError("check opened the REAL trade context although the gate is closed")
+
+    monkeypatch.setattr(futu_algo.live.futu_broker, "FutuBroker", no_broker)
+    monkeypatch.delenv("FUTU_ALGO_ALLOW_REAL", raising=False)
+    with socket.socket() as s:  # a port nothing listens on, so the quote check fails fast
+        s.bind(("127.0.0.1", 0))
+        port = s.getsockname()[1]
+    cfg = tmp_path / "config.yaml"
+    cfg.write_text(
+        f"futu: {{port: {port}}}\n"
+        "trading: {env: REAL, mode: paper, universe: [HK.00700]}\n"
+        "logging: {dir: null}\n",
+        encoding="utf-8",
+    )
+    assert main(["check", "-c", str(cfg)]) == 2
+    out = capsys.readouterr().out
+    assert "REAL trading gate" in out and "Trade connection: skipped" in out
 
 
 def test_data_list(workspace, capsys):
