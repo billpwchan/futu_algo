@@ -9,6 +9,9 @@ Security model:
 * Every state-changing request must carry the ``X-Futu-Algo: 1`` header. Browsers cannot
   add custom headers to cross-site requests without a CORS preflight, which this server
   never approves, so another website cannot drive the engine through a visitor's browser.
+* Requests must name an allowed host in ``Host`` (127.0.0.1, localhost, ::1, ``web.host`` and
+  ``web.allowed_hosts``), so a DNS-rebinding page cannot reach the console, and a
+  state-changing ``/api`` request whose ``Origin`` is another host is refused.
 """
 
 from __future__ import annotations
@@ -20,9 +23,11 @@ import logging
 import math
 import queue
 import shutil
+from collections.abc import Iterable
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlsplit
 
 import pandas as pd
 import yaml
@@ -46,6 +51,7 @@ from futu_algo.timeframe import Timeframe
 log = logging.getLogger(__name__)
 STATIC = Path(__file__).with_name("static")
 MUTATING = {"POST", "PUT", "PATCH", "DELETE"}
+LOCAL_HOSTS = ("127.0.0.1", "localhost", "::1")
 
 
 # --------------------------------------------------------------------------- request models
@@ -114,6 +120,14 @@ def _loads(text: Any) -> Any:
         return text
 
 
+def _url_host(url: str) -> str | None:
+    """Lower-case host name of a URL, without port or IPv6 brackets; None if malformed."""
+    try:
+        return urlsplit(url).hostname
+    except ValueError:
+        return None
+
+
 def _job_payload(job: Job) -> dict[str, Any]:
     return job.to_dict()
 
@@ -151,15 +165,19 @@ def list_backtests(root: Path, limit: int = 100) -> list[dict[str, Any]]:
 # --------------------------------------------------------------------------- app factory
 
 
-def create_app(app: App, *, token: str | None = None) -> FastAPI:
+def create_app(app: App, *, token: str | None = None, allowed_hosts: Iterable[str] = ()) -> FastAPI:
+    """``allowed_hosts`` adds host names to the local ones, ``web.host`` and ``web.allowed_hosts``."""
     cfg = app.cfg
     api = FastAPI(title="futu_algo console", version=__version__, docs_url="/api/docs", openapi_url="/api/openapi.json")
     token = token if token is not None else secret(cfg.web.token_env)
+    hosts = {h.strip().strip("[]").lower() for h in (*LOCAL_HOSTS, cfg.web.host, *cfg.web.allowed_hosts, *allowed_hosts)}
     api.state.app = app
 
     @api.middleware("http")
     async def guard(request: Request, call_next: Any) -> Any:
         path = request.url.path
+        if _url_host("//" + request.headers.get("host", "")) not in hosts:
+            return JSONResponse({"detail": "Host not allowed: add it to web.allowed_hosts"}, status_code=400)
         if path.startswith("/api") and path not in ("/api/health",):
             if token:
                 supplied = request.headers.get("authorization", "").removeprefix("Bearer ").strip()
@@ -168,6 +186,9 @@ def create_app(app: App, *, token: str | None = None) -> FastAPI:
                     return JSONResponse({"detail": "Unauthorized: missing or wrong console token"}, status_code=401)
             if request.method in MUTATING and request.headers.get("x-futu-algo") != "1":
                 return JSONResponse({"detail": "Missing X-Futu-Algo header"}, status_code=403)
+            origin = request.headers.get("origin")
+            if request.method in MUTATING and origin is not None and _url_host(origin) not in hosts:
+                return JSONResponse({"detail": "Cross-origin request refused"}, status_code=403)
         response = await call_next(request)
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "no-referrer")

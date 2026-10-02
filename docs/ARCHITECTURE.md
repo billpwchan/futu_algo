@@ -123,6 +123,10 @@ that header cross-site without a CORS preflight, which the server never approves
 website cannot drive the engine through a visitor's browser. Pages are served with a strict
 Content-Security-Policy (no inline scripts, no third-party origins).
 
+Every request must name an allowed host in `Host` (127.0.0.1, localhost, ::1, `web.host` or one
+of `web.allowed_hosts`), so a DNS-rebinding page cannot reach a console that runs without a
+token, and a state-changing request whose `Origin` is any other host is refused.
+
 ## Known limitations
 
 - **Stops in live trading** are evaluated on completed bars (a bar's low touching the stop

@@ -364,7 +364,7 @@ def cmd_web(args: argparse.Namespace) -> int:
     url = f"http://{'127.0.0.1' if host in ('0.0.0.0', '::') else host}:{port}/"
     print(f"Console: {url}{'?token=<your token>' if token else ''}")
     try:
-        uvicorn.run(create_app(app, token=token), host=host, port=port, log_level="warning")
+        uvicorn.run(create_app(app, token=token, allowed_hosts=[host]), host=host, port=port, log_level="warning")
     finally:
         app.shutdown()
     return 0

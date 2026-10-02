@@ -148,6 +148,7 @@ web:
   host: 127.0.0.1          # binding elsewhere requires a token
   port: 8765
   token_env: FUTU_ALGO_WEB_TOKEN
+  allowed_hosts: []        # other names the browser uses for this machine (LAN IP, DNS name)
   autostart_engine: false
 
 schedule:                  # exchange-local times on trading days

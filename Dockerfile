@@ -11,6 +11,7 @@ USER futu
 WORKDIR /work
 EXPOSE 8765
 # Mount a directory with config.yaml (+ .env) at /work. Set web.host: 0.0.0.0 and
-# FUTU_ALGO_WEB_TOKEN when exposing the console outside the container.
+# FUTU_ALGO_WEB_TOKEN when exposing the console outside the container, and list any name
+# other than localhost that browsers use to reach it in web.allowed_hosts.
 ENTRYPOINT ["futu-algo"]
 CMD ["web", "-c", "/work/config.yaml", "--engine"]

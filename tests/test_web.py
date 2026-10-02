@@ -24,7 +24,7 @@ def demo(tmp_path):
 
 @pytest.fixture
 def client(demo):
-    return TestClient(create_app(demo, token=""))
+    return TestClient(create_app(demo, token="", allowed_hosts=["testserver"]))
 
 
 def _wait_job(client, job_id, timeout=60):
@@ -50,8 +50,37 @@ def test_mutations_need_the_csrf_header(client):
     assert client.post("/api/engine/start").status_code == 403
 
 
+def test_only_local_or_configured_hosts_are_served(demo):
+    c = TestClient(create_app(demo, token=""), base_url="http://127.0.0.1:8765")
+    assert c.get("/api/status").status_code == 200
+    for host in ("localhost:8765", "[::1]:8765", "127.0.0.1"):
+        assert c.get("/api/status", headers={"Host": host}).status_code == 200, host
+    for host in ("attacker.example", "attacker.example:8765", "127.0.0.1.attacker.example", ""):
+        for path in ("/api/status", "/api/health", "/"):
+            assert c.get(path, headers={"Host": host}).status_code == 400, (host, path)
+    assert c.post("/api/engine/start", headers={**H, "Host": "attacker.example"}).status_code == 400
+    assert demo.engine is None
+    # The TestClient's default host is not allowed unless passed in; web.allowed_hosts adds names.
+    assert TestClient(create_app(demo, token="")).get("/api/status").status_code == 400
+    demo.cfg.web.allowed_hosts = ["Console.LAN"]
+    assert TestClient(create_app(demo, token=""), base_url="http://console.lan:8765").get("/api/status").status_code == 200
+
+
+def test_cross_site_origin_cannot_mutate(demo):
+    c = TestClient(create_app(demo, token=""), base_url="http://127.0.0.1:8765")
+    for origin in ("http://attacker.example", "http://127.0.0.1.attacker.example:8765", "null"):
+        r = c.post("/api/engine/start", headers={**H, "Origin": origin})
+        assert r.status_code == 403, origin
+    assert demo.engine is None
+    assert c.get("/api/status", headers={"Origin": "http://attacker.example"}).status_code == 200  # reads are not mutations
+    for origin in ("http://127.0.0.1:8765", "http://localhost:8765", "http://[::1]:8765"):
+        r = c.post("/api/config/validate", headers={**H, "Origin": origin}, json={"text": "{}"})
+        assert r.status_code == 200 and r.json()["ok"], origin
+    assert c.post("/api/config/validate", headers=H, json={"text": "{}"}).status_code == 200  # no Origin header
+
+
 def test_token_is_enforced(demo):
-    c = TestClient(create_app(demo, token="s3cret"))
+    c = TestClient(create_app(demo, token="s3cret", allowed_hosts=["testserver"]))
     assert c.get("/api/status").status_code == 401
     assert c.get("/api/status", headers={"Authorization": "Bearer s3cret"}).status_code == 200
     assert c.get("/api/health").status_code == 200
@@ -121,7 +150,7 @@ def test_config_validation_and_save(tmp_path):
     p = tmp_path / "c.yaml"
     p.write_text("trading: {universe: [HK.00700]}\ndata: {offline: true}\n", encoding="utf-8")
     app = App(load_config(p))
-    c = TestClient(create_app(app, token=""))
+    c = TestClient(create_app(app, token="", allowed_hosts=["testserver"]))
     got = c.get("/api/config").json()
     assert got["editable"] and "HK.00700" in got["text"]
     bad = c.post("/api/config/validate", headers=H, json={"text": "trading: {sizing: {method: nope}}"}).json()

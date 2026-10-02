@@ -353,6 +353,10 @@ class WebConfig(_Model):
     host: str = "127.0.0.1"
     port: int = Field(8765, ge=1, le=65535)
     token_env: str = "FUTU_ALGO_WEB_TOKEN"
+    allowed_hosts: list[str] = Field(
+        default_factory=list,
+        description="Host names the console answers to besides 127.0.0.1, localhost, ::1 and host",
+    )
     autostart_engine: bool = False
 
 
