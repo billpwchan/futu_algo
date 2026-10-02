@@ -11,10 +11,10 @@ export function colors() {
   const v = (name) => cs.getPropertyValue(name).trim();
   return {
     surface: v('--surface'), text: v('--text'), text2: v('--text-2'), text3: v('--text-3'),
-    grid: v('--chart-grid'), border: v('--border'), crosshair: v('--text-3'),
-    up: v('--up'), down: v('--down'), accent: v('--accent'),
-    series: [1, 2, 3, 4, 5, 6, 7, 8].map((i) => v(`--series-${i}`)),
-    font: getComputedStyle(document.body).fontFamily,
+    grid: v('--chart-grid'), border: v('--border'), border2: v('--border-2'), crosshair: v('--chart-cross'),
+    up: v('--up'), down: v('--down'), accent: v('--accent'), surface3: v('--surface-3'),
+    series: [1, 2, 3, 4].map((i) => v(`--series-${i}`)),
+    font: v('--font') || getComputedStyle(document.body).fontFamily,
   };
 }
 
@@ -40,24 +40,25 @@ export function precisionFor(values) {
 
 export function makeChart(el, { intraday = false, height, panes = true } = {}) {
   const c = colors();
-  const chart = LWC().createChart(el, {
+  const L = LWC();
+  const chart = L.createChart(el, {
     autoSize: true,
     height,
     layout: {
       background: { type: 'solid', color: c.surface },
-      textColor: c.text2,
+      textColor: c.text3,
       fontFamily: c.font,
       fontSize: 11,
       attributionLogo: false,
-      panes: panes ? { separatorColor: c.border, separatorHoverColor: alpha(c.accent, 0.25), enableResize: true } : undefined,
+      panes: panes ? { separatorColor: c.border, separatorHoverColor: alpha(c.accent, 0.3), enableResize: true } : undefined,
     },
-    grid: { vertLines: { color: c.grid }, horzLines: { color: c.grid } },
-    rightPriceScale: { borderColor: c.border },
-    timeScale: { borderColor: c.border, timeVisible: intraday, secondsVisible: false, rightOffset: 4 },
+    grid: { vertLines: { visible: false }, horzLines: { color: c.grid, style: L.LineStyle.Solid } },
+    rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.12, bottom: 0.08 } },
+    timeScale: { borderVisible: false, timeVisible: intraday, secondsVisible: false, rightOffset: 6, barSpacing: 7 },
     crosshair: {
-      mode: LWC().CrosshairMode.Normal,
-      vertLine: { color: c.crosshair, labelBackgroundColor: c.text2, style: 3 },
-      horzLine: { color: c.crosshair, labelBackgroundColor: c.text2, style: 3 },
+      mode: L.CrosshairMode.Normal,
+      vertLine: { color: c.crosshair, width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: c.border2 },
+      horzLine: { color: c.crosshair, width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: c.border2 },
     },
     localization: { locale: 'en-US', dateFormat: 'yyyy-MM-dd' },
   });
@@ -85,11 +86,12 @@ export function candleChart(el, payload, { onDispose } = {}) {
   const priceFormat = { type: 'price', precision: prec, minMove: 1 / 10 ** prec };
   const candle = chart.addSeries(L.CandlestickSeries, {
     upColor: c.up, downColor: c.down, borderUpColor: c.up, borderDownColor: c.down,
-    wickUpColor: c.up, wickDownColor: c.down, priceFormat, priceLineVisible: true, priceLineStyle: 2,
+    wickUpColor: c.up, wickDownColor: c.down, priceFormat, priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1,
   }, 0);
   const volume = chart.addSeries(L.HistogramSeries, {
     priceFormat: { type: 'volume' }, priceLineVisible: false, lastValueVisible: false,
   }, 1);
+  volume.priceScale().applyOptions({ scaleMargins: { top: 0.15, bottom: 0 } });
   const lineSeries = new Map();
   let slot = 0;
   const hasLower = (payload.lines || []).some((l) => l.pane !== 'price');
@@ -101,14 +103,14 @@ export function candleChart(el, payload, { onDispose } = {}) {
     } else {
       const color = c.series[slot++ % c.series.length];
       s = chart.addSeries(L.LineSeries, {
-        color, lineWidth: pane === 0 ? 1.5 : 1.5, priceLineVisible: false, lastValueVisible: pane !== 0,
+        color, lineWidth: 2, priceLineVisible: false, lastValueVisible: pane !== 0,
         crosshairMarkerRadius: 3, priceFormat: pane === 0 ? priceFormat : { type: 'price', precision: 2, minMove: 0.01 },
       }, pane);
       s._color = color;
     }
     lineSeries.set(line.column, { series: s, spec: line });
   }
-  setStretch(chart, hasLower ? [5, 1.2, 1.8] : [5, 1.3]);
+  setStretch(chart, hasLower ? [5, 1, 1.7] : [5, 1.1]);
   const markersApi = L.createSeriesMarkers(candle, []);
 
   // Legend overlay (OHLC + indicator values at the crosshair).
@@ -131,13 +133,13 @@ export function candleChart(el, payload, { onDispose } = {}) {
       // binary search last point <= time
       let lo = 0; let hi = d.length - 1; let found = null;
       while (lo <= hi) { const mid = (lo + hi) >> 1; if (d[mid].time <= k.time) { found = d[mid]; lo = mid + 1; } else hi = mid - 1; }
-      if (found && found.time === k.time) values.push(h('span', { class: 'lg-item' }, h('span', { class: 'lg-swatch', style: { background: series._color || c.text3 } }), h('span', { class: 'lg-k' }, spec.label), h('span', { class: 'lg-v' }, fmtPrice(found.value, 2, spec.pane === 'price' ? prec : 2))));
+      if (found && found.time === k.time) values.push(h('span', { class: 'lg-item' }, h('span', { class: 'lg-swatch', style: { background: series._color || alpha(c.up, 0.6) } }), h('span', { class: 'lg-k' }, spec.label), h('span', { class: 'lg-v' }, fmtPrice(found.value, 2, spec.pane === 'price' ? prec : 2))));
     }
     mount(legend,
       h('div', { class: 'lg-row' },
         current.symbol ? h('span', { class: 'lg-title' }, current.symbol) : null,
         h('span', { class: 'lg-time' }, fmtChartTime(k.time, intraday)),
-        item('O', fmtPrice(k.open, 2, prec)), item('H', fmtPrice(k.high, 2, prec)), item('L', fmtPrice(k.low, 2, prec)), item('C', fmtPrice(k.close, 2, prec), signCls(chg)),
+            item('O', fmtPrice(k.open, 2, prec)), item('H', fmtPrice(k.high, 2, prec)), item('L', fmtPrice(k.low, 2, prec)), item('C', fmtPrice(k.close, 2, prec), signCls(chg)),
         chg != null ? h('span', { class: ['lg-v', signCls(chg)] }, fmtPct(chg)) : null,
         item('Vol', fmtCompact(k.volume))),
       values.length ? h('div', { class: 'lg-row' }, values) : null);
@@ -149,7 +151,7 @@ export function candleChart(el, payload, { onDispose } = {}) {
     byTime.clear();
     for (const k of p.candles) byTime.set(k.time, k);
     candle.setData(p.candles.map(({ time, open, high, low, close }) => ({ time, open, high, low, close })));
-    volume.setData(p.candles.map((k) => ({ time: k.time, value: k.volume ?? 0, color: alpha(k.close >= k.open ? c.up : c.down, 0.45) })));
+    volume.setData(p.candles.map((k) => ({ time: k.time, value: k.volume ?? 0, color: alpha(k.close >= k.open ? c.up : c.down, 0.32) })));
     for (const line of p.lines || []) {
       const entry = lineSeries.get(line.column);
       if (!entry) continue;
@@ -191,7 +193,7 @@ export function candleChart(el, payload, { onDispose } = {}) {
  * lines: [{name, data:[{time,value}], color, style, width}] on pane 0, optional drawdown
  * (fraction values) as a baseline area on pane 1. Legend with visibility toggles.
  */
-export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompact(v, 2), baseline } = {}) {
+export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompact(v, 2), baseline, legend: showLegend = true } = {}) {
   const c = colors();
   const L = LWC();
   const all = lines.flatMap((l) => l.data);
@@ -205,25 +207,25 @@ export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompa
     if (baseline != null && i === 0) {
       s = chart.addSeries(L.BaselineSeries, {
         baseValue: { type: 'price', price: baseline },
-        topLineColor: c.up, topFillColor1: alpha(c.up, 0.22), topFillColor2: alpha(c.up, 0.02),
-        bottomLineColor: c.down, bottomFillColor1: alpha(c.down, 0.02), bottomFillColor2: alpha(c.down, 0.22),
-        lineWidth: 2, priceFormat: fmt, priceLineVisible: false,
+        topLineColor: c.up, topFillColor1: alpha(c.up, 0.16), topFillColor2: alpha(c.up, 0.01),
+        bottomLineColor: c.down, bottomFillColor1: alpha(c.down, 0.01), bottomFillColor2: alpha(c.down, 0.16),
+        lineWidth: 2, priceFormat: fmt, priceLineVisible: true, priceLineStyle: 2, priceLineWidth: 1, priceLineColor: c.border2,
       }, 0);
     } else {
       s = chart.addSeries(L.LineSeries, {
-        color, lineWidth: line.width || (i === 0 ? 2 : 1.5), lineStyle: line.style || 0,
+        color, lineWidth: line.width || 2, lineStyle: line.style || 0,
         priceFormat: fmt, priceLineVisible: false, lastValueVisible: i === 0, crosshairMarkerRadius: 3,
       }, 0);
     }
     s.setData(line.data);
-    series.push({ s, line, color: baseline != null && i === 0 ? c.accent : color });
+    series.push({ s, line, color: baseline != null && i === 0 ? c.up : color });
   }
   let dd = null;
   if (drawdown?.length) {
     dd = chart.addSeries(L.BaselineSeries, {
       baseValue: { type: 'price', price: 0 },
       topLineColor: 'transparent', topFillColor1: 'transparent', topFillColor2: 'transparent',
-      bottomLineColor: c.down, bottomFillColor1: alpha(c.down, 0.08), bottomFillColor2: alpha(c.down, 0.35),
+      bottomLineColor: alpha(c.down, 0.8), bottomFillColor1: alpha(c.down, 0.06), bottomFillColor2: alpha(c.down, 0.28),
       lineWidth: 1, priceFormat: { type: 'custom', formatter: (v) => `${v.toFixed(1)}%`, minMove: 0.01 },
       priceLineVisible: false, lastValueVisible: false,
     }, 1);
@@ -232,7 +234,7 @@ export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompa
   }
   chart.timeScale().fitContent();
 
-  const legend = h('div', { class: 'chart-legend chart-legend-interactive' });
+  const legend = h('div', { class: 'chart-legend chart-legend-interactive', hidden: !showLegend });
   (el.parentElement || el).insertBefore(legend, el);
   const valueEls = new Map();
   mount(legend, h('div', { class: 'lg-row' }, series.map(({ s, line, color }) => {
@@ -262,4 +264,93 @@ export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompa
   chart.subscribeCrosshairMove(update);
   update(null);
   return { chart, series, dd, dispose: () => { legend.remove(); chart.remove(); }, update };
+}
+
+// --------------------------------------------------------------------------- histogram (SVG)
+
+function niceStep(raw) {
+  const p = 10 ** Math.floor(Math.log10(raw));
+  const n = raw / p;
+  return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 2.5 ? 2.5 : n <= 5 ? 5 : 10) * p;
+}
+
+/**
+ * Distribution of values (fractions, e.g. trade returns) in bins aligned on zero; bars below
+ * zero use the down colour, above the up colour. Hover shows the bin and its count.
+ * Returns {dispose}. Redraws on resize.
+ */
+export function histogram(el, values, { fmt = (v) => fmtPct(v, 1), height = 220, unit = 'trades' } = {}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const vals = values.filter((v) => Number.isFinite(v));
+  const tip = h('div', { class: 'viz-tip', hidden: true });
+  const host = h('div', { class: 'viz' });
+  el.replaceChildren(host, tip);
+  if (!vals.length) return { dispose() {} };
+  let lo = Math.min(...vals, 0); let hi = Math.max(...vals, 0);
+  if (lo === hi) { lo -= 0.01; hi += 0.01; }
+  const step = niceStep((hi - lo) / 16);
+  const start = Math.floor(lo / step) * step;
+  const nb = Math.max(1, Math.ceil((hi - start) / step + 1e-9));
+  const bins = Array.from({ length: nb }, (_, i) => ({ from: start + i * step, to: start + (i + 1) * step, n: 0 }));
+  for (const v of vals) bins[Math.min(nb - 1, Math.floor((v - start) / step + 1e-9))].n += 1;
+  const maxN = Math.max(...bins.map((b) => b.n));
+  const yStep = Math.max(1, niceStep(maxN / 4));
+  const yMax = Math.ceil(maxN / yStep) * yStep;
+
+  function draw() {
+    const W = Math.max(240, host.clientWidth || el.clientWidth || 480);
+    const H = height;
+    const m = { l: 34, r: 8, t: 10, b: 24 };
+    const pw = W - m.l - m.r; const ph = H - m.t - m.b;
+    const slot = pw / nb;
+    const bw = Math.min(24, Math.max(2, slot - 2));
+    const x = (i) => m.l + i * slot + (slot - bw) / 2;
+    const y = (n) => m.t + ph - (n / yMax) * ph;
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+    svg.setAttribute('height', H);
+    svg.setAttribute('role', 'img');
+    svg.setAttribute('aria-label', `Distribution of ${vals.length} ${unit}`);
+    const mk = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
+    for (let n = 0; n <= yMax; n += yStep) {
+      mk('line', { x1: m.l, x2: W - m.r, y1: y(n), y2: y(n), class: n === 0 ? 'viz-base' : 'viz-grid' });
+      mk('text', { x: m.l - 8, y: y(n) + 3.5, 'text-anchor': 'end', class: 'viz-axis' }, String(n));
+    }
+    const every = Math.max(1, Math.ceil(nb / Math.max(2, Math.floor(pw / 64))));
+    for (let i = 0; i <= nb; i++) {
+      const edge = start + i * step;
+      if (Math.abs(edge) > 1e-12 && i % every !== 0) continue;
+      mk('text', { x: m.l + i * slot, y: H - 6, 'text-anchor': 'middle', class: 'viz-axis' }, fmt(Math.abs(edge) < 1e-12 ? 0 : edge));
+    }
+    const css = getComputedStyle(document.documentElement);
+    const up = css.getPropertyValue('--up').trim(); const down = css.getPropertyValue('--down').trim();
+    bins.forEach((b, i) => {
+      const mid = (b.from + b.to) / 2;
+      const hit = mk('rect', { x: m.l + i * slot, y: m.t, width: slot, height: ph, class: 'viz-hit' });
+      let bar = null;
+      if (b.n) {
+        const top = y(b.n); const bh = m.t + ph - top; const r = Math.min(4, bw / 2, bh);
+        bar = mk('path', {
+          d: `M${x(i)},${m.t + ph} V${top + r} Q${x(i)},${top} ${x(i) + r},${top} H${x(i) + bw - r} Q${x(i) + bw},${top} ${x(i) + bw},${top + r} V${m.t + ph} Z`,
+          fill: mid < 0 ? down : up, class: 'viz-bar',
+        });
+      }
+      const show = () => {
+        bar?.classList.add('hover');
+        mount(tip, h('b', {}, `${b.n} ${unit}`), h('div', {}, `${fmt(b.from)} to ${fmt(b.to)}`));
+        tip.hidden = false;
+        tip.style.left = `${m.l + (i + 0.5) * slot}px`;
+        tip.style.top = `${b.n ? y(b.n) : m.t + ph}px`;
+      };
+      const hide = () => { bar?.classList.remove('hover'); tip.hidden = true; };
+      hit.addEventListener('mouseenter', show);
+      hit.addEventListener('mouseleave', hide);
+    });
+    host.replaceChildren(svg);
+  }
+  draw();
+  let last = host.clientWidth;
+  const ro = new ResizeObserver(() => { if (Math.abs(host.clientWidth - last) > 4) { last = host.clientWidth; draw(); } });
+  ro.observe(host);
+  return { dispose() { ro.disconnect(); } };
 }

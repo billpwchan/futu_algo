@@ -26,12 +26,18 @@ console or the command line.
 | **Paper trading** | Runs on live one-minute (or any) bars pushed by OpenD, sends tick-rounded limit orders to your Futu paper account, re-prices unfilled orders, reconciles fills, enforces risk limits and survives restarts. |
 | **Screener** | Price, liquidity, valuation, financial and chart-pattern filters run on Futu's servers over the whole HK market without using history quota, optionally confirmed by a strategy. |
 | **Notifications** | Email and Telegram for fills, rejections, errors, risk events, the daily summary and screener results. |
-| **Web console** | Dashboard, watchlist, live charts with indicators and fills, backtest runner and reports, screener, orders, data cache, config editor, event log. |
+| **Web console** | A dark-first trading workstation: live dashboard, quote-board watchlist, charts with indicators and fills, backtest builder and tear-sheet reports, screener, order blotter, data cache, config editor and event log, with a command palette and keyboard shortcuts. |
 
-<table><tr>
-<td><img src="docs/images/console-chart.png" alt="Live chart with MACD and fills"></td>
-<td><img src="docs/images/console-backtest.png" alt="Backtest report"></td>
-</tr></table>
+<table>
+<tr>
+<td><img src="docs/images/console-chart.png" alt="Live one-minute chart with MACD, volume and fill markers"></td>
+<td><img src="docs/images/console-backtest.png" alt="Backtest tear sheet: headline metrics and equity curve"></td>
+</tr>
+<tr>
+<td><img src="docs/images/console-watchlist.png" alt="Watchlist quote board with session sparklines and strategy state"></td>
+<td><img src="docs/images/console-backtest-light.png" alt="Backtest report in the light theme: equity, drawdown and monthly returns"></td>
+</tr>
+</table>
 
 The live engine and the backtester share the same strategy code and entry rules. The test suite
 replays real one-minute bars through both and requires every fill, fee and the final equity to
@@ -52,7 +58,7 @@ futu-algo web --demo --speed 30      # try everything on a simulated OpenD, no a
 ```
 
 Open http://127.0.0.1:8765/. Demo mode runs a synthetic market with a virtual clock inside the HK
-session; the engine starts automatically and trades eight made-up stocks on one-minute bars.
+session; the engine starts automatically and trades six made-up stocks on one-minute bars.
 
 With OpenD:
 
@@ -62,6 +68,34 @@ futu-algo check -c config.yaml       # validates the config, OpenD, quota and th
 futu-algo backtest -c config.yaml    # downloads data once, prints a summary, saves a report
 futu-algo web -c config.yaml         # console; start the engine from the dashboard
 ```
+
+## The console
+
+The console is a single-page app served by the same process, with no build step and nothing
+loaded from the internet: fonts ([Geist](https://vercel.com/font), OFL) and the chart library
+([Lightweight Charts](https://github.com/tradingview/lightweight-charts), Apache 2.0) ship in
+the package, and a strict Content-Security-Policy allows only same-origin scripts.
+
+- **Dashboard**: account equity with today's P/L and the intraday equity curve, allocation,
+  positions with weights, working intents, open orders, fills and a live event timeline. Engine
+  controls (start, halt entries, cancel all, flatten, stop) sit in the page header.
+- **Watchlist**: a quote board of the trading universe with session change, an intraday
+  sparkline, each symbol's strategy, warm-up progress, last decision and position.
+- **Chart**: candles, volume and the strategy's own indicator lines with buy/sell fills, updated
+  on every bar, beside a quote panel and the engine's recorded decisions.
+- **Backtest**: a stepped builder (strategy, universe, period, sizing, execution and exits,
+  checks) and a tear-sheet report: headline metrics, equity versus benchmark and buy & hold with
+  drawdown, monthly returns, the distribution of trade returns, drawdown periods and every trade.
+- **Screener**, **Orders**, **Data**, **Settings** and **Logs** cover presets and results, the
+  blotter, the bar cache and history quota, the YAML config editor with validation, and the
+  event log.
+
+The top bar shows the HK session as a timeline (auction, morning, lunch, afternoon, closing
+auction) with the time to the close. Press <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>K</kbd> (or
+<kbd>/</kbd>) for the command palette, which jumps to pages and symbols and runs engine actions;
+<kbd>G</kbd> then a letter switches page, <kbd>T</kbd> toggles the theme and <kbd>?</kbd> lists
+the shortcuts. Dark is the default; light, follow-the-system and red-up/green-down colouring are
+in Settings. Every page works down to phone width.
 
 ## Commands
 

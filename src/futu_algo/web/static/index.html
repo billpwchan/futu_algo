@@ -3,10 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark light">
   <meta name="referrer" content="no-referrer">
-  <title>futu_algo console</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M7 21l6-7 5 4 7-9' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <meta name="theme-color" content="#08090b" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+  <title>futu_algo</title>
+  <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="/static/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/static/fonts/GeistMono-Variable.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="/static/app.css">
   <script src="/static/js/boot.js"></script>
   <script src="/static/vendor/lightweight-charts.standalone.production.js" defer></script>
@@ -17,21 +21,28 @@
   <div class="app">
     <aside class="sidebar" id="sidebar" aria-label="Main navigation">
       <div class="brand">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">futu_algo<span class="brand-sub">console</span></span>
+        <img class="brand-mark" src="/static/favicon.svg" alt="" width="26" height="26">
+        <span class="brand-name">futu<span>_</span>algo</span>
+        <span class="brand-tag">HK</span>
       </div>
+      <button class="side-search" id="side-search" type="button" aria-label="Search pages, symbols and actions">
+        <span>Search…</span>
+      </button>
       <nav class="nav" id="nav"></nav>
       <div class="sidebar-foot">
-        <div class="conn" id="conn" title="Live event stream"><span class="dot" aria-hidden="true"></span><span class="conn-text">Connecting…</span></div>
-        <div class="version" id="version"></div>
+        <div class="engine-card" id="engine-card"></div>
+        <div class="foot-line">
+          <span class="conn" id="conn" title="Live event stream"><span class="dot" aria-hidden="true"></span><span class="conn-text">Connecting…</span></span>
+          <span class="version mono" id="version"></span>
+        </div>
       </div>
     </aside>
     <div class="nav-scrim" id="nav-scrim" hidden></div>
     <div class="main">
       <header class="topbar">
         <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"></button>
-        <h1 class="page-title" id="page-title">Dashboard</h1>
-        <div class="status-strip" id="status-strip" aria-live="off"></div>
+        <div class="crumbs" id="crumbs"></div>
+        <div class="topbar-right" id="topbar-right"></div>
       </header>
       <div id="banners"></div>
       <main id="view" class="view" tabindex="-1"></main>

@@ -5,7 +5,12 @@ import { badge } from './ui.js';
 
 export function symLink(sym, { tf } = {}) {
   if (!sym) return null;
-  return h('a', { href: `#/chart/${encodeURIComponent(sym)}${tf ? `?tf=${encodeURIComponent(tf)}` : ''}`, class: 'sym mono' }, sym);
+  return h('a', { href: `#/chart/${encodeURIComponent(sym)}${tf ? `?tf=${encodeURIComponent(tf)}` : ''}`, class: 'sym' }, sym);
+}
+
+/** Symbol code over its name, as used in every blotter. */
+export function symCell(sym, name, opts) {
+  return h('div', { class: 'sym-cell' }, symLink(sym, opts), name ? h('span', { class: 'sym-name', title: name }, name) : null);
 }
 
 export function sideBadge(side) {
@@ -22,7 +27,8 @@ export function stateBadge(state) {
 }
 
 const LEVEL_TONE = { debug: 'muted', info: 'neutral', warning: 'warn', error: 'bad' };
-export function levelBadge(level) { return badge(level, LEVEL_TONE[level] || 'neutral'); }
+export function levelBadge(level) { return h('span', { class: ['lvl-badge', `lvl-${level}`] }, level === 'warning' ? 'warn' : level); }
+export { LEVEL_TONE };
 
 const KIND_TONE = {
   engine: 'info', bar: 'muted', signal: 'accent', order: 'info', fill: 'good', rejection: 'warn', risk: 'warn',
@@ -40,10 +46,13 @@ export function timeCell(iso) {
 
 export function feedItem(ev) {
   const msg = ev.message || '';
-  return h('li', { class: ['feed-item', `lvl-${ev.level}`] },
-    h('time', { class: 'feed-time num', datetime: ev.time, title: `${fmtDateTime(ev.time)} HKT` }, fmtWhen(ev.time)),
-    kindBadge(ev.kind),
-    h('span', { class: 'feed-msg' }, msg));
+  const kind = ev.kind === 'daily_summary' ? 'summary' : ev.kind;
+  return h('li', { class: ['feed-item', `lvl-${ev.level}`, `k-${ev.kind}`] },
+    h('span', { class: 'feed-dot', 'aria-hidden': 'true' }),
+    h('div', { class: 'feed-main' },
+      h('div', { class: 'feed-kind' }, kind, ev.symbol ? ` · ${ev.symbol}` : ''),
+      h('div', { class: 'feed-msg' }, msg)),
+    h('time', { class: 'feed-time', datetime: ev.time, title: `${fmtDateTime(ev.time)} HKT` }, fmtWhen(ev.time)));
 }
 
 export const PHASE_LABEL = {

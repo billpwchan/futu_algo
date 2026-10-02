@@ -8,10 +8,10 @@ import { api, post, del, waitJob } from '../api.js';
 import { app, go, strategies } from '../state.js';
 import {
   card, kpi, btn, busy, dataTable, empty, errorBox, loading, badge, callout, field, select, segmented, kv,
-  toast, toastError, confirmDialog, skeleton,
+  toast, toastError, confirmDialog, skeleton, radioCards, switchControl, downloadText, toCSV,
 } from '../ui.js';
-import { TIMEFRAMES, symLink } from '../common.js';
-import { candleChart, equityChart } from '../charts.js';
+import { TIMEFRAMES } from '../common.js';
+import { candleChart, equityChart, histogram } from '../charts.js';
 
 const DRAFT_KEY = 'futu_algo.backtestDraft';
 const SIZERS = [
@@ -24,7 +24,8 @@ const SIZERS = [
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 export default {
-  title: ({ params }) => (params[0] ? 'Backtest result' : 'Backtest'),
+  title: ({ params }) => (params[0] ? 'Backtest report' : 'Backtest'),
+  head: ({ params }) => !params[0],
   async mount(root, { params, query, ctx, setTitle }) {
     if (params[0]) return mountResult(root, params[0], ctx, setTitle);
     return mountForm(root, query, ctx);
@@ -35,7 +36,7 @@ export default {
 
 async function mountForm(root, query, ctx) {
   const formHolder = h('div', {}, card({ title: 'New backtest', body: skeleton(8) }));
-  const historyHolder = h('div', {}, card({ title: 'Saved runs', body: skeleton(5) }));
+  const historyHolder = h('div', { class: 'bt-side' }, card({ title: 'Saved runs', body: skeleton(5) }));
   mount(root, h('div', { class: 'bt-layout' }, formHolder, historyHolder));
 
   loadHistory(historyHolder, ctx);
@@ -83,7 +84,11 @@ function buildForm(base, defaults, strats, ctx, fromId) {
   let paramValues = { ...(base.strategy?.params || {}) };
 
   // ---------------------------------------------------------------- strategy
-  const stratSel = select(strats.map((s) => ({ value: s.name, label: `${s.title} (${s.name})` })), stratName, { id: 'bt-strategy' });
+  const stratSel = radioCards('bt-strategy', strats.map((s) => ({ value: s.name, title: s.title, sub: s.name, desc: s.description })), stratName, (v) => {
+    stratName = v;
+    paramValues = stratName === base.strategy?.name ? { ...(base.strategy?.params || {}) } : {};
+    renderParams();
+  }, { label: 'Strategy' });
   const stratInfo = h('div', { class: 'strategy-info' });
   const paramsGrid = h('div', { class: 'form-grid' });
   const paramInputs = new Map();
@@ -91,9 +96,9 @@ function buildForm(base, defaults, strats, ctx, fromId) {
   function renderParams() {
     const s = byName[stratName];
     paramInputs.clear();
-    mount(stratInfo, h('p', { class: 'muted' }, s.description || ''), h('div', { class: 'meta-line' },
+    mount(stratInfo, s.description ? h('p', { class: 'small text-2' }, s.description) : null, h('div', { class: 'meta-line' },
       badge(`warm-up ${s.warmup_bars} bars`, 'neutral'),
-      s.plots?.length ? badge(`plots: ${s.plots.map((p) => p.label).join(', ')}`, 'neutral') : null));
+      s.plots?.length ? badge(`plots ${s.plots.map((p) => p.label).join(', ')}`, 'neutral') : null));
     const props = s.schema?.properties || {};
     mount(paramsGrid, Object.entries(props).map(([key, spec]) => {
       const cur = paramValues[key] ?? spec.default ?? s.params?.[key];
@@ -101,7 +106,7 @@ function buildForm(base, defaults, strats, ctx, fromId) {
       if (Array.isArray(spec.enum)) {
         control = select(spec.enum.map((v) => ({ value: v, label: String(v) })), cur);
       } else if (spec.type === 'boolean') {
-        control = h('input', { type: 'checkbox', checked: !!cur });
+        control = switchControl(spec.title || humanize(key), !!cur).input;
       } else if (spec.type === 'integer' || spec.type === 'number') {
         const min = spec.minimum ?? spec.exclusiveMinimum;
         const max = spec.maximum ?? spec.exclusiveMaximum;
@@ -113,16 +118,11 @@ function buildForm(base, defaults, strats, ctx, fromId) {
       const range = [spec.minimum != null ? `≥ ${spec.minimum}` : spec.exclusiveMinimum != null ? `> ${spec.exclusiveMinimum}` : null,
         spec.maximum != null ? `≤ ${spec.maximum}` : null].filter(Boolean).join(', ');
       const hint = [spec.description, range && `(${range})`].filter(Boolean).join(' ');
-      if (spec.type === 'boolean') return h('label', { class: 'check field' }, control, h('span', {}, spec.title || humanize(key)));
+      if (spec.type === 'boolean') return h('div', { class: 'field' }, control.parentElement);
       return field(spec.title || humanize(key), control, { hint: hint || null });
     }));
     if (!Object.keys(props).length) mount(paramsGrid, h('p', { class: 'muted' }, 'This strategy has no parameters.'));
   }
-  stratSel.addEventListener('change', () => {
-    stratName = stratSel.value;
-    paramValues = stratName === base.strategy?.name ? { ...(base.strategy?.params || {}) } : {};
-    renderParams();
-  });
   renderParams();
 
   function readParams() {
@@ -209,19 +209,22 @@ function buildForm(base, defaults, strats, ctx, fromId) {
   const fillSel = select([{ value: 'next_open', label: 'Next bar open' }, { value: 'close', label: 'Signal bar close' }], ex.fill || 'next_open');
   const slipTicksIn = numInput(ex.slippage_ticks ?? 1, { min: 0, step: 'any' });
   const slipBpsIn = numInput(ex.slippage_bps ?? 0, { min: 0, step: 'any' });
-  const freshChk = h('input', { type: 'checkbox', checked: ex.entry_requires_fresh_signal !== false });
-  const liqChk = h('input', { type: 'checkbox', checked: !!ex.liquidate_at_end });
+  const freshSw = switchControl('Entries need a fresh signal', ex.entry_requires_fresh_signal !== false);
+  const liqSw = switchControl('Liquidate at the end', !!ex.liquidate_at_end);
+  const freshChk = freshSw.input;
+  const liqChk = liqSw.input;
 
   const xt = base.exits || {};
   const stopIn = numInput(pctIn(xt.stop_loss), { min: 0, max: 99.99, placeholder: 'off' });
   const tpIn = numInput(pctIn(xt.take_profit), { min: 0, placeholder: 'off' });
   const trailIn = numInput(pctIn(xt.trailing_stop), { min: 0, max: 99.99, placeholder: 'off' });
   const maxBarsIn = numInput(xt.max_holding_bars, { min: 1, step: 1, placeholder: 'off' });
-  const lookChk = h('input', { type: 'checkbox', checked: base.check_lookahead !== false });
+  const lookSw = switchControl('Check the strategy for look-ahead bias', base.check_lookahead !== false);
+  const lookChk = lookSw.input;
   const rfIn = numInput(pctIn(base.risk_free_rate ?? 0), { step: 'any' });
 
   // ---------------------------------------------------------------- submit
-  const runBtn = btn('Run backtest', { type: 'submit', tone: 'primary', iconName: 'play' });
+  const runBtn = btn('Run backtest', { type: 'submit', tone: 'primary', iconName: 'play', size: 'lg' });
   const progress = h('div', { class: 'job-progress', hidden: true, 'aria-live': 'polite' });
 
   function collect() {
@@ -319,91 +322,78 @@ function buildForm(base, defaults, strats, ctx, fromId) {
     });
   }
 
-  const section = (title, ...children) => h('fieldset', { class: 'form-section' }, h('legend', {}, title), ...children);
+  let stepNo = 0;
+  const section = (title, ...children) => h('fieldset', { class: 'form-section' }, h('legend', {}, h('span', { class: 'step' }, String(++stepNo)), title), ...children);
   const form = h('form', { class: 'bt-form', onsubmit: submit, novalidate: true },
-    section('Strategy', field('Strategy', stratSel), stratInfo, paramsGrid),
+    section('Strategy', stratSel, stratInfo, paramsGrid),
     section('Universe',
-      field('Symbols', symBox, { hint: 'Type or paste codes; Enter or comma adds. 700 → HK.00700' }),
+      field('Symbols', symBox, { hint: 'Type or paste codes; Enter or comma adds one. 700 becomes HK.00700.' }),
       symActions,
-      h('div', { class: 'form-grid' }, field('Benchmark', benchIn, { hint: 'Index or stock; blank compares to buy & hold' }))),
+      h('div', { class: 'form-grid' }, field('Benchmark', benchIn, { hint: 'Index or stock; blank compares with buy & hold' }))),
     section('Period & capital',
       h('div', { class: 'form-grid' },
         field('Timeframe', tfSel),
         field('Start', startIn),
-        field('End', endIn, { hint: 'Blank = today' }),
+        field('End', endIn, { hint: 'Blank means today' }),
         field('Capital (HKD)', capitalIn)),
       h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Mode'), modeSeg, modeHint)),
     section('Position sizing',
       h('div', { class: 'form-grid' }, field('Method', methodSel), fMax, fValue, fLots, fPercent),
       methodHint),
-    section('Execution',
+    section('Execution & exits',
       h('div', { class: 'form-grid' },
         field('Fill price', fillSel),
         field('Slippage (ticks)', slipTicksIn),
         field('Slippage (bps)', slipBpsIn)),
-      h('div', { class: 'checks' },
-        h('label', { class: 'check' }, freshChk, h('span', {}, 'Entries need a fresh signal')),
-        h('label', { class: 'check' }, liqChk, h('span', {}, 'Liquidate at the end')))),
-    section('Exits',
+      h('div', { class: 'checks' }, freshSw, liqSw),
       h('div', { class: 'form-grid' },
         field('Stop loss (%)', stopIn, { hint: 'Below entry' }),
         field('Take profit (%)', tpIn, { hint: 'Above entry' }),
         field('Trailing stop (%)', trailIn, { hint: 'Below the peak' }),
         field('Max holding bars', maxBarsIn))),
     section('Checks',
-      h('div', { class: 'form-grid' }, field('Risk-free rate (%)', rfIn)),
-      h('div', { class: 'checks' }, h('label', { class: 'check' }, lookChk, h('span', {}, 'Check the strategy for look-ahead bias')))),
+      h('div', { class: 'form-grid' }, field('Risk-free rate (%)', rfIn, { hint: 'For Sharpe and Sortino' })),
+      h('div', { class: 'checks' }, lookSw)),
     err,
-    h('div', { class: 'form-actions' },
+    h('div', { class: 'run-bar' },
       runBtn,
       btn('Reset to config defaults', { tone: 'ghost', onclick: () => { storage.set(DRAFT_KEY, null); go('#/backtest'); } }),
       progress));
 
   return card({
-    title: 'New backtest',
-    subtitle: fromId ? `Settings loaded from run ${fromId}` : 'Overrides on top of the configured backtest section',
+    title: fromId ? 'Edit & re-run' : 'New backtest',
+    subtitle: fromId ? `Settings loaded from run ${fromId}` : 'Overrides on top of the backtest section of the config',
     body: form,
+    cls: 'bt-card',
+    flush: true,
   });
 }
 
 async function loadHistory(holder, ctx) {
   try {
-    const rows = await api('/api/backtests');
+    const rows = (await api('/api/backtests')) || [];
     if (!ctx.alive) return;
-    const table = dataTable({
-      caption: 'Saved backtests',
-      emptyText: 'No saved runs',
-      sort: { key: 'finished_at', dir: 'desc' },
-      onRowClick: (r) => go(`#/backtest/${encodeURIComponent(r.id)}`),
-      dense: true,
-      maxHeight: '640px',
-      columns: [
-        { key: 'finished_at', label: 'Finished', render: (r) => h('span', { class: 'num', title: fmtDateTime(r.finished_at) }, fmtWhen(r.finished_at)) },
-        {
-          key: 'strategy', label: 'Strategy',
-          render: (r) => h('div', { class: 'cell-stack' }, h('span', { class: 'mono' }, `${r.strategy} · ${r.timeframe}`),
-            h('span', { class: 'cell-sub truncate', title: (r.symbols || []).join(', ') }, `${(r.symbols || []).slice(0, 3).join(', ')}${(r.symbols || []).length > 3 ? ` +${r.symbols.length - 3}` : ''} · ${r.mode}`)),
-        },
-        { key: 'total_return', label: 'Return', num: true, render: (r) => h('span', { class: signCls(r.total_return) }, fmtPct(r.total_return)) },
-        { key: 'sharpe', label: 'Sharpe', num: true, render: (r) => fmtRatio(r.sharpe) },
-        { key: 'max_drawdown', label: 'Max DD', num: true, render: (r) => h('span', { class: 'down' }, fmtPct(r.max_drawdown, 1)), cls: 'hide-sm' },
-        { key: 'trades', label: 'Trades', num: true, cls: 'hide-sm' },
-        {
-          key: '_del', label: '', sortable: false, cls: 'actions-cell',
-          render: (r) => h('button', {
-            type: 'button', class: 'icon-btn icon-btn-danger', 'aria-label': `Delete run ${r.id}`, title: 'Delete',
-            onclick: async (e) => {
-              e.stopPropagation();
-              if (await deleteRun(r.id)) loadHistory(holder, ctx);
-            },
-          }, icon('trash', 15)),
-        },
-      ],
-    });
-    table.update(rows);
+    rows.sort((a, b) => String(b.finished_at).localeCompare(String(a.finished_at)));
+    const item = (r) => {
+      const syms = r.symbols || [];
+      const open = () => go(`#/backtest/${encodeURIComponent(r.id)}`);
+      return h('div', {
+        class: 'run-item', role: 'link', tabIndex: 0, title: `Open run ${r.id}`,
+        onclick: (e) => { if (!e.target.closest('button')) open(); },
+        onkeydown: (e) => { if (e.key === 'Enter' && e.target === e.currentTarget) open(); },
+      },
+      h('div', { class: 'run-title' }, h('span', {}, r.strategy), badge(r.timeframe, 'neutral'), r.mode === 'scan' ? badge('scan', 'accent') : null),
+      h('div', { class: ['run-ret', signCls(r.total_return)] }, fmtPct(r.total_return, 1)),
+      h('div', { class: 'run-meta', title: syms.join(', ') }, `${syms.slice(0, 3).join(', ')}${syms.length > 3 ? ` +${syms.length - 3}` : ''} · ${fmtWhen(r.finished_at)}`),
+      h('div', { class: 'run-stats' }, h('span', {}, 'SR ', h('b', {}, fmtRatio(r.sharpe))), h('span', {}, 'DD ', h('b', {}, fmtPct(r.max_drawdown, 0))), h('span', {}, h('b', {}, fmtInt(r.trades)), ' tr')),
+      h('button', {
+        type: 'button', class: 'icon-btn icon-btn-danger', 'aria-label': `Delete run ${r.id}`, title: 'Delete',
+        onclick: async (e) => { e.stopPropagation(); if (await deleteRun(r.id)) loadHistory(holder, ctx); },
+      }, icon('trash', 15)));
+    };
     mount(holder, card({
-      title: 'Saved runs', subtitle: `${rows.length} run(s)`, flush: true,
-      body: rows.length ? table.el : empty('No backtests yet', 'Run one with the form; results are saved and listed here.'),
+      title: 'Saved runs', subtitle: rows.length ? `${rows.length} report${rows.length === 1 ? '' : 's'} on disk` : null, flush: true,
+      body: rows.length ? h('div', { class: 'run-list' }, rows.map(item)) : empty('No backtests yet', 'Run one with the form; every report is saved and listed here.', null, 'flask'),
     }));
   } catch (err) {
     if (ctx.alive) mount(holder, card({ title: 'Saved runs', body: errorBox(err, () => loadHistory(holder, ctx)) }));
@@ -434,31 +424,30 @@ async function mountResult(root, id, ctx, setTitle) {
     if (!ctx.alive) return;
     mount(root, h('div', { class: 'stack' },
       h('a', { href: '#/backtest', class: 'back-link' }, icon('arrowLeft', 14), 'All backtests'),
-      err.status === 404 ? card({ body: empty('Backtest not found', `No saved run named ${id}. It may have been deleted.`, btn('Back to backtests', { onclick: () => go('#/backtest') })) }) : errorBox(err, () => mountResult(root, id, ctx, setTitle))));
+      err.status === 404 ? card({ body: empty('Backtest not found', `No saved run named ${id}. It may have been deleted.`, btn('Back to backtests', { onclick: () => go('#/backtest') }), 'flask') }) : errorBox(err, () => mountResult(root, id, ctx, setTitle))));
     return;
   }
   if (!ctx.alive) return;
   const cfg = res.config || {};
   const strat = res.strategy || {};
-  setTitle(`Backtest · ${strat.title || strat.name}`);
+  setTitle(`${strat.title || strat.name} · ${cfg.timeframe}`);
   const books = Object.keys(res.books || {});
   let bookName = res.primary && res.books[res.primary] ? res.primary : books[0];
+  const syms = cfg.symbols || [];
 
-  const header = card({
-    title: h('span', {}, strat.title || strat.name, ' ', h('span', { class: 'muted mono title-params' }, paramsText(strat.params))),
-    subtitle: h('span', { class: 'meta-line' },
-      badge(cfg.mode, 'accent'), badge(cfg.timeframe, 'neutral'),
-      h('span', {}, `${fmtDate(cfg.start)} → ${cfg.end ? fmtDate(cfg.end) : fmtDate(res.finished_at)}`),
-      h('span', {}, `${(cfg.symbols || []).length} symbol(s)`),
-      h('span', {}, `capital ${fmtMoney(cfg.capital, 0)}`),
-      h('span', { class: 'muted' }, `finished ${fmtDateTime(res.finished_at)}`)),
-    actions: [
-      btn('All runs', { tone: 'ghost', iconName: 'arrowLeft', onclick: () => go('#/backtest') }),
-      btn('Edit & re-run', { tone: 'secondary', onclick: () => go(`#/backtest?from=${encodeURIComponent(id)}`) }),
-      btn('Delete', { tone: 'ghost-danger', iconName: 'trash', onclick: async () => { if (await deleteRun(id)) go('#/backtest'); } }),
-    ],
-    cls: 'result-head',
-  });
+  const header = h('section', { class: 'card result-head' },
+    h('div', { style: { flex: '1 1 420px', minWidth: '0' } },
+      h('a', { href: '#/backtest', class: 'back-link' }, icon('arrowLeft', 14), 'All backtests'),
+      h('h1', { class: 'result-title' }, strat.title || strat.name, h('span', { class: 'title-params mono' }, paramsText(strat.params))),
+      h('div', { class: 'meta-line', style: { marginTop: '8px' } },
+        badge(cfg.mode, 'accent'), badge(cfg.timeframe, 'neutral'),
+        h('span', { class: 'num' }, `${fmtDate(cfg.start)} → ${cfg.end ? fmtDate(cfg.end) : fmtDate(res.finished_at)}`),
+        h('span', { title: syms.join(', ') }, syms.length <= 4 ? syms.join(', ') : `${syms.length} symbols`),
+        h('span', { class: 'num' }, `HK$${fmtMoney(cfg.capital, 0)}`),
+        h('span', {}, `run ${fmtDateTime(res.finished_at, { seconds: false })}`))),
+    h('div', { class: 'page-actions' },
+      btn('Edit & re-run', { iconName: 'sliders', onclick: () => go(`#/backtest?from=${encodeURIComponent(id)}`) }),
+      btn('', { tone: 'ghost-danger', iconName: 'trash', title: 'Delete this report', attrs: { 'aria-label': 'Delete this report' }, onclick: async () => { if (await deleteRun(id)) go('#/backtest'); } })));
 
   const bookBar = h('div', { class: 'book-bar' });
   const bookBody = h('div', { class: 'stack' });
@@ -479,8 +468,8 @@ async function mountResult(root, id, ctx, setTitle) {
     const opts = books.map((b) => ({ value: b, label: b }));
     mount(bookBar,
       h('span', { class: 'book-label' }, 'Book'),
-      books.length <= 8 ? segmented(opts, bookName, selectBook, { label: 'Book' }) : select(opts, bookName, { onchange: (e) => selectBook(e.target.value), 'aria-label': 'Book' }),
-      h('span', { class: 'muted book-hint' }, cfg.mode === 'scan' ? 'Scan mode: each symbol is its own book; COMPOSITE averages them.' : ''));
+      books.length <= 8 ? segmented(opts, bookName, selectBook, { label: 'Book', cls: 'segmented-mono' }) : select(opts, bookName, { class: 'input input-sm', onchange: (e) => selectBook(e.target.value), 'aria-label': 'Book' }),
+      h('span', { class: 'muted book-hint' }, cfg.mode === 'scan' ? 'Scan mode: each symbol trades alone with the full capital; COMPOSITE averages them.' : ''));
     bookBar.after(booksTable(res, (b) => { selectBook(b); bookBar.querySelector('.segmented')?.set?.(b); }));
   } else bookBar.remove();
   selectBook(bookName);
@@ -495,7 +484,7 @@ function booksTable(res, onPick) {
     dense: true,
     maxHeight: '300px',
     columns: [
-      { key: 'name', label: 'Book', render: (r) => h('span', { class: 'mono' }, r.name) },
+      { key: 'name', label: 'Book', render: (r) => h('span', { class: 'sym' }, r.name) },
       { key: 'total_return', label: 'Return', num: true, render: (r) => h('span', { class: signCls(r.total_return) }, fmtPct(r.total_return)) },
       { key: 'cagr', label: 'CAGR', num: true, render: (r) => fmtPct(r.cagr), cls: 'hide-sm' },
       { key: 'sharpe', label: 'Sharpe', num: true, render: (r) => fmtRatio(r.sharpe) },
@@ -506,7 +495,7 @@ function booksTable(res, onPick) {
     ],
   });
   t.update(rows);
-  return card({ title: 'Books', subtitle: 'Click a row to inspect it', body: t.el, flush: true });
+  return card({ title: 'Books', subtitle: 'Select a row to inspect that book', body: t.el, flush: true });
 }
 
 function renderBook(holder, res, name, ctx) {
@@ -514,33 +503,56 @@ function renderBook(holder, res, name, ctx) {
   const m = book.metrics || {};
   const excess = m.excess_return ?? (m.benchmark_total_return != null ? m.total_return - m.benchmark_total_return : null);
   const benchName = book.benchmark_name || 'Benchmark';
-  const kpis = h('div', { class: 'kpis kpis-bt' },
-    kpi('Total return', fmtPct(m.total_return), { tone: signCls(m.total_return), sub: `${fmtMoney(m.final_equity, 0)} final` }),
-    kpi('CAGR', fmtPct(m.cagr), { tone: signCls(m.cagr), sub: `${fmtNum(m.years, 2)} years` }),
-    kpi('Sharpe', fmtRatio(m.sharpe), { sub: `Vol ${fmtPct(m.volatility, 1, false)}` }),
-    kpi('Sortino', fmtRatio(m.sortino), { sub: `Calmar ${fmtRatio(m.calmar)}` }),
-    kpi('Max drawdown', fmtPct(m.max_drawdown), { tone: 'down', sub: m.max_drawdown_days != null ? `${fmtInt(m.max_drawdown_days)} days` : null }),
-    kpi('Win rate', fmtPct(m.win_rate, 1, false), { sub: `${fmtInt(m.trades)} trades${m.open_trades ? `, ${m.open_trades} open` : ''}` }),
-    kpi('Profit factor', fmtRatio(m.profit_factor), { sub: `Payoff ${fmtRatio(m.payoff_ratio)}` }),
-    kpi('Trades', fmtInt(m.trades), { sub: `avg ${fmtNum(m.avg_bars_held, 1)} bars held` }),
-    kpi('Fees', fmtMoney(m.total_fees, 0), { sub: `${fmtPct(m.fees_pct_of_capital, 2, false)} of capital` }),
-    kpi(`vs ${benchName}`, fmtPct(excess), { tone: signCls(excess), sub: `${benchName} ${fmtPct(m.benchmark_total_return ?? m.buy_hold_return)}`, title: 'Excess return over the benchmark' }));
+  const startEq = m.start_equity ?? res.config?.capital;
 
-  // equity chart
+  const tear = h('div', { class: 'tear' },
+    kpi('Total return', fmtPct(m.total_return), {
+      cls: 'tear-hero', tone: signCls(m.total_return),
+      sub: h('span', {}, `HK$${fmtMoney(m.final_equity, 0)} final · `, h('span', { class: signCls(excess) }, `${fmtPct(excess)} vs ${benchName}`)),
+    }),
+    kpi('CAGR', fmtPct(m.cagr), { tone: signCls(m.cagr), sub: `${fmtNum(m.years, 2)} years` }),
+    kpi('Sharpe', fmtRatio(m.sharpe), { sub: `Sortino ${fmtRatio(m.sortino)}` }),
+    kpi('Max drawdown', fmtPct(m.max_drawdown), { tone: 'down', sub: m.max_drawdown_days != null ? `${fmtInt(m.max_drawdown_days)} days to recover` : 'never recovered' }),
+    kpi('Win rate', fmtPct(m.win_rate, 1, false), { sub: `Profit factor ${fmtRatio(m.profit_factor)}` }),
+    kpi('Trades', fmtInt(m.trades), { sub: `avg ${fmtNum(m.avg_bars_held, 1)} bars held${m.open_trades ? ` · ${m.open_trades} open` : ''}` }));
+
+  const secondary = h('div', { class: 'kpis kpis-bt' },
+    kpi('Volatility', fmtPct(m.volatility, 1, false), { sub: 'annualised' }),
+    kpi('Calmar', fmtRatio(m.calmar), { sub: 'CAGR / max DD' }),
+    kpi('Expectancy', fmtSignedMoney(m.expectancy, 0), { tone: signCls(m.expectancy), sub: `payoff ${fmtRatio(m.payoff_ratio)}` }),
+    kpi('Exposure', fmtPct(m.exposure, 1, false), { sub: `in market ${fmtPct(m.time_in_market, 0, false)}` }),
+    kpi('Fees', `HK$${fmtMoney(m.total_fees, 0)}`, { sub: `${fmtPct(m.fees_pct_of_capital, 2, false)} of capital` }),
+    kpi(benchName, fmtPct(m.benchmark_total_return ?? m.buy_hold_return), { tone: signCls(m.benchmark_total_return ?? m.buy_hold_return), sub: m.beta != null ? `beta ${fmtRatio(m.beta)} · alpha ${fmtPct(m.alpha)}` : 'same period' }));
+
+  // equity chart: the strategy as a baseline around starting equity, comparisons as lines
   const chartEl = h('div', { class: 'chart chart-lg' });
   const lines = [{ name: 'Strategy', data: book.equity || [] }];
   if (book.benchmark?.length) lines.push({ name: benchName, data: book.benchmark });
-  if (book.buy_hold?.length && benchName !== 'Buy & hold') lines.push({ name: 'Buy & hold', data: book.buy_hold, style: 2, width: 1 });
+  if (book.buy_hold?.length && benchName !== 'Buy & hold') lines.push({ name: 'Buy & hold', data: book.buy_hold, style: 2 });
   const equityCard = card({
-    title: 'Equity curve', subtitle: `${book.currency || 'HKD'} · drawdown in the lower pane · click legend items to toggle`,
+    title: 'Equity curve', subtitle: `${book.currency || 'HKD'} · shaded against starting capital · drawdown below · click the legend to toggle`,
     body: h('div', { class: 'chart-wrap' }, book.equity?.length ? chartEl : empty('No equity data')), cls: 'card-chart',
   });
 
-  // monthly heatmap
-  const monthlyCard = card({ title: 'Monthly returns', body: monthlyTable(book.monthly || {}), flush: true });
+  // trade return distribution
+  const trades = book.trades || [];
+  const closedTrades = trades.filter((t) => !t.is_open && Number.isFinite(t.return_pct));
+  const rets = closedTrades.map((t) => t.return_pct).sort((a, b) => a - b);
+  const median = rets.length ? rets[Math.floor(rets.length / 2)] : null;
+  const mean = rets.length ? rets.reduce((a, b) => a + b, 0) / rets.length : null;
+  const distEl = h('div', { class: 'viz-wrap' });
+  const distCard = card({
+    title: 'Trade returns', subtitle: rets.length ? `${fmtInt(rets.length)} closed trades · mean ${fmtPct(mean)} · median ${fmtPct(median)}` : 'No closed trades',
+    body: rets.length ? distEl : empty('No closed trades', null, null, 'activity'),
+  });
+
+  const monthlyCard = card({
+    title: 'Monthly returns',
+    actions: h('span', { class: 'heat-legend' }, 'loss', h('span', { class: 'heat-scale', 'aria-hidden': 'true' }), 'gain'),
+    body: monthlyTable(book.monthly || {}), flush: true,
+  });
 
   // trades
-  const trades = book.trades || [];
   const tradeSyms = [...new Set(trades.map((t) => t.symbol))].sort();
   let symFilter = '';
   const tradeTable = dataTable({
@@ -548,30 +560,32 @@ function renderBook(holder, res, name, ctx) {
     emptyText: 'No trades',
     sort: { key: 'entry_time', dir: 'desc' },
     dense: true,
-    maxHeight: '460px',
+    maxHeight: '480px',
     columns: [
-      { key: 'symbol', label: 'Symbol', render: (t) => h('span', { class: 'mono' }, t.symbol) },
+      { key: 'symbol', label: 'Symbol', render: (t) => h('span', { class: 'sym' }, t.symbol) },
       { key: 'entry_time', label: 'Entry', render: (t) => h('span', { class: 'num' }, fmtDate(t.entry_time)) },
       { key: 'exit_time', label: 'Exit', render: (t) => (t.is_open ? badge('open', 'info') : h('span', { class: 'num' }, fmtDate(t.exit_time))) },
       { key: 'quantity', label: 'Qty', num: true, render: (t) => fmtInt(t.quantity) },
-      { key: 'entry_price', label: 'Entry px', num: true, render: (t) => fmtPrice(t.entry_price), cls: 'mono' },
-      { key: 'exit_price', label: 'Exit px', num: true, render: (t) => fmtPrice(t.exit_price), cls: 'mono' },
+      { key: 'entry_price', label: 'Entry px', num: true, render: (t) => fmtPrice(t.entry_price) },
+      { key: 'exit_price', label: 'Exit px', num: true, render: (t) => fmtPrice(t.exit_price) },
       { key: 'pnl', label: 'P/L', num: true, render: (t) => h('span', { class: signCls(t.pnl) }, fmtSignedMoney(t.pnl, 0)) },
       { key: 'return_pct', label: 'Return', num: true, render: (t) => h('span', { class: signCls(t.return_pct) }, fmtPct(t.return_pct)) },
       { key: 'fees', label: 'Fees', num: true, render: (t) => fmtMoney(t.fees, 0), cls: 'hide-sm' },
       { key: 'bars_held', label: 'Bars', num: true, cls: 'hide-sm' },
       { key: 'mae_pct', label: 'MAE', num: true, render: (t) => fmtPct(t.mae_pct, 1), cls: 'hide-sm', title: 'Maximum adverse excursion' },
       { key: 'mfe_pct', label: 'MFE', num: true, render: (t) => fmtPct(t.mfe_pct, 1), cls: 'hide-sm', title: 'Maximum favourable excursion' },
-      { key: 'exit_reason', label: 'Exit reason', render: (t) => badge(t.exit_reason, t.exit_reason === 'signal' ? 'neutral' : t.exit_reason === 'open' ? 'info' : 'warn') },
+      { key: 'exit_reason', label: 'Exit', render: (t) => badge(t.exit_reason, t.exit_reason === 'signal' ? 'neutral' : t.exit_reason === 'open' ? 'info' : 'warn') },
     ],
   });
   const applyTradeFilter = () => tradeTable.update(symFilter ? trades.filter((t) => t.symbol === symFilter) : trades);
   applyTradeFilter();
   const wins = trades.filter((t) => !t.is_open && t.pnl > 0).length;
-  const closed = trades.filter((t) => !t.is_open).length;
   const tradesCard = card({
-    title: 'Trades', subtitle: `${fmtInt(trades.length)} round trips · ${wins}/${closed} winners`,
-    actions: tradeSyms.length > 1 ? select([{ value: '', label: 'All symbols' }, ...tradeSyms.map((s) => ({ value: s, label: s }))], '', { 'aria-label': 'Filter trades by symbol', class: 'input input-sm', onchange: (e) => { symFilter = e.target.value; applyTradeFilter(); } }) : null,
+    title: 'Trades', subtitle: `${fmtInt(trades.length)} round trips · ${wins} of ${closedTrades.length} closed trades won`,
+    actions: [
+      tradeSyms.length > 1 ? select([{ value: '', label: 'All symbols' }, ...tradeSyms.map((s) => ({ value: s, label: s }))], '', { 'aria-label': 'Filter trades by symbol', class: 'input input-sm', onchange: (e) => { symFilter = e.target.value; applyTradeFilter(); } }) : null,
+      btn('CSV', { size: 'sm', iconName: 'download', disabled: !trades.length, onclick: () => downloadText(`${res.id || 'backtest'}-${name}-trades.csv`, toCSV(Object.keys(trades[0] || {}), tradeTable.rows)) }),
+    ],
     body: tradeTable.el, flush: true,
   });
 
@@ -581,7 +595,7 @@ function renderBook(holder, res, name, ctx) {
     caption: 'Worst drawdowns', emptyText: 'No drawdowns', dense: true,
     columns: [
       { key: 'depth', label: 'Depth', num: true, render: (d) => h('span', { class: 'down' }, fmtPct(d.depth, 1)) },
-      { key: 'start', label: 'Start', render: (d) => h('span', { class: 'num' }, fmtDate(d.start)) },
+      { key: 'start', label: 'Peak', render: (d) => h('span', { class: 'num' }, fmtDate(d.start)) },
       { key: 'trough', label: 'Trough', render: (d) => h('span', { class: 'num' }, fmtDate(d.trough)) },
       { key: 'end', label: 'Recovered', render: (d) => (d.recovered ? h('span', { class: 'num' }, fmtDate(d.end)) : badge('not yet', 'warn')) },
       { key: 'days', label: 'Days', num: true, render: (d) => fmtInt(d.days) },
@@ -593,49 +607,47 @@ function renderBook(holder, res, name, ctx) {
     ['Final equity', fmtMoney(m.final_equity, 0)],
     ['Realized P/L', h('span', { class: signCls(m.realized_pnl) }, fmtSignedMoney(m.realized_pnl, 0))],
     ['Unrealized P/L', h('span', { class: signCls(m.unrealized_pnl) }, fmtSignedMoney(m.unrealized_pnl, 0))],
-    ['Exposure', fmtPct(m.exposure, 1, false)],
-    ['Time in market', fmtPct(m.time_in_market, 1, false)],
     ['Turnover', `${fmtNum(m.turnover, 2)}×`],
-    ['Expectancy', fmtSignedMoney(m.expectancy, 0)],
     ['Avg win / loss', `${fmtMoney(m.avg_win, 0)} / ${fmtMoney(m.avg_loss, 0)}`],
     ['Largest win / loss', `${fmtMoney(m.largest_win, 0)} / ${fmtMoney(m.largest_loss, 0)}`],
-    ['Max consec. W / L', `${fmtInt(m.max_consecutive_wins)} / ${fmtInt(m.max_consecutive_losses)}`],
+    ['Max consecutive W / L', `${fmtInt(m.max_consecutive_wins)} / ${fmtInt(m.max_consecutive_losses)}`],
     ['VaR / CVaR 95%', `${fmtPct(m.var_95)} / ${fmtPct(m.cvar_95)}`],
     ['Best / worst bar', `${fmtPct(m.best_bar)} / ${fmtPct(m.worst_bar)}`],
-    m.beta != null ? ['Beta / alpha', `${fmtRatio(m.beta)} / ${fmtPct(m.alpha)}`] : null,
     m.information_ratio != null ? ['Information ratio', fmtRatio(m.information_ratio)] : null,
     m.exit_reasons ? ['Exit reasons', Object.entries(m.exit_reasons).map(([k, v]) => `${k} ${v}`).join(', ')] : null,
   ]);
 
   mount(holder,
-    kpis,
+    tear,
+    secondary,
     equityCard,
     monthlyCard,
     h('div', { class: 'grid-2' },
       card({ title: 'Statistics', body: extra }),
-      card({ title: 'Worst drawdowns', body: ddTable.el, flush: true })),
+      h('div', { class: 'stack' }, distCard, card({ title: 'Worst drawdowns', body: ddTable.el, flush: true }))),
     tradesCard);
 
   if (book.equity?.length && window.LightweightCharts) {
-    ctx.own(equityChart(chartEl, { lines, drawdown: book.drawdown }));
+    ctx.own(equityChart(chartEl, { lines, drawdown: book.drawdown, baseline: startEq }));
   }
+  if (rets.length) ctx.own(histogram(distEl, rets));
 }
 
 function monthlyTable(monthly) {
   const years = Object.keys(monthly).sort();
-  if (!years.length) return empty('No monthly data');
+  if (!years.length) return empty('No monthly data', null, null, 'clock');
   let maxAbs = 0;
   for (const y of years) for (let i = 1; i <= 12; i++) { const v = monthly[y][String(i)]; if (typeof v === 'number') maxAbs = Math.max(maxAbs, Math.abs(v)); }
   const cell = (v, isYear = false) => {
     if (typeof v !== 'number') return h('td', { class: 'num heat-empty' }, '');
     const intensity = maxAbs ? Math.min(1, Math.abs(v) / (isYear ? Math.max(maxAbs * 3, Math.abs(v)) : maxAbs)) : 0;
-    const pct = Math.round(10 + intensity * 50);
+    const pct = Math.round(8 + intensity * 52);
     const color = v >= 0 ? 'var(--up)' : 'var(--down)';
-    return h('td', { class: ['num', 'heat', isYear && 'heat-year'], style: { background: `color-mix(in srgb, ${color} ${pct}%, transparent)` }, title: fmtPct(v, 2) }, fmtPct(v, 1));
+    return h('td', { class: ['num', 'heat', isYear && 'heat-year'], style: { background: `color-mix(in srgb, ${color} ${pct}%, var(--surface))` }, title: fmtPct(v, 2) }, fmtPct(v, 1));
   };
   return h('div', { class: 'table-wrap' }, h('table', { class: 'table heatmap' },
     h('caption', { class: 'sr-only' }, 'Monthly returns by year'),
-    h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'Year'), MONTHS.map((mo) => h('th', { scope: 'col', class: 'num' }, mo)), h('th', { scope: 'col', class: 'num' }, 'Year'))),
+    h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, ''), MONTHS.map((mo) => h('th', { scope: 'col', class: 'num' }, mo)), h('th', { scope: 'col', class: 'num' }, 'Year'))),
     h('tbody', {}, years.map((y) => h('tr', {}, h('th', { scope: 'row', class: 'num' }, y), Array.from({ length: 12 }, (_, i) => cell(monthly[y][String(i + 1)])), cell(monthly[y].year, true))))));
 }
 
@@ -646,6 +658,7 @@ function renderSymbols(holder, res, bookName, ctx) {
   const chartEl = h('div', { class: 'chart chart-lg' });
   const wrap = h('div', { class: 'chart-wrap' }, chartEl);
   const sub = h('span');
+  const openLink = h('a', { class: 'link-sm' }, 'Open chart', icon('arrowUpRight', 13));
   let chartCtx = null;
   const draw = () => {
     chartCtx?.dispose();
@@ -654,19 +667,17 @@ function renderSymbols(holder, res, bookName, ctx) {
     const book = res.books[bookName];
     const bookSyms = new Set((book?.trades || []).map((t) => t.symbol));
     sub.textContent = `${s.name || ''}${s.name ? ' · ' : ''}lot ${fmtInt(s.lot_size)} · ${fmtInt(s.candles.length)} bars · ${fmtInt(s.markers.length)} fills${bookSyms.size && !bookSyms.has(current) ? ' (not traded in this book)' : ''}`;
+    openLink.href = `#/chart/${encodeURIComponent(current)}?tf=${encodeURIComponent(res.config?.timeframe || 'DAY')}`;
     if (!s.candles.length || !window.LightweightCharts) { mount(wrap, empty('No bars for this symbol')); return; }
     mount(wrap, chartEl);
     chartCtx.own(candleChart(chartEl, { ...s, symbol: current, markerText: false }));
   };
   const picker = syms.length > 1
     ? (syms.length <= 6
-      ? segmented(syms.map((s) => ({ value: s, label: s })), current, (v) => { current = v; draw(); }, { label: 'Symbol', size: 'sm' })
+      ? segmented(syms.map((s) => ({ value: s, label: s })), current, (v) => { current = v; draw(); }, { label: 'Symbol', size: 'sm', cls: 'segmented-mono' })
       : select(syms.map((s) => ({ value: s, label: s })), current, { class: 'input input-sm', 'aria-label': 'Symbol', onchange: (e) => { current = e.target.value; draw(); } }))
     : null;
-  mount(holder, card({
-    title: 'Price & trades', subtitle: sub, actions: [picker, symLink(current) && h('a', { href: `#/chart/${encodeURIComponent(current)}?tf=${encodeURIComponent(res.config?.timeframe || 'DAY')}`, class: 'link-sm' }, 'Open chart')],
-    body: wrap, cls: 'card-chart',
-  }));
+  mount(holder, card({ title: 'Price & fills', subtitle: sub, actions: [picker, openLink], body: wrap, cls: 'card-chart' }));
   draw();
 }
 
@@ -679,11 +690,14 @@ function warningsCard(res) {
   const costs = res.costs || {};
   const hk = costs.HK || {};
   const costLine = costs.model === 'simple'
-    ? `Simple cost model`
-    : `HK: commission ${fmtPct(hk.commission_rate, 3, false)} (min ${fmtMoney(hk.commission_min)}), platform fee ${fmtMoney(hk.platform_fee)}, statutory fees ${hk.include_statutory ? 'included' : 'excluded'}`;
+    ? 'Simple cost model'
+    : `HK commission ${fmtPct(hk.commission_rate, 3, false)} (min ${fmtMoney(hk.commission_min)}), platform fee ${fmtMoney(hk.platform_fee)}, statutory fees ${hk.include_statutory ? 'included' : 'excluded'}`;
+  const ex = res.config?.execution || {};
   return card({
-    title: 'Checks & warnings', subtitle: `${(res.warnings || []).length} warning(s)`,
-    body: h('div', { class: 'stack-sm' }, items, h('p', { class: 'muted small' }, `Costs: ${costLine}. Execution: fill at ${res.config?.execution?.fill?.replace('_', ' ')}, slippage ${res.config?.execution?.slippage_ticks} tick(s) + ${res.config?.execution?.slippage_bps} bps.`)),
+    title: 'Checks & assumptions', subtitle: `${(res.warnings || []).length} warning${(res.warnings || []).length === 1 ? '' : 's'}`,
+    body: h('div', { class: 'stack-sm' }, items, kv([
+      ['Costs', costLine],
+      ['Fills', `${String(ex.fill || '').replace('_', ' ')}, slippage ${ex.slippage_ticks ?? 0} tick(s) + ${ex.slippage_bps ?? 0} bps`],
+    ])),
   });
 }
-

@@ -3,7 +3,8 @@
   try {
     var p = JSON.parse(window.localStorage.getItem('futu_algo.prefs') || '{}');
     var root = document.documentElement;
-    if (p.theme === 'light' || p.theme === 'dark') root.setAttribute('data-theme', p.theme);
+    var theme = p.theme || 'dark';
+    if (theme === 'light' || theme === 'dark') root.setAttribute('data-theme', theme);
     root.setAttribute('data-updown', p.updown === 'red-up' ? 'red-up' : 'green-up');
-  } catch (e) { /* storage blocked: follow the system theme */ }
+  } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
 })();

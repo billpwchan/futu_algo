@@ -19,7 +19,7 @@ export function toast(message, tone = 'info', { title, timeout } = {}) {
     h('button', { class: 'icon-btn toast-close', type: 'button', 'aria-label': 'Dismiss', onclick: close }, icon('x', 14)),
   );
   root.appendChild(el);
-  while (root.children.length > 5) root.firstElementChild.remove();
+  while (root.children.length > 3) root.firstElementChild.remove();
   setTimeout(close, timeout ?? (tone === 'error' ? 9000 : tone === 'warning' ? 7000 : 4500));
 }
 
@@ -118,8 +118,9 @@ export function skeleton(rows = 4) {
   return h('div', { class: 'skeleton', 'aria-hidden': 'true' }, Array.from({ length: rows }, (_, i) => h('div', { class: 'skeleton-line', style: { width: `${90 - (i * 13) % 40}%` } })));
 }
 
-export function empty(title, text, action) {
+export function empty(title, text, action, iconName = 'inbox') {
   return h('div', { class: 'empty' },
+    iconName ? h('div', { class: 'empty-icon' }, icon(iconName, 20)) : null,
     h('div', { class: 'empty-title' }, title),
     text ? h('div', { class: 'empty-text' }, text) : null,
     action || null);
@@ -129,7 +130,7 @@ export function errorBox(err, retry) {
   return h('div', { class: 'callout callout-error', role: 'alert' },
     icon('alert', 16),
     h('div', { class: 'callout-body' },
-      h('div', { class: 'callout-title' }, err?.status === 404 ? 'Not found' : 'Could not load'),
+      h('div', { class: 'callout-title' }, err?.status === 404 ? 'Not found' : err?.status === 0 ? 'Server unreachable' : 'Could not load'),
       h('div', {}, err?.detail || err?.message || String(err))),
     retry ? h('button', { class: 'btn btn-sm', type: 'button', onclick: retry }, 'Retry') : null);
 }
@@ -150,11 +151,79 @@ export function card({ title, subtitle, actions, body, cls, id, flush = false })
     body == null ? null : h('div', { class: 'card-body' }, body));
 }
 
-export function kpi(label, value, { sub, tone, subTone, title } = {}) {
-  return h('div', { class: 'kpi', title },
+export function kpi(label, value, { sub, tone, subTone, title, extra, cls } = {}) {
+  return h('div', { class: ['kpi', cls], title },
     h('div', { class: 'kpi-label' }, label),
-    h('div', { class: ['kpi-value', 'num', tone] }, value),
-    sub != null ? h('div', { class: ['kpi-sub', 'num', subTone] }, sub) : null);
+    h('div', { class: ['kpi-value', tone] }, value),
+    sub != null ? h('div', { class: ['kpi-sub', subTone] }, sub) : null,
+    extra || null);
+}
+
+/** Signed change chip: delta(+0.0123, '+1.23%') coloured by direction. */
+export function delta(v, text, { arrow = true } = {}) {
+  const dir = !Number.isFinite(v) || v === 0 ? '' : v > 0 ? 'up' : 'down';
+  return h('span', { class: ['delta', dir] }, arrow && dir ? (dir === 'up' ? '▲' : '▼') : null, text);
+}
+
+export function kbd(...keys) {
+  return h('span', { class: 'kbds' }, keys.map((k) => h('kbd', { class: 'kbd' }, k)));
+}
+
+/** 0..1 meter; tone escalates to warn/bad at the given thresholds. */
+export function meter(frac, { warnAt = 0.75, badAt = 0.9, label } = {}) {
+  const f = Math.max(0, Math.min(1, Number.isFinite(frac) ? frac : 0));
+  const tone = f >= badAt ? 'bad' : f >= warnAt ? 'warn' : '';
+  return h('span', {
+    class: ['meter', tone], role: 'meter', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': String(Math.round(f * 100)), 'aria-label': label,
+  }, h('span', { class: 'meter-fill', style: { width: `${(f * 100).toFixed(1)}%` } }));
+}
+
+/** Checkbox styled as a switch. Returns the label; the input is label.input. */
+export function switchControl(label, checked, { onchange, id } = {}) {
+  const input = h('input', { type: 'checkbox', checked: !!checked, id, onchange });
+  const el = h('label', { class: 'switch' }, input, h('span', { class: 'switch-track', 'aria-hidden': 'true' }), h('span', {}, label));
+  el.input = input;
+  return el;
+}
+
+/** Inline SVG sparkline. values: numbers; tone: 'up' | 'down' | '' (accent). */
+export function sparkline(values, { width = 120, height = 30, tone = '', area = true, baseline } = {}) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  svg.setAttribute('width', width);
+  svg.setAttribute('height', height);
+  svg.setAttribute('class', 'spark');
+  svg.setAttribute('aria-hidden', 'true');
+  const vals = (values || []).filter((v) => Number.isFinite(v));
+  if (vals.length < 2) return svg;
+  let min = Math.min(...vals); let max = Math.max(...vals);
+  if (baseline != null) { min = Math.min(min, baseline); max = Math.max(max, baseline); }
+  const span = max - min || 1;
+  const pad = 3;
+  const x = (i) => (i / (vals.length - 1)) * (width - pad * 2) + pad;
+  const y = (v) => height - pad - ((v - min) / span) * (height - pad * 2);
+  const color = tone === 'up' ? 'var(--up)' : tone === 'down' ? 'var(--down)' : 'var(--accent)';
+  const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`);
+  const mk = (tag, attrs) => { const el = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v); svg.appendChild(el); return el; };
+  if (baseline != null) mk('line', { x1: pad, x2: width - pad, y1: y(baseline), y2: y(baseline), stroke: 'var(--border-2)', 'stroke-width': 1, 'stroke-dasharray': '2 3' });
+  if (area) mk('path', { d: `M${pts[0]} L${pts.join(' L')} L${x(vals.length - 1).toFixed(1)},${height} L${x(0).toFixed(1)},${height} Z`, class: 'spark-area', fill: color });
+  mk('polyline', { points: pts.join(' '), class: 'spark-line', stroke: color });
+  mk('circle', { cx: x(vals.length - 1), cy: y(vals[vals.length - 1]), r: 2.5, class: 'spark-dot', fill: color });
+  return svg;
+}
+
+/** Radio cards: options [{value, title, sub, desc}] -> element with .value getter. */
+export function radioCards(name, options, value, onChange, { label } = {}) {
+  const root = h('div', { class: 'rcards', role: 'radiogroup', 'aria-label': label });
+  for (const o of options) {
+    root.appendChild(h('label', { class: 'rcard' },
+      h('input', { type: 'radio', name, value: o.value, checked: o.value === value, onchange: () => { root.current = o.value; onChange?.(o.value); } }),
+      h('span', { class: 'rcard-title' }, o.title, o.sub ? h('span', { class: 'mono' }, o.sub) : null),
+      o.desc ? h('span', { class: 'rcard-desc' }, o.desc) : null));
+  }
+  root.current = value;
+  return root;
 }
 
 export function btn(label, { onclick, tone, size, iconName, type = 'button', disabled, title, attrs } = {}) {
@@ -175,8 +244,8 @@ export async function busy(button, fn) {
 }
 
 /** Segmented control: options [{value, label}] */
-export function segmented(options, value, onChange, { label, size } = {}) {
-  const root = h('div', { class: ['segmented', size && `segmented-${size}`], role: 'radiogroup', 'aria-label': label });
+export function segmented(options, value, onChange, { label, size, cls } = {}) {
+  const root = h('div', { class: ['segmented', size && `segmented-${size}`, cls], role: 'radiogroup', 'aria-label': label });
   const render = (current) => mount(root, options.map((o) => h('button', {
     type: 'button', role: 'radio', 'aria-checked': String(o.value === current),
     class: ['seg', o.value === current && 'active'],

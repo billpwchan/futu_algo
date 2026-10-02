@@ -3,7 +3,8 @@
 import { h, mount, getPrefs, setPref } from '../core.js';
 import { api, post, put } from '../api.js';
 import { app, envLabel } from '../state.js';
-import { card, btn, busy, callout, errorBox, segmented, kv, skeleton, toast, toastError, confirmDialog, badge } from '../ui.js';
+import { card, btn, busy, callout, errorBox, segmented, kv, skeleton, toast, toastError, confirmDialog, badge, kbd } from '../ui.js';
+import { MOD, showShortcuts } from '../palette.js';
 
 function jsonTree(value, depth = 0) {
   if (value === null || value === undefined) return h('span', { class: 'j-null' }, 'null');
@@ -70,18 +71,32 @@ export default {
 
     // ---------------------------------------------------------------- preferences
     const prefs = getPrefs();
+    const themeCard = (value, label, swatch) => h('button', {
+      type: 'button', role: 'radio', class: 'theme-card', 'aria-checked': String(prefs.theme === value), onclick: () => setPref('theme', value),
+    }, swatch, h('span', {}, label));
     const preview = h('div', { class: 'updown-preview', 'aria-hidden': 'true' },
-      h('span', { class: 'up' }, '▲ +1.25%'), h('span', { class: 'down' }, '▼ −0.80%'),
-      h('span', { class: 'candle-demo candle-up' }), h('span', { class: 'candle-demo candle-down' }));
+      h('span', { class: 'candle-demo candle-up' }), h('span', { class: 'candle-demo candle-down' }),
+      h('span', { class: 'up' }, '▲ +1.25%'), h('span', { class: 'down' }, '▼ −0.80%'));
     const prefCard = card({
-      title: 'Preferences', subtitle: 'Stored in this browser',
-      body: h('div', { class: 'stack-sm' },
+      title: 'Appearance', subtitle: 'Stored in this browser',
+      body: h('div', { class: 'stack' },
         h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Theme'),
-          segmented([{ value: 'system', label: 'System' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }], prefs.theme, (v) => setPref('theme', v), { label: 'Theme' })),
+          h('div', { class: 'theme-cards', role: 'radiogroup', 'aria-label': 'Theme' },
+            themeCard('dark', 'Dark', h('span', { class: 'theme-swatch dark' }, h('i', { class: 'sw-l' }), h('i'))),
+            themeCard('light', 'Light', h('span', { class: 'theme-swatch' }, h('i', { class: 'sw-l' }), h('i'))),
+            themeCard('system', 'System', h('span', { class: 'theme-swatch system' })))),
         h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Price colours'),
-          segmented([{ value: 'green-up', label: 'Green up / red down' }, { value: 'red-up', label: 'Red up / green down' }], prefs.updown, (v) => setPref('updown', v), { label: 'Price colours' }),
-          h('span', { class: 'field-hint' }, 'Applies to P/L, candles and fill markers. Red-up is the mainland China convention.'),
-          preview)),
+          segmented([{ value: 'green-up', label: 'Green up' }, { value: 'red-up', label: 'Red up' }], prefs.updown, (v) => setPref('updown', v), { label: 'Price colours' }),
+          preview,
+          h('span', { class: 'field-hint' }, 'Applies to P/L, candles and fill markers. Red up is the mainland China convention.'))),
+    });
+    const keysCard = card({
+      title: 'Keyboard',
+      actions: btn('All shortcuts', { size: 'sm', tone: 'ghost', onclick: showShortcuts }),
+      body: h('div', { class: 'shortcut-list' },
+        h('span', {}, 'Command palette'), kbd(MOD, 'K'),
+        h('span', {}, 'Go to a page'), kbd('G', 'D'),
+        h('span', {}, 'Toggle theme'), kbd('T')),
     });
 
     // ---------------------------------------------------------------- notifications
@@ -90,7 +105,7 @@ export default {
     const notifyCard = card({
       title: 'Notifications',
       body: h('div', { class: 'stack-sm' },
-        h('div', { class: 'meta-line' }, channels.length ? channels.map((c) => badge(c, 'good')) : badge('no channel enabled', 'muted')),
+        h('div', { class: 'meta-line' }, channels.length ? channels.map((c) => badge(c, 'good', { class: 'badge badge-good badge-dot' })) : badge('no channel enabled', 'muted')),
         h('p', { class: 'muted small' }, 'Channels are configured under notify.email / notify.telegram; secrets come from environment variables.'),
         h('div', {}, btn('Send test notification', {
           tone: 'secondary', iconName: 'bell', disabled: !channels.length,
@@ -116,9 +131,10 @@ export default {
         ['Data', s.offline ? 'offline (cache only)' : 'online (OpenD)'],
         ['Auth', s.token_required ? 'console token required' : 'local only, no token'],
         ['API', h('a', { href: '/api/docs', target: '_blank', rel: 'noopener' }, 'OpenAPI docs')],
+        ['Fonts', 'Geist, Geist Mono (OFL)'],
       ]), h('p', { class: 'muted small' }, 'Charts by ', h('a', { href: 'https://www.tradingview.com/', target: '_blank', rel: 'noopener noreferrer' }, 'TradingView'), ' Lightweight Charts™ (Apache 2.0).')),
     });
-    mount(side, prefCard, notifyCard, aboutCard);
+    mount(side, prefCard, notifyCard, keysCard, aboutCard);
 
     // ---------------------------------------------------------------- editor
     let cfg;
@@ -135,7 +151,7 @@ export default {
     let saved = cfg.text || '';
     const out = h('div', { class: 'editor-out', 'aria-live': 'polite' });
     const dirty = h('span', { class: 'toolbar-meta' });
-    const updateDirty = () => { dirty.textContent = editor.area.value !== saved ? 'Unsaved changes' : ''; };
+    const updateDirty = () => { mount(dirty, editor.area.value !== saved ? [h('span', { class: 'dot dot-warn' }), 'Unsaved changes'] : null); };
     editor.area.addEventListener('input', updateDirty);
 
     function showError(text) {
@@ -154,7 +170,7 @@ export default {
       } else showError(r.error);
       return r.ok;
     }
-    const validateBtn = btn('Validate', { tone: 'secondary', iconName: 'check', onclick: (e) => busy(e.currentTarget, () => validate().catch((err) => toastError(err, 'Validate failed'))) });
+    const validateBtn = btn('Validate', { iconName: 'check', onclick: (e) => busy(e.currentTarget, () => validate().catch((err) => toastError(err, 'Validate failed'))) });
     const saveBtn = btn('Save', {
       tone: 'primary', disabled: !cfg.editable, title: cfg.editable ? null : 'The server was started without --config',
       onclick: (e) => busy(e.currentTarget, async () => {
@@ -181,9 +197,9 @@ export default {
       body: h('div', { class: 'stack-sm' },
         cfg.editable ? null : callout('info', 'Read-only', 'The server was started without --config, so there is no file to save to. You can still validate edits.'),
         editor.el,
-        h('div', { class: 'form-actions' }, validateBtn, saveBtn, revertBtn, dirty),
+        h('div', { class: 'form-actions' }, saveBtn, validateBtn, revertBtn, h('span', { class: 'spacer' }), dirty),
         out),
     }));
-    mount(effectiveHolder, card({ title: 'Effective config', subtitle: 'What the running process uses (secrets are env var names)', body: h('div', { class: 'json-tree mono' }, jsonTree(cfg.effective)) }));
+    mount(effectiveHolder, card({ title: 'Effective configuration', subtitle: 'What the running process uses; secrets appear as environment variable names', body: h('div', { class: 'json-tree mono' }, jsonTree(cfg.effective)) }));
   },
 };
