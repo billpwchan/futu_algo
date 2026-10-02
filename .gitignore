@@ -15,7 +15,7 @@ htmlcov/
 
 # Runtime output (paths are relative to the config file)
 /data/
-/state/
+**/state/
 /logs/
 /reports/
 *.sqlite
@@ -26,8 +26,13 @@ htmlcov/
 config.yaml
 config.local.yaml
 *.local.yaml
+*.bak-*
 .env
+.env.*
+!.env.example
 *.key
+*.pem
+FutuOpenD.xml
 
 # Editors / OS
 .idea/
