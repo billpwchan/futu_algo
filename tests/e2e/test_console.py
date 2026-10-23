@@ -73,8 +73,8 @@ def browser():
         b.close()
 
 
-def _open(browser, url: str, width: int = 1440, height: int = 900):
-    ctx = browser.new_context(viewport={"width": width, "height": height})
+def _open(browser, url: str, width: int = 1440, height: int = 900, locale: str = "en-US"):
+    ctx = browser.new_context(viewport={"width": width, "height": height}, locale=locale)
     page = ctx.new_page()
     errors: list[str] = []
     page.on("console", lambda m: errors.append(m.text) if m.type == "error" else None)
@@ -84,19 +84,23 @@ def _open(browser, url: str, width: int = 1440, height: int = 900):
 
 
 @pytest.mark.parametrize("route", PAGES)
-def test_every_page_renders_without_errors(console, browser, route):
-    ctx, page, errors = _open(browser, f"{console}/#/{route}")
+@pytest.mark.parametrize("locale", ["en-US", "zh-CN"])
+def test_every_page_renders_without_errors(console, browser, route, locale):
+    ctx, page, errors = _open(browser, f"{console}/#/{route}", locale=locale)
     page.wait_for_load_state("networkidle")
     page.wait_for_timeout(800)
     body = page.inner_text("body")
     assert len(body.strip()) > 50, f"{route} rendered almost nothing"
+    assert page.locator("html").get_attribute("lang") == ("en" if locale == "en-US" else locale)
+    assert page.locator("#nav").get_by_text("设置" if locale == "zh-CN" else "Settings", exact=True).count() == 1
     assert not errors, f"{route}: {errors}"
     ctx.close()
 
 
 @pytest.mark.parametrize("route", ["dashboard", "backtest", "chart/HK.00700"])
-def test_mobile_layout_has_no_horizontal_scroll(console, browser, route):
-    ctx, page, errors = _open(browser, f"{console}/#/{route}", 390, 844)
+@pytest.mark.parametrize("locale", ["en-US", "zh-CN"])
+def test_mobile_layout_has_no_horizontal_scroll(console, browser, route, locale):
+    ctx, page, errors = _open(browser, f"{console}/#/{route}", 390, 844, locale=locale)
     page.wait_for_load_state("networkidle")
     page.wait_for_timeout(600)
     overflow = page.evaluate("document.documentElement.scrollWidth - document.documentElement.clientWidth")
@@ -105,16 +109,88 @@ def test_mobile_layout_has_no_horizontal_scroll(console, browser, route):
     ctx.close()
 
 
-def test_backtest_runs_from_the_browser(console, browser):
-    ctx, page, errors = _open(browser, f"{console}/#/backtest")
+@pytest.mark.parametrize("locale", ["en-US", "zh-CN"])
+def test_backtest_runs_from_the_browser(console, browser, locale):
+    ctx, page, errors = _open(browser, f"{console}/#/backtest", locale=locale)
     page.wait_for_load_state("networkidle")
-    page.get_by_role("button", name="Run backtest").click()
+    page.get_by_role("button", name="运行回测" if locale == "zh-CN" else "Run backtest").click()
     # The backtest's history requests share the Futu rate limit with the demo engine running in the
     # same app, so how long the job takes depends on the engine's load: allow a slow CI runner.
     page.wait_for_url("**/#/backtest/*", timeout=180_000)
     page.wait_for_timeout(1500)
     text = page.inner_text("body").lower()  # labels are upper-cased by CSS
-    assert "sharpe" in text and "max drawdown" in text and "trades" in text
+    labels = ["夏普比率", "最大回撤", "交易"] if locale == "zh-CN" else ["sharpe", "max drawdown", "trades"]
+    assert all(label in text for label in labels)
     assert page.locator("canvas").count() > 0
+    assert not errors, errors
+    ctx.close()
+
+
+def test_language_choice_persists_and_protects_config(console, browser):
+    ctx, page, errors = _open(browser, f"{console}/#/settings", locale="zh-CN")
+    page.wait_for_selector(".code-area")
+    editor = page.locator(".code-area")
+    original = editor.input_value()
+    editor.fill(original + "\n# unsaved edit\n")
+    page.locator("#language-select").select_option("en")
+    page.get_by_role("button", name="取消", exact=True).click()
+    assert "# unsaved edit" in editor.input_value()
+    assert page.locator("#language-select").input_value() == "zh-CN"
+    page.locator("#language-select").select_option("en")
+    page.get_by_role("button", name="确认", exact=True).click()
+    page.wait_for_function("document.documentElement.lang === 'en'")
+    page.wait_for_selector("#language-select")
+    assert page.locator("#language-select").input_value() == "en"
+    page.reload()
+    page.wait_for_selector("#language-select")
+    assert page.locator("html").get_attribute("lang") == "en"
+    assert page.locator(".code-area").input_value() == original
+    assert not errors, errors
+    ctx.close()
+
+
+@pytest.mark.parametrize("locale", ["en-US", "zh-CN"])
+def test_screener_conditions_and_results_are_localized(console, browser, locale):
+    ctx, page, errors = _open(browser, f"{console}/#/screener", locale=locale)
+    page.wait_for_load_state("networkidle")
+    chinese = locale == "zh-CN"
+    preset = page.locator(".preset").first
+    assert preset.locator(".preset-name").inner_text() == ("高流动性股票" if chinese else "liquid")
+    assert ("股价高于" if chinese else "Price above") in preset.locator(".preset-desc").inner_text()
+    assert ("现价" if chinese else "CUR_PRICE") in preset.locator(".preset-filters").inner_text()
+    assert ("基础" if chinese else "simple") in preset.locator(".preset-filters").inner_text().lower()
+    page.get_by_role("button", name="执行选股" if chinese else "Run screen").click()
+    page.wait_for_url("**/#/screener/*", timeout=30_000)
+    page.get_by_role("columnheader", name="今日成交额" if chinese else "Turnover Today").wait_for()
+    assert page.get_by_role("columnheader", name="现价" if chinese else "Cur Price").count() == 1
+    assert page.get_by_role("columnheader", name="股票代码" if chinese else "Symbol").count() == 1
+    rows = page.request.get(f"{console}/api/screener/results/{page.url.split('/')[-1]}").json()["rows"]
+    assert rows and "cur_price" in rows[0]
+    assert "turnover_today" in rows[0]
+    assert not errors, errors
+    ctx.close()
+
+
+@pytest.mark.parametrize("locale", ["en-US", "zh-CN"])
+def test_chart_and_screener_can_add_symbols_to_personal_watchlist(console, browser, locale):
+    ctx, page, errors = _open(browser, f"{console}/#/chart/HK.00700", locale=locale)
+    chinese = locale == "zh-CN"
+    add_label = "添加到自选股" if chinese else "Add to watchlist"
+    remove_label = "从自选股移除" if chinese else "Remove from watchlist"
+    page.get_by_role("button", name=f"{add_label}: HK.00700").click()
+    page.goto(f"{console}/#/watchlist")
+    page.locator("#personal-watchlist").get_by_text("HK.00700").wait_for()
+    page.locator("#personal-watchlist").get_by_role("button", name=f"{remove_label}: HK.00700").click()
+    page.locator("#personal-watchlist").get_by_text("No saved symbols" if not chinese else "还没有收藏股票").wait_for()
+
+    page.goto(f"{console}/#/screener")
+    page.wait_for_load_state("networkidle")
+    page.get_by_role("button", name="执行选股" if chinese else "Run screen").click()
+    page.wait_for_url("**/#/screener/*", timeout=30_000)
+    row = page.locator("#screener-result tbody tr.clickable").first
+    symbol = row.locator(".sym").inner_text()
+    row.get_by_role("button", name=f"{add_label}: {symbol}").click()
+    page.goto(f"{console}/#/watchlist")
+    page.locator("#personal-watchlist").get_by_text(symbol).wait_for()
     assert not errors, errors
     ctx.close()

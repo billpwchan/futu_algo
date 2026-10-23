@@ -397,6 +397,7 @@ def _book_payload(book: Book) -> dict[str, Any]:
         "benchmark_name": book.benchmark_name,
         "buy_hold": _curve(book.buy_hold) if book.buy_hold is not None else [],
         "trades": [_num(t.to_dict()) for t in book.trades],
+        "fills": [_num(f.to_dict()) for f in book.fills],
         "drawdowns": _num(drawdown_periods(book.equity, book.initial_capital)),
         "monthly": {
             str(year): {str(k): _num(v) for k, v in row.items()} for year, row in monthly.iterrows()

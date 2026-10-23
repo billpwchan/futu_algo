@@ -1,3 +1,4 @@
+import { t as translate } from '../i18n.js';
 // Dashboard: engine controls, account hero with the intraday equity curve, allocation,
 // positions, working intents, open orders, fills and the live activity timeline.
 
@@ -30,7 +31,7 @@ function mini(label, value, cls) {
 }
 
 export default {
-  title: () => 'Dashboard',
+  title: () => translate('Dashboard'),
   async mount(root, { ctx, actions: headActions, setDesc }) {
     // ---------------------------------------------------------------- layout
     const heroBox = h('div', {}, skeleton(3));
@@ -41,76 +42,76 @@ export default {
     const allocSub = h('span');
 
     const positions = dataTable({
-      caption: 'Positions',
-      emptyText: 'No open positions',
+      caption: translate('Positions'),
+      emptyText: translate('No open positions'),
       sort: { key: 'market_value', dir: 'desc' },
       columns: [
-        { key: 'symbol', label: 'Symbol', render: (r) => symCell(r.symbol, r.name) },
-        { key: 'quantity', label: 'Qty', num: true, render: (r) => fmtInt(r.quantity) },
-        { key: 'cost_price', label: 'Avg cost', num: true, render: (r) => fmtPrice(r.cost_price), cls: 'hide-sm' },
-        { key: 'last_price', label: 'Last', num: true, render: (r) => fmtPrice(r.last_price) },
-        { key: 'market_value', label: 'Mkt value', num: true, render: (r) => fmtMoney(r.market_value, 0) },
-        { key: 'weight', label: 'Weight', num: true, value: (r) => r.market_value / (lastAccount?.account?.equity || 1), render: (r) => weightCell(r.market_value / (lastAccount?.account?.equity || NaN)), cls: 'hide-sm' },
-        { key: 'unrealized_pl', label: 'Unrealized P/L', num: true, render: (r) => plCell(r.unrealized_pl, r.unrealized_pl_pct) },
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symCell(r.symbol, r.name) },
+        { key: 'quantity', label: translate('Qty'), num: true, render: (r) => fmtInt(r.quantity) },
+        { key: 'cost_price', label: translate('Avg cost'), num: true, render: (r) => fmtPrice(r.cost_price), cls: 'hide-sm' },
+        { key: 'last_price', label: translate('Last'), num: true, render: (r) => fmtPrice(r.last_price) },
+        { key: 'market_value', label: translate('Mkt value'), num: true, render: (r) => fmtMoney(r.market_value, 0) },
+        { key: 'weight', label: translate('Weight'), num: true, value: (r) => r.market_value / (lastAccount?.account?.equity || 1), render: (r) => weightCell(r.market_value / (lastAccount?.account?.equity || NaN)), cls: 'hide-sm' },
+        { key: 'unrealized_pl', label: translate('Unrealized P/L'), num: true, render: (r) => plCell(r.unrealized_pl, r.unrealized_pl_pct) },
         {
           key: '_act', label: '', sortable: false, cls: 'actions-cell',
-          render: (r) => (engineRunning() ? btn('Flatten', { size: 'sm', tone: 'ghost-danger', onclick: (e) => busy(e.currentTarget, () => actions.flatten(r.symbol)), title: `Flatten ${r.symbol}` }) : ''),
+          render: (r) => (engineRunning() ? btn(translate('Flatten'), { size: 'sm', tone: 'ghost-danger', onclick: (e) => busy(e.currentTarget, () => actions.flatten(r.symbol)), title: translate("Flatten {0}", { 0: r.symbol }) }) : ''),
         },
       ],
     });
     const working = dataTable({
-      caption: 'Working intents',
-      emptyText: 'Nothing working',
+      caption: translate('Working intents'),
+      emptyText: translate('Nothing working'),
       dense: true,
       columns: [
         { key: 'id', label: '#', num: true },
-        { key: 'symbol', label: 'Symbol', render: (r) => symLink(r.symbol) },
-        { key: 'side', label: 'Side', render: (r) => sideBadge(r.side) },
-        { key: 'quantity', label: 'Qty', num: true, render: (r) => `${fmtInt(r.filled)} / ${fmtInt(r.quantity)}` },
-        { key: 'attempts', label: 'Tries', num: true },
-        { key: 'reason', label: 'Reason', cls: 'truncate hide-sm' },
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symLink(r.symbol) },
+        { key: 'side', label: translate('Side'), render: (r) => sideBadge(r.side) },
+        { key: 'quantity', label: translate('Qty'), num: true, render: (r) => `${fmtInt(r.filled)} / ${fmtInt(r.quantity)}` },
+        { key: 'attempts', label: translate('Tries'), num: true },
+        { key: 'reason', label: translate('Reason'), cls: 'truncate hide-sm' },
       ],
     });
     const openOrders = dataTable({
-      caption: 'Open orders',
-      emptyText: 'No open orders',
+      caption: translate('Open orders'),
+      emptyText: translate('No open orders'),
       dense: true,
       columns: [
-        { key: 'created', label: 'Time', render: (r) => timeCell(r.created) },
-        { key: 'symbol', label: 'Symbol', render: (r) => symLink(r.symbol) },
-        { key: 'side', label: 'Side', render: (r) => sideBadge(r.side) },
-        { key: 'quantity', label: 'Qty', num: true, render: (r) => `${fmtInt(r.filled_qty)} / ${fmtInt(r.quantity)}` },
-        { key: 'price', label: 'Limit', num: true, render: (r) => fmtPrice(r.price) },
-        { key: 'state', label: 'State', render: (r) => stateBadge(r.state), cls: 'hide-sm' },
+        { key: 'created', label: translate('Time'), render: (r) => timeCell(r.created) },
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symLink(r.symbol) },
+        { key: 'side', label: translate('Side'), render: (r) => sideBadge(r.side) },
+        { key: 'quantity', label: translate('Qty'), num: true, render: (r) => `${fmtInt(r.filled_qty)} / ${fmtInt(r.quantity)}` },
+        { key: 'price', label: translate('Limit'), num: true, render: (r) => fmtPrice(r.price) },
+        { key: 'state', label: translate('State'), render: (r) => stateBadge(r.state), cls: 'hide-sm' },
       ],
     });
     const fills = dataTable({
-      caption: 'Recent fills',
-      emptyText: 'No fills yet today',
+      caption: translate('Recent fills'),
+      emptyText: translate('No fills yet today'),
       dense: true,
       maxHeight: '340px',
       sort: { key: 'time', dir: 'desc' },
       columns: [
-        { key: 'time', label: 'Time', render: (r) => timeCell(r.time) },
-        { key: 'symbol', label: 'Symbol', render: (r) => symLink(r.symbol) },
-        { key: 'side', label: 'Side', render: (r) => sideBadge(r.side) },
-        { key: 'quantity', label: 'Qty', num: true, render: (r) => fmtInt(r.quantity) },
-        { key: 'price', label: 'Price', num: true, render: (r) => fmtPrice(r.price) },
-        { key: 'value', label: 'Value', num: true, value: (r) => r.quantity * r.price, render: (r) => fmtMoney(r.quantity * r.price, 0) },
+        { key: 'time', label: translate('Time'), render: (r) => timeCell(r.time) },
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symLink(r.symbol) },
+        { key: 'side', label: translate('Side'), render: (r) => sideBadge(r.side) },
+        { key: 'quantity', label: translate('Qty'), num: true, render: (r) => fmtInt(r.quantity) },
+        { key: 'price', label: translate('Price'), num: true, render: (r) => fmtPrice(r.price) },
+        { key: 'value', label: translate('Value'), num: true, value: (r) => r.quantity * r.price, render: (r) => fmtMoney(r.quantity * r.price, 0) },
       ],
     });
 
     // ---------------------------------------------------------------- activity feed
     const feedKinds = new Set(storage.get(FEED_KEY, KINDS.filter((k) => k !== 'bar' && k !== 'log')));
     const feedList = h('ol', { class: 'feed', 'aria-live': 'off' });
-    const feedChips = chips(KINDS.map((k) => ({ value: k, label: k === 'daily_summary' ? 'summary' : k })), feedKinds, (sel) => {
+    const feedChips = chips(KINDS.map((k) => ({ value: k, label: translate(k === 'daily_summary' ? 'summary' : k) })), feedKinds, (sel) => {
       storage.set(FEED_KEY, [...sel]);
       renderFeed();
-    }, { label: 'Event kinds' });
+    }, { label: translate('Event kinds') });
     const filterBox = h('div', { class: 'feed-filters', hidden: true }, feedChips);
     function renderFeed() {
       const evs = stream.recent().filter((e) => feedKinds.has(e.kind)).slice(-150).reverse();
-      if (!evs.length) mount(feedList, h('li', { class: 'feed-empty' }, stream.state === 'live' ? 'No activity for the selected kinds yet' : 'Waiting for the live stream…'));
+      if (!evs.length) mount(feedList, h('li', { class: 'feed-empty' }, stream.state === 'live' ? translate('No activity for the selected kinds yet') : translate('Waiting for the live stream…')));
       else mount(feedList, evs.map(feedItem));
     }
     ctx.on('event', (ev) => {
@@ -121,25 +122,25 @@ export default {
     });
     renderFeed();
     const filterBtn = btn('', {
-      size: 'sm', tone: 'ghost', iconName: 'filter', title: 'Filter event kinds', attrs: { 'aria-label': 'Filter event kinds', 'aria-expanded': 'false' },
+      size: 'sm', tone: 'ghost', iconName: 'filter', title: translate('Filter event kinds'), attrs: { 'aria-label': translate('Filter event kinds'), 'aria-expanded': 'false' },
       onclick: (e) => { filterBox.hidden = !filterBox.hidden; e.currentTarget.setAttribute('aria-expanded', String(!filterBox.hidden)); },
     });
-    const summaryBtn = btn('', { size: 'sm', tone: 'ghost', iconName: 'bell', title: 'Send the daily summary now', attrs: { 'aria-label': 'Send daily summary' }, onclick: (e) => busy(e.currentTarget, () => actions.summary()) });
+    const summaryBtn = btn('', { size: 'sm', tone: 'ghost', iconName: 'bell', title: translate('Send the daily summary now'), attrs: { 'aria-label': translate('Send daily summary') }, onclick: (e) => busy(e.currentTarget, () => actions.summary()) });
 
     const positionsCount = h('span');
     mount(root,
       h('div', { class: 'dash-grid' },
         h('div', { class: 'dash-main' },
           card({ body: h('div', {}, heroBox, chartWrap), cls: 'equity-card' }),
-          card({ title: h('span', {}, 'Positions ', positionsCount), body: positions.el, flush: true, actions: h('a', { href: '#/watchlist', class: 'link-sm' }, 'Watchlist') }),
+          card({ title: h('span', {}, translate('Positions '), positionsCount), body: positions.el, flush: true, actions: h('a', { href: '#/watchlist', class: 'link-sm' }, translate('Watchlist')) }),
           h('div', { class: 'grid-2' },
-            card({ title: 'Working intents', subtitle: 'Target changes the executor is still filling', body: working.el, flush: true }),
-            card({ title: 'Open orders', subtitle: 'Resting at the broker', body: openOrders.el, flush: true, actions: h('a', { href: '#/orders', class: 'link-sm' }, 'Blotter') })),
-          card({ title: 'Recent fills', body: fills.el, flush: true, actions: h('a', { href: '#/orders?tab=fills', class: 'link-sm' }, 'All fills') })),
+            card({ title: translate('Working intents'), subtitle: translate('Target changes the executor is still filling'), body: working.el, flush: true }),
+            card({ title: translate('Open orders'), subtitle: translate('Resting at the broker'), body: openOrders.el, flush: true, actions: h('a', { href: '#/orders', class: 'link-sm' }, translate('Blotter')) })),
+          card({ title: translate('Recent fills'), body: fills.el, flush: true, actions: h('a', { href: '#/orders?tab=fills', class: 'link-sm' }, translate('All fills')) })),
         h('div', { class: 'dash-side' },
-          card({ title: 'Allocation', subtitle: allocSub, body: allocBox }),
+          card({ title: translate('Allocation'), subtitle: allocSub, body: allocBox }),
           card({
-            title: h('span', { class: 'row' }, h('span', { class: ['dot', 'dot-good', 'dot-live'], 'aria-hidden': 'true' }), 'Live activity'),
+            title: h('span', { class: 'row' }, h('span', { class: ['dot', 'dot-good', 'dot-live'], 'aria-hidden': 'true' }), translate('Live activity')),
             body: h('div', { class: 'feed-wrap' }, filterBox, feedList), flush: true, actions: [filterBtn, summaryBtn],
           }))));
 
@@ -149,26 +150,26 @@ export default {
       const running = e?.state === 'running';
       const busyState = e && (e.state === 'starting' || e.state === 'stopping');
       mount(headActions,
-        running && !e.halted ? btn('Halt entries', { iconName: 'pause', onclick: (ev) => busy(ev.currentTarget, actions.halt), title: 'Stop opening new positions' }) : null,
-        running && e.halted ? btn('Resume entries', { tone: 'primary', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.resume) }) : null,
-        running ? btn('Cancel all', { tone: 'ghost-danger', iconName: 'x', onclick: (ev) => busy(ev.currentTarget, actions.cancelAll), title: 'Cancel every open order' }) : null,
-        running ? btn('Flatten all', { tone: 'ghost-danger', iconName: 'flatten', onclick: (ev) => busy(ev.currentTarget, () => actions.flatten(null)) }) : null,
+        running && !e.halted ? btn(translate('Halt entries'), { iconName: 'pause', onclick: (ev) => busy(ev.currentTarget, actions.halt), title: translate('Stop opening new positions') }) : null,
+        running && e.halted ? btn(translate('Resume entries'), { tone: 'primary', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.resume) }) : null,
+        running ? btn(translate('Cancel all'), { tone: 'ghost-danger', iconName: 'x', onclick: (ev) => busy(ev.currentTarget, actions.cancelAll), title: translate('Cancel every open order') }) : null,
+        running ? btn(translate('Flatten all'), { tone: 'ghost-danger', iconName: 'flatten', onclick: (ev) => busy(ev.currentTarget, () => actions.flatten(null)) }) : null,
         running ? h('span', { class: 'engine-controls' }, h('span', { class: 'sep' })) : null,
         running
-          ? btn('Stop engine', { iconName: 'stop', onclick: (ev) => busy(ev.currentTarget, actions.stop) })
-          : btn(busyState ? `Engine ${e.state}…` : 'Start engine', { tone: 'primary', iconName: 'play', disabled: busyState, onclick: (ev) => busy(ev.currentTarget, actions.start) }));
+          ? btn(translate('Stop engine'), { iconName: 'stop', onclick: (ev) => busy(ev.currentTarget, actions.stop) })
+          : btn(busyState ? translate("Engine {0}…", { 0: translate(e.state) }) : translate('Start engine'), { tone: 'primary', iconName: 'play', disabled: busyState, onclick: (ev) => busy(ev.currentTarget, actions.start) }));
       const s = app.status;
       const env = envLabel(s);
-      if (e) setDesc(`${env} account · ${e.symbols.length} symbols on ${e.timeframe} bars · trading day ${e.trading_day || '—'}${e.state === 'running' ? '' : ` · engine ${e.state}, showing last known values`}`);
-      else setDesc(`${s?.trading?.symbols?.length ?? 0} symbols configured on ${s?.trading?.timeframe || '—'} bars · engine not running`);
+      if (e) setDesc(translate('{env} account · {count} symbols on {tf} bars · trading day {day}', { env, count: e.symbols.length, tf: e.timeframe, day: e.trading_day || '—' }) + (e.state === 'running' ? '' : translate(' · engine {state}, showing last known values', { state: translate(e.state) })));
+      else setDesc(translate('{count} symbols configured on {tf} bars · engine not running', { count: s?.trading?.symbols?.length ?? 0, tf: s?.trading?.timeframe || '—' }));
     }
 
     // ---------------------------------------------------------------- hero
     function renderHero(acct, dayStart) {
       if (!acct) {
         const e = engine();
-        mount(heroBox, empty(e ? `Engine ${e.state}` : 'The engine is not running', 'Account equity, positions and the intraday curve appear once the engine is running and connected to OpenD.',
-          btn('Start engine', { tone: 'primary', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.start) }), 'zap'));
+        mount(heroBox, empty(e ? translate("Engine {0}", { 0: translate(e.state) }) : translate('The engine is not running'), translate('Account equity, positions and the intraday curve appear once the engine is running and connected to OpenD.'),
+          btn(translate('Start engine'), { tone: 'primary', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.start) }), 'zap'));
         chartWrap.hidden = true;
         return;
       }
@@ -178,31 +179,31 @@ export default {
       const unrl = (lastAccount?.positions || []).reduce((s, p) => s + (p.unrealized_pl || 0), 0);
       mount(heroBox, h('div', { class: 'hero' },
         h('div', {},
-          h('div', { class: 'hero-label' }, 'Account equity', h('span', { class: ['env', `env-${envLabel(app.status).toLowerCase()}`] }, envLabel(app.status))),
+          h('div', { class: 'hero-label' }, translate('Account equity'), h('span', { class: ['env', `env-${envLabel(app.status).toLowerCase()}`] }, envLabel(app.status))),
           heroValue(acct.equity, acct.currency),
-          h('div', { class: 'hero-delta' }, delta(dayPct, fmtPct(dayPct)), h('span', { class: signCls(dayPnl) }, fmtSignedMoney(dayPnl)), h('span', { class: 'muted' }, 'today'))),
+          h('div', { class: 'hero-delta' }, delta(dayPct, fmtPct(dayPct)), h('span', { class: signCls(dayPnl) }, fmtSignedMoney(dayPnl)), h('span', { class: 'muted' }, translate("today")))),
         h('div', { class: 'minis' },
-          mini('Cash', fmtMoney(acct.cash, 0)),
-          mini('Market value', fmtMoney(acct.market_value, 0)),
-          mini('Buying power', fmtCompact(acct.buying_power)),
-          mini('Unrealized', fmtSignedMoney(unrl, 0), signCls(unrl)),
-          mini('Realized', fmtSignedMoney(acct.realized_pl, 0), signCls(acct.realized_pl)))));
+          mini(translate('Cash'), fmtMoney(acct.cash, 0)),
+          mini(translate('Market value'), fmtMoney(acct.market_value, 0)),
+          mini(translate('Buying power'), fmtCompact(acct.buying_power)),
+          mini(translate('Unrealized'), fmtSignedMoney(unrl, 0), signCls(unrl)),
+          mini(translate('Realized'), fmtSignedMoney(acct.realized_pl, 0), signCls(acct.realized_pl)))));
     }
 
     // ---------------------------------------------------------------- allocation
     function renderAllocation(acct, rows) {
-      if (!acct) { mount(allocBox, h('p', { class: 'muted small' }, 'No account data yet.')); allocSub.textContent = ''; return; }
+      if (!acct) { mount(allocBox, h('p', { class: 'muted small' }, translate('No account data yet.'))); allocSub.textContent = ''; return; }
       const eq = acct.equity || 1;
       const pos = [...rows].sort((a, b) => (b.market_value || 0) - (a.market_value || 0));
       const cash = Math.max(0, acct.cash || 0);
-      allocSub.textContent = `${fmtPct(acct.market_value / eq, 1, false)} invested · ${fmtInt(pos.length)} position${pos.length === 1 ? '' : 's'}`;
+      allocSub.textContent = translate('{pct} invested · {count} position(s)', { pct: fmtPct(acct.market_value / eq, 1, false), count: fmtInt(pos.length) });
       const seg = (cls, v, label) => h('span', { class: ['alloc-seg', cls], style: { flex: `${Math.max(v, 0)} 1 0` }, title: `${label}: ${fmtPct(v / eq, 1, false)}` });
       mount(allocBox, h('div', { class: 'alloc' },
-        h('div', { class: 'alloc-bar', role: 'img', 'aria-label': `Allocation: ${pos.map((p) => `${p.symbol} ${fmtPct(p.market_value / eq, 1, false)}`).join(', ')}, cash ${fmtPct(cash / eq, 1, false)}` },
-          pos.map((p) => seg('', p.market_value, p.symbol)), seg('cash', cash, 'Cash')),
+        h('div', { class: 'alloc-bar', role: 'img', 'aria-label': translate('Allocation: {positions}, cash {cash}', { positions: pos.map((p) => `${p.symbol} ${fmtPct(p.market_value / eq, 1, false)}`).join(', '), cash: fmtPct(cash / eq, 1, false) }) },
+          pos.map((p) => seg('', p.market_value, p.symbol)), seg('cash', cash, translate('Cash'))),
         h('div', { class: 'alloc-list' },
           pos.map((p) => h('div', { class: 'alloc-row' }, h('span', { class: 'alloc-sw' }), h('span', {}, symLink(p.symbol)), h('span', { class: 'alloc-val' }, fmtCompact(p.market_value)), h('span', { class: 'alloc-pct' }, fmtPct(p.market_value / eq, 1, false)))),
-          h('div', { class: 'alloc-row cash' }, h('span', { class: 'alloc-sw' }), h('span', { class: 'text-2' }, 'Cash'), h('span', { class: 'alloc-val' }, fmtCompact(cash)), h('span', { class: 'alloc-pct' }, fmtPct(cash / eq, 1, false))))));
+          h('div', { class: 'alloc-row cash' }, h('span', { class: 'alloc-sw' }), h('span', { class: 'text-2' }, translate('Cash')), h('span', { class: 'alloc-val' }, fmtCompact(cash)), h('span', { class: 'alloc-pct' }, fmtPct(cash / eq, 1, false))))));
     }
 
     // ---------------------------------------------------------------- equity chart
@@ -221,14 +222,14 @@ export default {
       if (pts.length < 2 || !window.LightweightCharts) {
         chartBox.hidden = true;
         chartEmpty.hidden = false;
-        mount(chartEmpty, h('p', { class: 'muted small' }, engineRunning() ? 'The intraday curve fills in as the engine records equity once a minute.' : 'Start the engine to record the intraday equity curve.'));
+        mount(chartEmpty, h('p', { class: 'muted small' }, engineRunning() ? translate('The intraday curve fills in as the engine records equity once a minute.') : translate('Start the engine to record the intraday equity curve.')));
         return;
       }
       chartBox.hidden = false;
       chartEmpty.hidden = true;
       if (eq) { eq.dispose(); eq = null; }
       eq = equityChart(chartBox, {
-        lines: [{ name: 'Equity', data: pts }],
+        lines: [{ name: translate('Equity'), data: pts }],
         baseline: dayStart || pts[0].value,
         valueFormat: (v) => fmtMoney(v, 0),
         legend: false,

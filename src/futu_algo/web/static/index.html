@@ -17,22 +17,22 @@
   <script type="module" src="/static/app.js"></script>
 </head>
 <body>
-  <a class="skip-link" href="#view">Skip to content</a>
+  <a class="skip-link" href="#view" data-i18n="Skip to content">Skip to content</a>
   <div class="app">
-    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation" data-i18n-aria-label="Main navigation">
       <div class="brand">
         <img class="brand-mark" src="/static/favicon.svg" alt="" width="26" height="26">
         <span class="brand-name">futu<span>_</span>algo</span>
         <span class="brand-tag">HK</span>
       </div>
-      <button class="side-search" id="side-search" type="button" aria-label="Search pages, symbols and actions">
-        <span>Search…</span>
+      <button class="side-search" id="side-search" type="button" aria-label="Search pages, symbols and actions" data-i18n-aria-label="Search pages, symbols and actions">
+        <span data-i18n="Search…">Search…</span>
       </button>
       <nav class="nav" id="nav"></nav>
       <div class="sidebar-foot">
         <div class="engine-card" id="engine-card"></div>
         <div class="foot-line">
-          <span class="conn" id="conn" title="Live event stream"><span class="dot" aria-hidden="true"></span><span class="conn-text">Connecting…</span></span>
+          <span class="conn" id="conn" title="Live event stream" data-i18n-title="Live event stream"><span class="dot" aria-hidden="true"></span><span class="conn-text" data-i18n="Connecting…">Connecting…</span></span>
           <span class="version mono" id="version"></span>
         </div>
       </div>
@@ -40,7 +40,7 @@
     <div class="nav-scrim" id="nav-scrim" hidden></div>
     <div class="main">
       <header class="topbar">
-        <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"></button>
+        <button class="icon-btn menu-btn" id="menu-btn" type="button" aria-label="Open navigation" data-i18n-aria-label="Open navigation" aria-controls="sidebar" aria-expanded="false"></button>
         <div class="crumbs" id="crumbs"></div>
         <div class="topbar-right" id="topbar-right"></div>
       </header>

@@ -22,6 +22,7 @@ import json
 import logging
 import math
 import queue
+import re
 import shutil
 from collections.abc import Iterable
 from datetime import UTC, date, datetime, timedelta
@@ -44,6 +45,7 @@ from futu_algo.data.store import SeriesKey
 from futu_algo.errors import ConfigError, FutuAlgoError
 from futu_algo.events import BACKTEST, Event
 from futu_algo.market.calendar import minutes_to_close
+from futu_algo.market.instrument import normalize_symbol
 from futu_algo.screener.engine import list_results, load_result
 from futu_algo.strategy.registry import available, create_strategy
 from futu_algo.timeframe import FUTU_KTYPES, Timeframe
@@ -585,13 +587,83 @@ def create_app(app: App, *, token: str | None = None, allowed_hosts: Iterable[st
         if path is None:
             raise HTTPException(409, "No config file to write (started without --config)")
         try:
-            validate_yaml_text(body.text, cfg.base_dir)
+            parsed = validate_yaml_text(body.text, cfg.base_dir)
+            parsed.source_path = path
         except ConfigError as exc:
             raise HTTPException(422, str(exc)) from exc
         backup = path.with_suffix(path.suffix + f".bak-{datetime.now():%Y%m%d%H%M%S}")
         shutil.copy2(path, backup)
         path.write_text(body.text, encoding="utf-8")
-        return _json({"saved": str(path), "backup": str(backup), "restart_required": True})
+        try:
+            retained = app.reload_config(parsed)
+        except Exception as exc:
+            # Restore the last valid on-disk config if the active engine could not accept it.
+            shutil.copy2(backup, path)
+            raise HTTPException(409, f"Config was not applied: {exc}") from exc
+        return _json({"saved": str(path), "backup": str(backup), "restart_required": False,
+                      "hot_reloaded": True, "retained_symbols": retained})
+
+    @api.put("/api/trading/universe")
+    def put_universe(body: dict[str, list[str]]) -> JSONResponse:
+        path = cfg.source_path
+        if path is None:
+            raise HTTPException(409, "No config file to write (started without --config)")
+        raw = body.get("symbols") if isinstance(body, dict) else None
+        if not isinstance(raw, list) or any(not isinstance(symbol, str) for symbol in raw):
+            raise HTTPException(422, "symbols must be a list of stock codes")
+        try:
+            symbols = list(dict.fromkeys(normalize_symbol(symbol) for symbol in raw))
+            # Keep per-symbol strategy/enabled settings for existing entries.
+            original = path.read_text(encoding="utf-8")
+            data = yaml.safe_load(original) or {}
+            trading = data.setdefault("trading", {})
+            old = trading.get("universe", [])
+            specs = {
+                (normalize_symbol(item) if isinstance(item, str) else normalize_symbol(item["symbol"])): item
+                for item in old
+            }
+            trading["universe"] = [specs.get(symbol, symbol) for symbol in symbols]
+            indent_match = re.search(r"(?m)^(\s*)universe\s*:", original)
+            if indent_match:
+                indent = indent_match.group(1)
+                lines = original.splitlines(keepends=True)
+                start = original[:indent_match.start()].count("\n")
+                end = start + 1
+                while end < len(lines):
+                    line = lines[end]
+                    stripped = line.strip()
+                    if stripped and not stripped.startswith("#") and len(line) - len(line.lstrip()) <= len(indent):
+                        break
+                    end += 1
+                header = lines[start].rstrip("\r\n")
+                comment = f"  # {header.split('#', 1)[1].strip()}" if "#" in header else ""
+                replacement = [header.split("#", 1)[0].rstrip() + comment + "\n"]
+                for symbol in symbols:
+                    spec = specs.get(symbol, symbol)
+                    if isinstance(spec, dict):
+                        encoded = yaml.safe_dump(spec, default_flow_style=True, sort_keys=False, allow_unicode=True).strip()
+                        replacement.append(f"{indent}  - {encoded}\n")
+                    else:
+                        replacement.append(f"{indent}  - {symbol}\n")
+                lines[start:end] = replacement
+                text = "".join(lines)
+            else:
+                data["trading"] = trading
+                text = yaml.safe_dump(data, sort_keys=False, allow_unicode=True)
+            parsed = validate_yaml_text(text, cfg.base_dir)
+            parsed.source_path = path
+        except (ConfigError, KeyError, TypeError, yaml.YAMLError) as exc:
+            raise HTTPException(422, str(exc)) from exc
+        backup = path.with_suffix(path.suffix + f".bak-{datetime.now():%Y%m%d%H%M%S}")
+        shutil.copy2(path, backup)
+        path.write_text(text, encoding="utf-8")
+        try:
+            retained = app.reload_config(parsed)
+        except Exception as exc:
+            shutil.copy2(backup, path)
+            raise HTTPException(409, f"Trading universe was not applied: {exc}") from exc
+        return _json({"symbols": parsed.trading.symbols, "saved": str(path), "backup": str(backup),
+                      "hot_reloaded": True, "retained_symbols": retained})
 
     @api.post("/api/notify/test")
     def notify_test(body: NotifyBody) -> JSONResponse:

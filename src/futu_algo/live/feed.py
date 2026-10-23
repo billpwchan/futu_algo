@@ -224,16 +224,17 @@ class FutuBarFeed:
             log.exception("Failed to process K-line push")
 
     def subscribe(self, symbols: list[str]) -> None:
-        self.symbols = list(symbols)
-        if not symbols:
+        added = [symbol for symbol in symbols if symbol not in self.symbols]
+        if not added:
             return
+        self.symbols.extend(added)
         self._install_handler()
         self.gateway.call(
             "subscribe",
-            f"subscribe({len(symbols)} x {self.subtype})",
-            lambda ctx: ctx.subscribe(symbols, [self.subtype], subscribe_push=True),
+            f"subscribe({len(added)} x {self.subtype})",
+            lambda ctx: ctx.subscribe(added, [self.subtype], subscribe_push=True),
         )
-        log.info("Subscribed %s to %d symbol(s)", self.subtype, len(symbols))
+        log.info("Subscribed %s to %d symbol(s)", self.subtype, len(added))
 
     def unsubscribe(self) -> None:
         if not self.symbols:
@@ -244,6 +245,20 @@ class FutuBarFeed:
             )
         except Exception as exc:  # Futu refuses unsubscribing within a minute of subscribing
             log.info("Unsubscribe skipped: %s", exc)
+
+    def unsubscribe_symbols(self, symbols: list[str]) -> None:
+        removed = [symbol for symbol in symbols if symbol in self.symbols]
+        if not removed:
+            return
+        try:
+            self.gateway.call(
+                "subscribe", f"unsubscribe({len(removed)} x {self.subtype})",
+                lambda ctx: ctx.unsubscribe(removed, [self.subtype]),
+            )
+        except Exception as exc:  # Futu can refuse a recent subscription change.
+            log.info("Unsubscribe skipped: %s", exc)
+            return
+        self.symbols = [symbol for symbol in self.symbols if symbol not in removed]
 
     def recent_bars(self, symbol: str, count: int) -> pd.DataFrame:
         """Up to 1,000 most recent base bars from the subscription cache (last may be in progress)."""

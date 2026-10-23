@@ -82,7 +82,7 @@
   --sidebar-w: 232px;
   --topbar-h: 56px;
   --gutter: 24px;
-  --font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "PingFang HK", "Noto Sans CJK TC", "Microsoft JhengHei", sans-serif;
+  --font: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", "PingFang HK", "Noto Sans CJK TC", "Microsoft JhengHei", sans-serif;
   --mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   --ease: cubic-bezier(.2, .7, .2, 1);
 }
@@ -599,6 +599,7 @@ input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); width
 .side-sell { background: var(--down-weak); color: var(--down-text); }
 
 .sym { font-family: var(--mono); font-weight: 550; color: var(--text); font-size: 12.5px; letter-spacing: -.01em; }
+.sym-inline-name { font-family: var(--font-sans); font-size: 12px; font-weight: 400; letter-spacing: 0; color: var(--text-3); }
 a.sym:hover { color: var(--accent-text); text-decoration: none; }
 .sym-cell { display: flex; flex-direction: column; min-width: 0; line-height: 1.3; }
 .sym-name { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; }
@@ -630,6 +631,10 @@ a.sym:hover { color: var(--accent-text); text-decoration: none; }
 .table tr.empty-row:hover td { background: transparent; }
 .table-dense td { height: 36px; }
 .table-dense th { height: 30px; }
+.trade-groups-wrap { max-height: 620px; }
+.trade-detail-row td.trade-detail-cell { padding: 8px 12px 12px; background: var(--surface-2); }
+.trade-expand { width: 28px; height: 28px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text-2); cursor: pointer; font-size: 18px; line-height: 1; }
+.trade-expand:hover { border-color: var(--accent-line); color: var(--accent-text); }
 .th-sort { display: inline-flex; align-items: center; gap: 4px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; width: 100%; }
 .th-sort:hover { color: var(--text); }
 .sort-ind { display: inline-block; width: 8px; font-size: 8px; color: var(--accent-text); }

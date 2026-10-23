@@ -16,6 +16,15 @@ console or the command line.
 
 ![Web console dashboard](docs/images/console-dashboard.png)
 
+The web console supports English and Simplified Chinese. Choose **Settings → Appearance →
+Language**; the choice is saved in this browser. On first visit, the browser language is used,
+with English as the fallback. Language changes reload the current page.
+
+网页控制台支持英文和简体中文，可在 **设置 → 外观 → 语言** 中切换并记住选择。
+首次访问跟随浏览器语言；切换语言会刷新页面，未保存的配置会先提示确认。
+配置字段、策略参数标识、API 数据和原始日志保留原文。
+语言包扩展方式见 [国际化说明](docs/i18n.md)。
+
 ## What it does
 
 | | |
