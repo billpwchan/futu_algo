@@ -1,3 +1,4 @@
+import { t as translate, localizeShell } from './js/i18n.js';
 // futu_algo web console: application shell, hash router, market session ribbon, engine card,
 // live event toasts, command palette and shortcuts.
 
@@ -18,29 +19,29 @@ import settings from './js/pages/settings.js';
 import logs from './js/pages/logs.js';
 
 const PAGES = [
-  { id: 'dashboard', label: 'Dashboard', icon: 'dashboard', group: 'Trade', key: 'd', page: dashboard, desc: 'Account, positions and the live engine' },
-  { id: 'watchlist', label: 'Watchlist', icon: 'list', group: 'Trade', key: 'w', page: watchlist, desc: 'Every symbol the engine trades, its strategy and its last decision' },
-  { id: 'chart', label: 'Chart', icon: 'candles', group: 'Trade', key: 'c', page: chart, desc: 'Candles, strategy indicators and fills' },
-  { id: 'orders', label: 'Orders', icon: 'orders', group: 'Trade', key: 'o', page: orders, desc: 'The order blotter, fills and execution intents' },
-  { id: 'backtest', label: 'Backtest', icon: 'flask', group: 'Research', key: 'b', page: backtest, desc: 'Board lots, HK statutory costs and tick-table slippage, next-open fills' },
-  { id: 'screener', label: 'Screener', icon: 'filter', group: 'Research', key: 's', page: screener, desc: 'Filters run on Futu servers across the whole HK market' },
-  { id: 'data', label: 'Data', icon: 'database', group: 'Research', key: 'a', page: data, desc: 'The local K-line cache and your Futu history quota' },
-  { id: 'settings', label: 'Settings', icon: 'settings', group: 'System', key: ',', page: settings, desc: 'Configuration, notifications and display preferences' },
-  { id: 'logs', label: 'Logs', icon: 'logs', group: 'System', key: 'l', page: logs, desc: 'Engine events, persisted and streamed live' },
+  { id: 'dashboard', label: translate('Dashboard'), icon: 'dashboard', group: translate('Trade'), key: 'd', page: dashboard, desc: translate('Account, positions and the live engine') },
+  { id: 'watchlist', label: translate('Watchlist'), icon: 'list', group: translate('Trade'), key: 'w', page: watchlist, desc: translate('Every symbol the engine trades, its strategy and its last decision') },
+  { id: 'chart', label: translate('Chart'), icon: 'candles', group: translate('Trade'), key: 'c', page: chart, desc: translate('Candles, strategy indicators and fills') },
+  { id: 'orders', label: translate('Orders'), icon: 'orders', group: translate('Trade'), key: 'o', page: orders, desc: translate('The order blotter, fills and execution intents') },
+  { id: 'backtest', label: translate('Backtest'), icon: 'flask', group: translate('Research'), key: 'b', page: backtest, desc: translate('Board lots, HK statutory costs and tick-table slippage, next-open fills') },
+  { id: 'screener', label: translate('Screener'), icon: 'filter', group: translate('Research'), key: 's', page: screener, desc: translate('Filters run on Futu servers across the whole HK market') },
+  { id: 'data', label: translate('Data'), icon: 'database', group: translate('Research'), key: 'a', page: data, desc: translate('The local K-line cache and your Futu history quota') },
+  { id: 'settings', label: translate('Settings'), icon: 'settings', group: translate('System'), key: ',', page: settings, desc: translate('Configuration, notifications and display preferences') },
+  { id: 'logs', label: translate('Logs'), icon: 'logs', group: translate('System'), key: 'l', page: logs, desc: translate('Engine events, persisted and streamed live') },
 ];
 
 const PHASES = {
-  continuous: 'Trading', pre_open: 'Pre-open auction', lunch: 'Lunch break', closing_auction: 'Closing auction',
-  after_hours: 'After hours', closed: 'Market closed', unknown: 'Unknown',
+  continuous: translate('Trading'), pre_open: translate('Pre-open auction'), lunch: translate('Lunch break'), closing_auction: translate('Closing auction'),
+  after_hours: translate('After hours'), closed: translate('Market closed'), unknown: translate('Unknown'),
 };
 const PHASE_TONE = { continuous: 'good', pre_open: 'warn', closing_auction: 'warn', lunch: 'info', after_hours: '', closed: '', unknown: '' };
 // Minutes after 09:00 HKT: pre-open auction, morning, lunch, afternoon, closing auction.
 const SESSIONS = [
-  { from: 0, to: 30, cls: 'auction', label: 'Pre-open 09:00–09:30' },
-  { from: 30, to: 180, cls: '', label: 'Morning 09:30–12:00' },
-  { from: 180, to: 240, cls: 'lunch', label: 'Lunch 12:00–13:00' },
-  { from: 240, to: 420, cls: '', label: 'Afternoon 13:00–16:00' },
-  { from: 420, to: 430, cls: 'auction', label: 'Closing auction 16:00–16:10' },
+  { from: 0, to: 30, cls: 'auction', label: translate('Pre-open 09:00–09:30') },
+  { from: 30, to: 180, cls: '', label: translate('Morning 09:30–12:00') },
+  { from: 180, to: 240, cls: 'lunch', label: translate('Lunch 12:00–13:00') },
+  { from: 240, to: 420, cls: '', label: translate('Afternoon 13:00–16:00') },
+  { from: 420, to: 430, cls: 'auction', label: translate('Closing auction 16:00–16:10') },
 ];
 let loadedAt = Date.now(); // exchange time at boot; replaced by the server clock once known
 
@@ -62,7 +63,7 @@ function buildNav() {
   let group = null;
   for (const p of PAGES) {
     if (p.group !== group) { group = p.group; out.push(h('div', { class: 'nav-group', role: 'presentation' }, group)); }
-    out.push(h('a', { href: `#/${p.id}`, class: 'nav-link', dataset: { page: p.id }, title: `${p.label} (G then ${p.key.toUpperCase()})` },
+    out.push(h('a', { href: `#/${p.id}`, class: 'nav-link', dataset: { page: p.id }, title: translate("{0} (G then {1})", { 0: p.label, 1: p.key.toUpperCase() }) },
       icon(p.icon, 18), h('span', {}, p.label), h('span', { class: 'nav-key' }, kbd('G', p.key.toUpperCase()))));
   }
   mount(navEl, out);
@@ -84,16 +85,16 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && document
 // --------------------------------------------------------------------------- top bar
 
 const sessionEl = h('div', { class: 'session' });
-const clockEl = h('span', { class: 'clock', title: 'Exchange time (Asia/Hong_Kong)' });
+const clockEl = h('span', { class: 'clock', title: translate('Exchange time (Asia/Hong_Kong)') });
 const enginePill = h('span', { class: 'engine-pill-wrap' });
 const themeBtn = h('button', { class: 'icon-btn', type: 'button', onclick: () => toggleTheme() });
-const searchTop = h('button', { class: 'icon-btn search-top', type: 'button', 'aria-label': 'Search', title: `Search (${MOD}+K)`, onclick: () => openPalette() }, icon('search', 17));
+const searchTop = h('button', { class: 'icon-btn search-top', type: 'button', 'aria-label': translate('Search'), title: translate("Search ({0}+K)", { 0: MOD }), onclick: () => openPalette() }, icon('search', 17));
 
 function renderThemeBtn() {
   const dark = isDark();
   themeBtn.replaceChildren(icon(dark ? 'sun' : 'moon', 17));
-  themeBtn.setAttribute('aria-label', dark ? 'Switch to light theme' : 'Switch to dark theme');
-  themeBtn.title = `${dark ? 'Light' : 'Dark'} theme (T)`;
+  themeBtn.setAttribute('aria-label', dark ? translate('Switch to light theme') : translate('Switch to dark theme'));
+  themeBtn.title = translate('{theme} theme (T)', { theme: dark ? translate('Light') : translate('Dark') });
 }
 
 function buildTopbar() {
@@ -118,17 +119,17 @@ function renderSession() {
   const t = hkMinutes(now) - 9 * 60;
   const open = phase !== 'closed' && phase !== 'unknown';
   let sub = '';
-  if (phase === 'continuous' && s?.minutes_to_close != null) sub = `Closes in ${fmtDuration(s.minutes_to_close)}`;
-  else if (phase === 'lunch') sub = `Resumes in ${fmtDuration(240 - t)}`;
-  else if (phase === 'pre_open') sub = `Opens in ${fmtDuration(30 - t)}`;
-  else if (phase === 'closing_auction') sub = 'Auction until 16:10';
-  else if (phase === 'after_hours') sub = 'Session over';
+  if (phase === 'continuous' && s?.minutes_to_close != null) sub = translate("Closes in {0}", { 0: fmtDuration(s.minutes_to_close) });
+  else if (phase === 'lunch') sub = translate("Resumes in {0}", { 0: fmtDuration(240 - t) });
+  else if (phase === 'pre_open') sub = translate("Opens in {0}", { 0: fmtDuration(30 - t) });
+  else if (phase === 'closing_auction') sub = translate('Auction until 16:10');
+  else if (phase === 'after_hours') sub = translate('Session over');
   const total = 430;
   mount(sessionEl,
     h('div', { class: 'session-text' },
       h('span', { class: 'session-phase' }, h('span', { class: ['dot', `dot-${PHASE_TONE[phase] || ''}`, phase === 'continuous' && 'dot-live'] }), PHASES[phase] || phase),
       sub ? h('span', { class: 'session-sub' }, sub) : null),
-    h('div', { class: 'ribbon', role: 'img', 'aria-label': `HK session timeline, ${PHASES[phase] || phase}` },
+    h('div', { class: 'ribbon', role: 'img', 'aria-label': translate("HK session timeline, {0}", { 0: PHASES[phase] || phase }) },
       h('div', { class: 'ribbon-ticks', 'aria-hidden': 'true' },
         h('span', { style: { left: '0%' } }, '09:00'), h('span', { class: 'mid', style: { left: `${(180 / total) * 100}%` } }, '12:00'), h('span', { class: 'end', style: { left: '100%' } }, '16:10')),
       h('div', { class: 'ribbon-track' }, SESSIONS.map((seg) => {
@@ -142,7 +143,7 @@ function renderSession() {
 function renderClock() {
   const now = serverNow();
   mount(clockEl, fmtTime(now), h('small', {}, 'HKT'));
-  clockEl.title = `Exchange time: ${fmtDate(now)} ${fmtTime(now)} (Asia/Hong_Kong)`;
+  clockEl.title = translate("Exchange time: {0} {1} (Asia/Hong_Kong)", { 0: fmtDate(now), 1: fmtTime(now) });
 }
 setInterval(() => { renderClock(); if (new Date().getSeconds() % 10 === 0) renderSession(); }, 1000);
 
@@ -150,7 +151,7 @@ const ENGINE_TONE = { running: 'good', starting: 'warn', stopping: 'warn', stopp
 function uptime(iso) {
   const t = Date.parse(iso);
   if (!Number.isFinite(t)) return '';
-  return `up ${fmtDuration((serverNow().getTime() - t) / 60000)}`;
+  return translate("up {0}", { 0: fmtDuration((serverNow().getTime() - t) / 60000) });
 }
 
 function renderEngine() {
@@ -159,7 +160,7 @@ function renderEngine() {
   const state = e ? e.state : s ? 'stopped' : app.statusError ? 'offline' : 'loading';
   const env = envLabel(s);
   const tone = e?.halted ? 'warn' : ENGINE_TONE[state] ?? '';
-  const label = e?.halted ? 'Entries halted' : state === 'offline' ? 'Server offline' : `Engine ${state}`;
+  const label = e?.halted ? translate('Entries halted') : state === 'offline' ? translate('Server offline') : translate("Engine {0}", { 0: translate(state) });
   const syms = e ? e.symbols.length : s?.trading?.symbols?.length ?? 0;
   const tf = e?.timeframe || s?.trading?.timeframe || '';
   const canStart = s && (!e || e.state === 'stopped' || e.state === 'error');
@@ -169,9 +170,9 @@ function renderEngine() {
       h('span', { class: 'engine-card-title' }, label),
       h('span', { class: 'engine-card-up' }, e?.state === 'running' ? uptime(e.started_at) : '')),
     h('div', { class: 'engine-card-meta' },
-      env !== '—' ? h('span', { class: ['env', `env-${env.toLowerCase()}`], title: `Trading environment (${s?.trading?.mode})` }, env) : null,
-      h('span', {}, `${syms} symbols · ${tf}`)),
-    canStart ? btn('Start engine', { tone: 'primary', size: 'sm', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.start) }) : null);
+      env !== '—' ? h('span', { class: ['env', `env-${env.toLowerCase()}`], title: translate("Trading environment ({0})", { 0: s?.trading?.mode }) }, env) : null,
+      h('span', {}, translate("{0} symbols · {1}", { 0: syms, 1: tf }))),
+    canStart ? btn(translate('Start engine'), { tone: 'primary', size: 'sm', iconName: 'play', onclick: (ev) => busy(ev.currentTarget, actions.start) }) : null);
   mount(enginePill, h('span', { class: ['pill', `pill-${tone || 'muted'}`, 'engine-pill'], title: label },
     h('span', { class: 'dot', 'aria-hidden': 'true' }), env !== '—' ? env : state));
 }
@@ -181,21 +182,21 @@ function renderBanners() {
   const e = s?.engine;
   const items = [];
   if (app.statusError && !s) {
-    items.push(h('div', { class: 'banner banner-bad', role: 'alert' }, icon('alert'), h('span', { class: 'banner-text' }, `Cannot load status: ${app.statusError.detail || app.statusError.message}`)));
+    items.push(h('div', { class: 'banner banner-bad', role: 'alert' }, icon('alert'), h('span', { class: 'banner-text' }, translate("Cannot load status: {0}", { 0: app.statusError.detail || app.statusError.message }))));
   } else if (app.statusError) {
-    items.push(h('div', { class: 'banner banner-warn', role: 'status' }, icon('alert'), h('span', { class: 'banner-text' }, 'Lost connection to the server; showing the last known state.')));
+    items.push(h('div', { class: 'banner banner-warn', role: 'status' }, icon('alert'), h('span', { class: 'banner-text' }, translate('Lost connection to the server; showing the last known state.'))));
   }
   if (e?.halted) {
     items.push(h('div', { class: 'banner banner-warn', role: 'alert' },
       icon('shield'),
-      h('span', { class: 'banner-text' }, h('strong', {}, 'New entries halted'), e.halt_reason ? ` — ${e.halt_reason}` : ''),
-      btn('Resume entries', { size: 'sm', onclick: (ev) => busy(ev.currentTarget, actions.resume) })));
+      h('span', { class: 'banner-text' }, h('strong', {}, translate('New entries halted')), e.halt_reason ? ` — ${e.halt_reason}` : ''),
+      btn(translate('Resume entries'), { size: 'sm', onclick: (ev) => busy(ev.currentTarget, actions.resume) })));
   }
   if (e?.state === 'error' && e.last_error) {
-    items.push(h('div', { class: 'banner banner-bad', role: 'alert' }, icon('alert'), h('span', { class: 'banner-text' }, h('strong', {}, 'Engine error'), ` — ${e.last_error}`)));
+    items.push(h('div', { class: 'banner banner-bad', role: 'alert' }, icon('alert'), h('span', { class: 'banner-text' }, h('strong', {}, translate('Engine error')), ` — ${e.last_error}`)));
   }
   if (envLabel(s) === 'REAL') {
-    items.push(h('div', { class: 'banner banner-real' }, icon('alert'), h('span', { class: 'banner-text' }, h('strong', {}, 'REAL account'), ' — orders use real money.')));
+    items.push(h('div', { class: 'banner banner-real' }, icon('alert'), h('span', { class: 'banner-text' }, h('strong', {}, translate('REAL account')), translate(" — orders use real money."))));
   }
   mount(banners, items);
 }
@@ -260,14 +261,14 @@ async function route({ force = false } = {}) {
     await entry.page.mount(body, { ...r, ctx, setTitle, setDesc, actions: actionsEl });
   } catch (err) {
     console.error(err);
-    if (ctx.alive) mount(body, h('div', { class: 'callout callout-error' }, icon('alert'), h('div', {}, `This page failed to render: ${err.message || err}`)));
+    if (ctx.alive) mount(body, h('div', { class: 'callout callout-error' }, icon('alert'), h('div', {}, translate("This page failed to render: {0}", { 0: err.message || err }))));
   }
 }
 window.addEventListener('hashchange', () => route());
 
 // --------------------------------------------------------------------------- live stream: connection + toasts
 
-const CONN_TEXT = { live: 'Live', connecting: 'Connecting…', reconnecting: 'Reconnecting…', offline: 'Stream offline' };
+const CONN_TEXT = { live: translate('Live'), connecting: translate('Connecting…'), reconnecting: translate('Reconnecting…'), offline: translate('Stream offline') };
 function renderConn(state) {
   conn.className = `conn conn-${state}`;
   conn.querySelector('.conn-text').textContent = CONN_TEXT[state] || state;
@@ -287,11 +288,11 @@ stream.on('event', (ev) => {
   if (['engine', 'risk', 'account', 'fill', 'error'].includes(ev.kind)) statusRefreshSoon();
   if (!fresh(ev)) return;
   switch (ev.kind) {
-    case 'fill': toast(ev.message, 'success', { title: 'Fill' }); break;
-    case 'rejection': toast(ev.message, 'warning', { title: 'Order rejected' }); break;
-    case 'error': toast(ev.message, 'error', { title: 'Error' }); break;
-    case 'risk': if (ev.level !== 'info') toast(ev.message, 'warning', { title: 'Risk' }); break;
-    case 'engine': if (ev.level === 'error' || ev.level === 'warning') toast(ev.message, ev.level === 'error' ? 'error' : 'warning', { title: 'Engine' }); break;
+    case 'fill': toast(ev.message, 'success', { title: translate('Fill') }); break;
+    case 'rejection': toast(ev.message, 'warning', { title: translate('Order rejected') }); break;
+    case 'error': toast(ev.message, 'error', { title: translate('Error') }); break;
+    case 'risk': if (ev.level !== 'info') toast(ev.message, 'warning', { title: translate('Risk') }); break;
+    case 'engine': if (ev.level === 'error' || ev.level === 'warning') toast(ev.message, ev.level === 'error' ? 'error' : 'warning', { title: translate('Engine') }); break;
     default: break;
   }
 });
@@ -304,9 +305,9 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () 
 
 // --------------------------------------------------------------------------- token
 
-setTokenPrompt(() => promptDialog('Console token required', {
-  label: 'Token', type: 'password', confirmLabel: 'Unlock',
-  message: 'This server requires the console token (the value of the environment variable named by web.token_env).',
+setTokenPrompt(() => promptDialog(translate('Console token required'), {
+  label: translate('Token'), type: 'password', confirmLabel: translate('Unlock'),
+  message: translate('This server requires the console token (the value of the environment variable named by web.token_env).'),
 }));
 
 // --------------------------------------------------------------------------- boot
@@ -319,6 +320,7 @@ async function fontsReady() {
 }
 
 function boot() {
+  localizeShell();
   applyPrefs();
   buildNav();
   buildTopbar();

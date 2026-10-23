@@ -105,6 +105,8 @@ screener:
   presets:
     liquid_uptrend:
       description: Liquid HK stocks with MA5 > MA10 > MA20 > MA30 > MA60 on daily bars
+      labels: {zh-CN: 高流动性上升趋势}
+      descriptions: {zh-CN: 日线 MA5 > MA10 > MA20 > MA30 > MA60 的高流动性港股}
       filters:
         - {kind: simple, field: CUR_PRICE, min: 1}
         - {kind: accumulate, field: TURNOVER, min: 100000000, days: 10, sort: desc}
@@ -112,6 +114,8 @@ screener:
       max_results: 100
     macd_golden_cross:
       description: MACD golden cross today, turnover above HK$50M, confirmed by the macd strategy
+      labels: {zh-CN: MACD 金叉}
+      descriptions: {zh-CN: "今日出现 MACD 金叉、成交额超过 5,000 万港元，并由 MACD 策略确认"}
       filters:
         - {kind: pattern, field: MACD_GOLD_CROSS_LOW, ktype: K_DAY}
         - {kind: accumulate, field: TURNOVER, min: 50000000, days: 5}
@@ -119,6 +123,8 @@ screener:
       max_confirm: 20
     value:
       description: PE (TTM) between 0 and 12, ROE above 12%
+      labels: {zh-CN: 价值股}
+      descriptions: {zh-CN: 滚动市盈率介于 0 至 12，净资产收益率高于 12%}
       filters:
         - {kind: simple, field: PE_TTM, min: 0, max: 12}
         - {kind: financial, field: RETURN_ON_EQUITY_RATE, min: 12, quarter: ANNUAL}

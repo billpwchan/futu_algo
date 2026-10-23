@@ -270,6 +270,8 @@ class ScreenFilter(_Model):
 
 class ScreenPreset(_Model):
     description: str = ""
+    labels: dict[str, str] = Field(default_factory=dict, description="Optional localized display names, e.g. zh-CN")
+    descriptions: dict[str, str] = Field(default_factory=dict, description="Optional localized descriptions, e.g. zh-CN")
     market: Literal["HK"] = "HK"
     plate: str | None = Field(None, description="Restrict to a Futu plate, e.g. HK.LIST1910")
     filters: list[ScreenFilter] = Field(default_factory=list)

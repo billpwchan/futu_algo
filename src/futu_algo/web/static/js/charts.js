@@ -4,6 +4,8 @@
 
 import { h, fmtPrice, fmtCompact, fmtChartTime, fmtPct, fmtInt, signCls, mount } from './core.js';
 
+import { intlLocale, t as translate } from './i18n.js';
+
 const LWC = () => window.LightweightCharts;
 
 export function colors() {
@@ -60,7 +62,7 @@ export function makeChart(el, { intraday = false, height, panes = true } = {}) {
       vertLine: { color: c.crosshair, width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: c.border2 },
       horzLine: { color: c.crosshair, width: 1, style: L.LineStyle.Dashed, labelBackgroundColor: c.border2 },
     },
-    localization: { locale: 'en-US', dateFormat: 'yyyy-MM-dd' },
+    localization: { locale: intlLocale(), dateFormat: 'yyyy-MM-dd' },
   });
   return chart;
 }
@@ -241,7 +243,7 @@ export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompa
     const v = h('span', { class: 'lg-v' });
     valueEls.set(s, v);
     const b = h('button', {
-      type: 'button', class: 'lg-toggle', 'aria-pressed': 'true', title: `Show/hide ${line.name}`,
+      type: 'button', class: 'lg-toggle', 'aria-pressed': 'true', title: translate('Show/hide {name}', { name: line.name }),
       onclick: () => {
         const on = b.getAttribute('aria-pressed') !== 'true';
         b.setAttribute('aria-pressed', String(on));
@@ -249,7 +251,7 @@ export function equityChart(el, { lines, drawdown, valueFormat = (v) => fmtCompa
       },
     }, h('span', { class: ['lg-swatch', line.style ? 'lg-swatch-dashed' : ''], style: { background: line.style ? 'transparent' : color, borderColor: color } }), h('span', { class: 'lg-k' }, line.name), v);
     return b;
-  }), dd ? h('span', { class: 'lg-item' }, h('span', { class: 'lg-swatch', style: { background: alpha(c.down, 0.5) } }), h('span', { class: 'lg-k' }, 'Drawdown'), h('span', { class: 'lg-v' })) : null));
+  }), dd ? h('span', { class: 'lg-item' }, h('span', { class: 'lg-swatch', style: { background: alpha(c.down, 0.5) } }), h('span', { class: 'lg-k' }, translate('Drawdown')), h('span', { class: 'lg-v' })) : null));
   const ddEl = dd ? legend.querySelector('.lg-item:last-child .lg-v') : null;
   const update = (param) => {
     for (const { s } of series) {
@@ -279,7 +281,7 @@ function niceStep(raw) {
  * zero use the down colour, above the up colour. Hover shows the bin and its count.
  * Returns {dispose}. Redraws on resize.
  */
-export function histogram(el, values, { fmt = (v) => fmtPct(v, 1), height = 220, unit = 'trades' } = {}) {
+export function histogram(el, values, { fmt = (v) => fmtPct(v, 1), height = 220, unit = translate('trades') } = {}) {
   const NS = 'http://www.w3.org/2000/svg';
   const vals = values.filter((v) => Number.isFinite(v));
   const tip = h('div', { class: 'viz-tip', hidden: true });
@@ -310,7 +312,7 @@ export function histogram(el, values, { fmt = (v) => fmtPct(v, 1), height = 220,
     svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
     svg.setAttribute('height', H);
     svg.setAttribute('role', 'img');
-    svg.setAttribute('aria-label', `Distribution of ${vals.length} ${unit}`);
+    svg.setAttribute('aria-label', translate('Distribution of {count} {unit}', { count: vals.length, unit }));
     const mk = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
     for (let n = 0; n <= yMax; n += yStep) {
       mk('line', { x1: m.l, x2: W - m.r, y1: y(n), y2: y(n), class: n === 0 ? 'viz-base' : 'viz-grid' });
@@ -337,7 +339,7 @@ export function histogram(el, values, { fmt = (v) => fmtPct(v, 1), height = 220,
       }
       const show = () => {
         bar?.classList.add('hover');
-        mount(tip, h('b', {}, `${b.n} ${unit}`), h('div', {}, `${fmt(b.from)} to ${fmt(b.to)}`));
+        mount(tip, h('b', {}, `${b.n} ${unit}`), h('div', {}, translate('{from} to {to}', { from: fmt(b.from), to: fmt(b.to) })));
         tip.hidden = false;
         tip.style.left = `${m.l + (i + 0.5) * slot}px`;
         tip.style.top = `${b.n ? y(b.n) : m.t + ph}px`;

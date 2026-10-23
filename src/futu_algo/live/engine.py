@@ -358,6 +358,65 @@ class LiveEngine:
             self._persist()
             return d
 
+    def reload_universe(self, instruments: dict[str, Instrument]) -> list[str]:
+        """Apply a new trading universe while running, retaining symbols with exposure."""
+        with self._lock:
+            requested = list(self.tc.symbols)
+            exposed = {
+                symbol for symbol, position in self.positions.items() if position.quantity > 0
+            }
+            exposed.update(intent.symbol for intent in self.executor.working())
+            symbols = list(dict.fromkeys([*requested, *(s for s in self.symbols if s in exposed)]))
+            missing = [symbol for symbol in symbols if symbol not in instruments]
+            if missing:
+                raise ValueError(f"Instrument data missing for: {', '.join(missing)}")
+
+            old_symbols = set(self.symbols)
+            old_strategies = self.strategies
+            strategies = {
+                symbol: (
+                    old_strategies[symbol]
+                    if symbol in requested and symbol in old_strategies
+                    and self.tc.strategy_for(symbol).name == old_strategies[symbol].name
+                    and self.tc.strategy_for(symbol).params == old_strategies[symbol].params.model_dump()
+                    else create_strategy(self.tc.strategy_for(symbol).name, self.tc.strategy_for(symbol).params)
+                )
+                for symbol in symbols
+            }
+
+            # Resolve and warm every added instrument before changing the active engine state.
+            added = [symbol for symbol in symbols if symbol not in old_symbols]
+            removed = [symbol for symbol in self.symbols if symbol not in symbols]
+            windows = {symbol: self.windows[symbol] for symbol in symbols if symbol in self.windows}
+            for symbol in added:
+                strategy = strategies[symbol]
+                need = strategy.warmup_bars() + 2
+                frame = pd.DataFrame(columns=list(BAR_COLUMNS))
+                if self.data is not None:
+                    try:
+                        yesterday = pd.Timestamp(self.clock()).tz_convert(self.market.tz).date() - timedelta(days=1)
+                        frame = self.data.load_bars(symbol, self.tf, yesterday, yesterday, warmup_bars=need)
+                    except Exception as exc:
+                        log.warning("Warm-up cache load failed for %s: %s", symbol, exc)
+                windows[symbol] = frame.tail(self.max_window).copy()
+
+            if self.feed is not None and added:
+                self.feed.subscribe(added)
+            if self.feed is not None and removed:
+                self.feed.unsubscribe_symbols(removed)
+            self.instruments.update(instruments)
+            self.executor.instrument = self.instrument
+            self.symbols = symbols
+            self.strategies = strategies
+            self.windows = windows
+            self.max_window = min(max([3 * s.warmup_bars() for s in strategies.values()] + [300]), 5000)
+            self.blocked = {s: self.blocked.get(s, self.tc.entry_requires_fresh_signal) for s in symbols}
+            self.last_decision = {s: d for s, d in self.last_decision.items() if s in symbols}
+            for symbol in added:
+                self._load_warmup(symbol)
+            self.bus.emit(ENGINE, f"Trading universe hot-reloaded: {', '.join(requested)}")
+            return [s for s in symbols if s not in requested]
+
     def _decide(self, sym: str, bar: Bar, sig: float) -> Decision:
         pos = self.positions.get(sym)
         qty = pos.quantity if pos else 0
