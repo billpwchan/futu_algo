@@ -52,6 +52,21 @@ def _f(value: Any, default: float = 0.0) -> float:
     return default if out != out else out  # NaN -> default
 
 
+def _first_number(row: dict[str, Any], *fields: str, default: float = 0.0) -> float:
+    """Return the first populated numeric account field, preserving valid zero values."""
+    for field in fields:
+        value = row.get(field)
+        if value is None or str(value).strip().upper() in ("", "N/A", "NAN", "NONE"):
+            continue
+        try:
+            number = float(value)
+        except (TypeError, ValueError):
+            continue
+        if pd.notna(number):
+            return number
+    return default
+
+
 def _ts(value: Any, tz: str) -> datetime | None:
     if value in (None, "", "N/A"):
         return None
@@ -276,12 +291,35 @@ class FutuBroker:
             limited=refresh,
         )
         row = data.iloc[0].to_dict()
+        currency = str(row.get("currency") or "").strip()
+        if not currency or currency.upper() == "N/A":
+            currency = self.market.currency
+        # Futu's generic `power` is margin buying power and may be zero for a cash
+        # paper account even when cash is available. Prefer currency-specific cash
+        # buying power, then the legacy cash-power field. Some cash paper accounts
+        # return N/A for both, so fall back to unreserved cash before margin `power`.
+        cash_power_fields = {
+            "HK": ("hkd_net_cash_power", "net_cash_power"),
+            "US": ("usd_net_cash_power", "net_cash_power"),
+            "CN": ("cnh_net_cash_power", "net_cash_power"),
+        }
+        buying_power = _first_number(
+            row, *cash_power_fields.get(self.market.code, ("net_cash_power",)), default=float("nan")
+        )
+        if pd.isna(buying_power):
+            # Some cash paper accounts return N/A for currency-specific cash power.
+            # Fall back to cash less frozen funds, then to margin power as a last resort.
+            cash = _first_number(row, "cash", default=float("nan"))
+            if pd.notna(cash):
+                buying_power = max(cash - _f(row.get("frozen_cash")), 0.0)
+            else:
+                buying_power = _f(row.get("power"))
         return AccountSnapshot(
-            currency=str(row.get("currency") or self.market.currency),
+            currency=currency,
             equity=_f(row.get("total_assets")),
             cash=_f(row.get("cash")),
             market_value=_f(row.get("market_val")),
-            buying_power=_f(row.get("power"), _f(row.get("cash"))),
+            buying_power=buying_power,
             realized_pl=_f(row.get("realized_pl")),
             unrealized_pl=_f(row.get("unrealized_pl")),
             time=datetime.now().astimezone(),

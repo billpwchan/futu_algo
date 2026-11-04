@@ -90,6 +90,7 @@ def MAX(a: Series | float, b: Series | float) -> Series:
     return pd.concat([_s(a, like), _s(b, like)], axis=1).max(axis=1, skipna=False)
 
 
+
 def MIN(a: Series | float, b: Series | float) -> Series:
     like = a if isinstance(a, pd.Series) else b
     assert isinstance(like, pd.Series)

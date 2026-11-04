@@ -273,7 +273,7 @@ def book_metrics(book: Book, *, fallback_ppy: float, risk_free_rate: float = 0.0
     if not m:
         return m
     years = max(m["years"], 1e-9)
-    traded = sum(f.value for f in book.fills)
+    traded = sum(f.value_hkd for f in book.fills)
     fees = book.total_fees
     m.update(
         {

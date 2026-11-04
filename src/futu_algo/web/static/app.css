@@ -813,6 +813,11 @@ dialog { color: var(--text); }
 .dash-side { position: sticky; top: calc(var(--topbar-h) + 16px); }
 .equity-card .card-body { padding: 18px 20px 6px; }
 .equity-card .chart-wrap { margin: 10px -14px 0; }
+.equity-range { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+.pnl-note { padding: 14px 16px 4px; margin: 0; }
+.pnl-details { padding: 8px 16px 14px; }
+.pnl-details summary { color: var(--text-2); font-size: 12.5px; cursor: pointer; padding: 7px 0; }
+.pnl-details .table-wrap { margin-top: 8px; }
 .engine-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .engine-controls .sep { width: 1px; height: 22px; background: var(--border-2); margin: 0 4px; }
 

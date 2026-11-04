@@ -17,6 +17,7 @@ dependencies = [
     "pyarrow>=15",
     "pydantic>=2.6",
     "pyyaml>=6.0",
+    "clickhouse-connect>=0.8.18",
     "fastapi>=0.110",
     "uvicorn>=0.29",
 ]

@@ -47,6 +47,7 @@ from futu_algo.market.costs import (
     SimpleCostModel,
     USCostModel,
 )
+from futu_algo.market.fx import load_usd_hkd_rates, prior_rate
 from futu_algo.market.instrument import Instrument
 from futu_algo.strategy.base import PlotSpec, Strategy
 from futu_algo.strategy.lookahead import LookaheadReport, check_lookahead
@@ -159,7 +160,7 @@ def _composite(books: list[Book], name: str) -> Book:
 
     comp = Book(
         name=name,
-        currency=books[0].currency,
+        currency="HKD",
         initial_capital=books[0].initial_capital,
         equity=avg("equity", None),
         cash=avg("cash", None),
@@ -182,15 +183,18 @@ def _composite(books: list[Book], name: str) -> Book:
 
 
 def _index_benchmark(
-    bars: pd.DataFrame, instrument: Instrument, start: date, end: date, capital: float
+    bars: pd.DataFrame, instrument: Instrument, start: date, end: date, capital: float,
+    fx_rates: pd.Series | None = None,
 ) -> pd.Series | None:
     idx = _window(bars, instrument.tz, start, end)
     if len(idx) == 0:
         return None
     sel = bars.iloc[idx]
-    closes = pd.Series(
-        sel["close"].to_numpy(float), index=bar_close_ns(pd.DatetimeIndex(sel.index), instrument)
-    )
+    close_values = sel["close"].to_numpy(float)
+    if instrument.currency == "USD" and fx_rates is not None:
+        rates = np.array([prior_rate(fx_rates, day) for day in pd.DatetimeIndex(sel.index).date])
+        close_values = close_values * rates
+    closes = pd.Series(close_values, index=bar_close_ns(pd.DatetimeIndex(sel.index), instrument))
     feed_like = SymbolFeed(instrument, sel, pd.DataFrame(index=sel.index), np.zeros(len(sel)), 0, len(sel) - 1)
     closes.index = display_index(closes.index.to_numpy(), [feed_like])
     return capital * closes / closes.iloc[0]
@@ -211,6 +215,8 @@ def run_on_bars(
     *,
     benchmark: tuple[pd.DataFrame, Instrument] | None = None,
     extra_warnings: list[str] | None = None,
+    fx_cache_root: str | Path = Path("data"),
+    fx_offline: bool = False,
 ) -> BacktestResult:
     start = bt.start
     end = bt.end or date.today()
@@ -227,6 +233,34 @@ def run_on_bars(
             feeds.append(feed)
     if not feeds:
         raise DataError("No symbol has enough data to backtest: " + "; ".join(warnings))
+
+    needs_fx = any(f.instrument.currency == "USD" for f in feeds) or (
+        benchmark is not None and benchmark[1].currency == "USD"
+    )
+    fx_rates = None
+    if needs_fx:
+        fx_start = min(f.bars.index[f.first].date() for f in feeds)
+        if benchmark is not None and benchmark[1].currency == "USD":
+            fx_start = min(fx_start, start)
+        fx_end = max(f.bars.index[f.last].date() for f in feeds)
+        if benchmark is not None and benchmark[1].currency == "USD":
+            benchmark_idx = _window(benchmark[0], benchmark[1].tz, start, end)
+            if len(benchmark_idx):
+                fx_end = max(fx_end, pd.DatetimeIndex(benchmark[0].index[benchmark_idx]).date[-1])
+        fx_rates = load_usd_hkd_rates(fx_start, fx_end, fx_cache_root, offline=fx_offline)
+        for feed in feeds:
+            if feed.instrument.currency != "USD":
+                continue
+            first_rate = prior_rate(fx_rates, feed.dates[feed.first])
+            feed.fx_to_hkd[:feed.first] = first_rate
+            feed.fx_to_hkd[feed.first : feed.last + 1] = [
+                prior_rate(fx_rates, day) for day in feed.dates[feed.first : feed.last + 1]
+            ]
+        warnings.append(
+            "USD assets are converted to HKD using Frankfurter historical daily USD/HKD "
+            "reference rates, applying the previous available fixing to avoid look-ahead; "
+            "FX conversion spreads and fees are not modelled."
+        )
 
     lookahead = None
     if bt.check_lookahead:
@@ -245,7 +279,7 @@ def run_on_bars(
 
     bench_series = bench_name = None
     if benchmark is not None:
-        bench_series = _index_benchmark(benchmark[0], benchmark[1], start, end, capital)
+        bench_series = _index_benchmark(benchmark[0], benchmark[1], start, end, capital, fx_rates)
         bench_name = benchmark[1].name or benchmark[1].symbol
         if bench_series is None:
             warnings.append(f"Benchmark {benchmark[1].symbol}: no bars in range; using buy & hold")
@@ -346,6 +380,7 @@ def run_backtest(cfg: AppConfig, data: DataManager, bt: BacktestConfig | None = 
     return run_on_bars(
         bt, cfg.costs, strategy, loaded.bars, loaded.instruments,
         benchmark=loaded.benchmark, extra_warnings=loaded.warnings,
+        fx_cache_root=data.store.root, fx_offline=data.offline,
     )
 
 
@@ -433,6 +468,7 @@ def _symbol_payload(view: SymbolView, fills: list[Any]) -> dict[str, Any]:
     return {
         "symbol": view.instrument.symbol,
         "name": view.instrument.name,
+        "currency": view.instrument.currency,
         "lot_size": view.instrument.lot_size,
         "candles": candles,
         "lines": lines,

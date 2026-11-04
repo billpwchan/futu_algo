@@ -318,10 +318,72 @@ def create_app(app: App, *, token: str | None = None, allowed_hosts: Iterable[st
 
     @api.get("/api/equity")
     def equity(days: int = 1) -> JSONResponse:
+        days = max(1, min(days, 365))
         now = app.engine.clock() if app.engine else datetime.now(UTC)
         since = (pd.Timestamp(now).tz_convert("UTC") - timedelta(days=days)).isoformat(timespec="seconds")
         rows = app.state.equity_curve(since_iso=since)
         return _json(rows)
+
+    @api.get("/api/pnl")
+    def pnl() -> JSONResponse:
+        """Attribute completed round trips to symbols using the stored FIFO fill ledger."""
+        engine = app.engine
+        env = engine.env if engine else app.cfg.trading.env
+        fills_ = app.state.all_fills(env=env)
+        lots: dict[str, list[list[float]]] = {}
+        trades: list[dict[str, Any]] = []
+        by_symbol: dict[str, dict[str, Any]] = {}
+        for fill in fills_:
+            symbol = fill["symbol"]
+            side = str(fill["side"]).upper()
+            qty = float(fill["quantity"])
+            price = float(fill["price"])
+            queue = lots.setdefault(symbol, [])
+            remaining = qty
+            if side == "BUY":
+                while remaining > 0 and queue and queue[0][0] < 0:
+                    matched = min(remaining, -queue[0][0])
+                    entry = queue[0][1]
+                    realized = (entry - price) * matched
+                    trades.append({"symbol": symbol, "time": fill["time"], "side": "SHORT", "quantity": matched,
+                                   "entry_price": entry, "exit_price": price, "pnl": realized})
+                    row = by_symbol.setdefault(symbol, {"symbol": symbol, "closed_pnl": 0.0, "closed_trades": 0})
+                    row["closed_pnl"] += realized
+                    row["closed_trades"] += 1
+                    queue[0][0] += matched
+                    remaining -= matched
+                    if queue[0][0] == 0:
+                        queue.pop(0)
+                if remaining:
+                    queue.append([remaining, price])
+            elif side == "SELL":
+                while remaining > 0 and queue and queue[0][0] > 0:
+                    matched = min(remaining, queue[0][0])
+                    entry = queue[0][1]
+                    realized = (price - entry) * matched
+                    trades.append({"symbol": symbol, "time": fill["time"], "side": "LONG", "quantity": matched,
+                                   "entry_price": entry, "exit_price": price, "pnl": realized})
+                    row = by_symbol.setdefault(symbol, {"symbol": symbol, "closed_pnl": 0.0, "closed_trades": 0})
+                    row["closed_pnl"] += realized
+                    row["closed_trades"] += 1
+                    queue[0][0] -= matched
+                    remaining -= matched
+                    if queue[0][0] == 0:
+                        queue.pop(0)
+                if remaining:
+                    queue.append([-remaining, price])
+        positions = engine.positions if engine else {}
+        rows = []
+        for symbol in sorted(set(by_symbol) | set(positions)):
+            pos = positions.get(symbol)
+            row = by_symbol.get(symbol, {"symbol": symbol, "closed_pnl": 0.0, "closed_trades": 0})
+            row["unrealized_pnl"] = float(pos.unrealized_pl) if pos else 0.0
+            row["open_quantity"] = int(pos.quantity) if pos else 0
+            row["total_pnl"] = row["closed_pnl"] + row["unrealized_pnl"]
+            rows.append(row)
+        closed = sorted(trades, key=lambda t: t["time"], reverse=True)[:200]
+        return _json({"method": "FIFO", "symbols": sorted(rows, key=lambda r: r["total_pnl"], reverse=True),
+                      "trades": closed, "fill_count": len(fills_)})
 
     @api.get("/api/events")
     def events(limit: int = 200, kinds: str | None = None) -> JSONResponse:

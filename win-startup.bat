@@ -1,7 +1,7 @@
 @echo off
 setlocal
 
-rem Start the Futu Algo web console from this project's directory.
+rem Start the Futu Algo web console and trading engine from this project's directory.
 cd /d "%~dp0"
 title Futu Algo Web Console
 
@@ -18,7 +18,7 @@ if exist "%APP%" goto :start
 
 rem Fallback for a virtual environment created with a different layout.
 if exist "%~dp0.venv\Scripts\python.exe" (
-    "%~dp0.venv\Scripts\python.exe" -m futu_algo web -c "%CONFIG%"
+    "%~dp0.venv\Scripts\python.exe" -m futu_algo web -c "%CONFIG%" --engine
     goto :finished
 )
 
@@ -28,7 +28,7 @@ echo         Install the project with: .venv\Scripts\python.exe -m pip install -
 goto :failed
 
 :start
-"%APP%" web -c "%CONFIG%"
+"%APP%" web -c "%CONFIG%" --engine
 
 :finished
 set "EXIT_CODE=%ERRORLEVEL%"

@@ -2,7 +2,7 @@ import { t as translate } from '../i18n.js';
 // Dashboard: engine controls, account hero with the intraday equity curve, allocation,
 // positions, working intents, open orders, fills and the live activity timeline.
 
-import { h, mount, storage, fmtMoney, fmtSignedMoney, fmtPct, fmtInt, fmtPrice, signCls, hkEpoch, fmtCompact, throttle } from '../core.js';
+import { h, mount, storage, fmtMoney, fmtSignedMoney, fmtPct, fmtInt, fmtPrice, signCls, hkEpoch, fmtCompact, throttle, fmtDateTime } from '../core.js';
 import { api, stream, KINDS } from '../api.js';
 import { app, actions, engine, engineRunning, serverNow, refreshStatus, envLabel } from '../state.js';
 import { card, btn, busy, dataTable, empty, chips, skeleton, errorBox, delta } from '../ui.js';
@@ -38,6 +38,28 @@ export default {
     const chartBox = h('div', { class: 'chart chart-sm' });
     const chartEmpty = h('div', { class: 'chart-empty', hidden: true });
     const chartWrap = h('div', { class: 'chart-wrap' }, chartBox, chartEmpty);
+    const curveRange = h('select', { class: 'select select-sm', 'aria-label': translate('Equity curve range') },
+      [1, 30, 90].map((days) => h('option', { value: days }, translate(days === 1 ? '1 day' : '{0} days', { 0: days }))));
+    const pnlSummary = h('p', { class: 'muted small pnl-note' }, translate('P/L attribution uses FIFO matching of recorded fills; fees and FX adjustments are excluded.'));
+    const pnlTable = dataTable({ caption: translate('P/L by symbol'), emptyText: translate('No attributed P/L yet'), dense: true,
+      columns: [
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symCell(r.symbol) },
+        { key: 'closed_pnl', label: translate('Closed P/L'), num: true, render: (r) => h('span', { class: signCls(r.closed_pnl) }, fmtSignedMoney(r.closed_pnl, 0)) },
+        { key: 'unrealized_pnl', label: translate('Open P/L'), num: true, render: (r) => h('span', { class: signCls(r.unrealized_pnl) }, fmtSignedMoney(r.unrealized_pnl, 0)) },
+        { key: 'total_pnl', label: translate('Total net P/L'), num: true, render: (r) => h('span', { class: signCls(r.total_pnl) }, fmtSignedMoney(r.total_pnl, 0)) },
+      ] });
+    const tradeDetails = h('details', { class: 'pnl-details' }, h('summary', {}, translate('Closed trade details')));
+    const tradeTable = dataTable({ caption: translate('Closed trade details'), emptyText: translate('No closed trades in recorded fills'), dense: true,
+      columns: [
+        { key: 'time', label: translate('Time'), render: (r) => fmtDateTime(r.time, { seconds: false }) },
+        { key: 'symbol', label: translate('Symbol'), render: (r) => symLink(r.symbol) },
+        { key: 'side', label: translate('Side'), render: (r) => translate(r.side === 'LONG' ? 'Long' : 'Short') },
+        { key: 'quantity', label: translate('Qty'), num: true, render: (r) => fmtInt(r.quantity) },
+        { key: 'entry_price', label: translate('Entry price'), num: true, render: (r) => fmtPrice(r.entry_price) },
+        { key: 'exit_price', label: translate('Exit price'), num: true, render: (r) => fmtPrice(r.exit_price) },
+        { key: 'pnl', label: translate('P/L'), num: true, render: (r) => h('span', { class: signCls(r.pnl) }, fmtSignedMoney(r.pnl, 0)) },
+      ] });
+    tradeDetails.appendChild(tradeTable.el);
     const allocBox = h('div', {}, skeleton(5));
     const allocSub = h('span');
 
@@ -131,7 +153,8 @@ export default {
     mount(root,
       h('div', { class: 'dash-grid' },
         h('div', { class: 'dash-main' },
-          card({ body: h('div', {}, heroBox, chartWrap), cls: 'equity-card' }),
+          card({ body: h('div', {}, heroBox, h('div', { class: 'equity-range' }, h('span', { class: 'muted small' }, translate('Equity curve')), curveRange), chartWrap), cls: 'equity-card' }),
+          card({ title: translate('P/L breakdown'), subtitle: translate('Attributed performance from recorded trading operations'), body: h('div', {}, pnlSummary, pnlTable.el, tradeDetails), flush: true }),
           card({ title: h('span', {}, translate('Positions '), positionsCount), body: positions.el, flush: true, actions: h('a', { href: '#/watchlist', class: 'link-sm' }, translate('Watchlist')) }),
           h('div', { class: 'grid-2' },
             card({ title: translate('Working intents'), subtitle: translate('Target changes the executor is still filling'), body: working.el, flush: true }),
@@ -209,8 +232,8 @@ export default {
     // ---------------------------------------------------------------- equity chart
     let eq = null;
     let lastEqTime = 0;
-    function drawEquity(rows, dayStart) {
-      const today = engine()?.trading_day;
+    function drawEquity(rows, dayStart, days = Number(curveRange.value || 1)) {
+      const today = days === 1 ? engine()?.trading_day : null;
       const pts = [];
       for (const r of rows) {
         const t = hkEpoch(r.time);
@@ -230,7 +253,7 @@ export default {
       if (eq) { eq.dispose(); eq = null; }
       eq = equityChart(chartBox, {
         lines: [{ name: translate('Equity'), data: pts }],
-        baseline: dayStart || pts[0].value,
+        baseline: days === 1 ? (dayStart || pts[0].value) : pts[0].value,
         valueFormat: (v) => fmtMoney(v, 0),
         legend: false,
       });
@@ -267,17 +290,24 @@ export default {
       const rows = await api('/api/fills?limit=40');
       if (ctx.alive) fills.update(rows || []);
     }
-    async function loadEquity() {
-      const rows = await api('/api/equity?days=1');
+    async function loadEquity(days = Number(curveRange.value || 1)) {
+      const rows = await api(`/api/equity?days=${days}`);
       if (!ctx.alive) return;
-      drawEquity(rows || [], lastAccount?.day_start_equity);
+      drawEquity(rows || [], lastAccount?.day_start_equity, days);
+    }
+    async function loadPnl() {
+      const data = await api('/api/pnl');
+      if (!ctx.alive) return;
+      pnlTable.update(data.symbols || []);
+      tradeTable.update(data.trades || []);
+      pnlSummary.textContent = translate('P/L attribution uses FIFO matching of recorded fills; fees and FX adjustments are excluded.') + ` ${translate('Recorded fills')}: ${fmtInt(data.fill_count || 0)}.`;
     }
 
     renderControls();
     ctx.onStatus(() => { renderControls(); working.update(engine()?.working || []); });
     try {
       await loadAccount();
-      await Promise.all([loadFills(), loadEquity()]);
+      await Promise.all([loadFills(), loadEquity(), loadPnl()]);
     } catch (err) {
       if (!ctx.alive) return;
       mount(heroBox, errorBox(err, () => { refreshStatus(); loadAccount().catch(() => {}); }));
@@ -285,7 +315,8 @@ export default {
     const refresh = throttle(() => { loadAccount().catch(() => {}); loadFills().catch(() => {}); }, 1000);
     ctx.every(3000, () => loadAccount().catch(() => {}));
     ctx.every(60000, () => loadEquity().catch(() => {}));
-    ctx.on('fill', refresh);
+    curveRange.addEventListener('change', () => loadEquity(Number(curveRange.value)).catch(() => {}));
+    ctx.on('fill', () => { refresh(); loadPnl().catch(() => {}); });
     ctx.on('order', refresh);
     ctx.on('rejection', refresh);
     ctx.on('engine', () => { refresh(); loadEquity().catch(() => {}); });

@@ -85,7 +85,7 @@ function buildForm(base, defaults, strats, ctx, fromId) {
   let paramValues = { ...(base.strategy?.params || {}) };
 
   // ---------------------------------------------------------------- strategy
-  const stratSel = radioCards('bt-strategy', strats.map((s) => ({ value: s.name, title: s.title, sub: s.name, desc: s.description })), stratName, (v) => {
+  const stratSel = radioCards('bt-strategy', strats.map((s) => ({ value: s.name, title: translate(s.title), sub: s.name, desc: translate(s.description) })), stratName, (v) => {
     stratName = v;
     paramValues = stratName === base.strategy?.name ? { ...(base.strategy?.params || {}) } : {};
     renderParams();
@@ -97,17 +97,17 @@ function buildForm(base, defaults, strats, ctx, fromId) {
   function renderParams() {
     const s = byName[stratName];
     paramInputs.clear();
-    mount(stratInfo, s.description ? h('p', { class: 'small text-2' }, s.description) : null, h('div', { class: 'meta-line' },
+    mount(stratInfo, s.description ? h('p', { class: 'small text-2' }, translate(s.description)) : null, h('div', { class: 'meta-line' },
       badge(translate("warm-up {0} bars", { 0: s.warmup_bars }), 'neutral'),
-      s.plots?.length ? badge(translate("plots {0}", { 0: s.plots.map((p) => p.label).join(', ') }), 'neutral') : null));
+      s.plots?.length ? badge(translate("plots {0}", { 0: s.plots.map((p) => translate(p.label)).join(', ') }), 'neutral') : null));
     const props = s.schema?.properties || {};
     mount(paramsGrid, Object.entries(props).map(([key, spec]) => {
       const cur = paramValues[key] ?? spec.default ?? s.params?.[key];
       let control;
       if (Array.isArray(spec.enum)) {
-        control = select(spec.enum.map((v) => ({ value: v, label: String(v) })), cur);
+        control = select(spec.enum.map((v) => ({ value: v, label: translate(String(v)) })), cur);
       } else if (spec.type === 'boolean') {
-        control = switchControl(spec.title || humanize(key), !!cur).input;
+        control = switchControl(translate(spec.title || humanize(key)), !!cur).input;
       } else if (spec.type === 'integer' || spec.type === 'number') {
         const min = spec.minimum ?? spec.exclusiveMinimum;
         const max = spec.maximum ?? spec.exclusiveMaximum;
@@ -118,9 +118,9 @@ function buildForm(base, defaults, strats, ctx, fromId) {
       paramInputs.set(key, { control, spec });
       const range = [spec.minimum != null ? `≥ ${spec.minimum}` : spec.exclusiveMinimum != null ? `> ${spec.exclusiveMinimum}` : null,
         spec.maximum != null ? `≤ ${spec.maximum}` : null].filter(Boolean).join(', ');
-      const hint = [spec.description, range && `(${range})`].filter(Boolean).join(' ');
+      const hint = [spec.description && translate(spec.description), range && `(${range})`].filter(Boolean).join(' ');
       if (spec.type === 'boolean') return h('div', { class: 'field' }, control.parentElement);
-      return field(spec.title || humanize(key), control, { hint: hint || null });
+      return field(translate(spec.title || humanize(key)), control, { hint: hint || null });
     }));
     if (!Object.keys(props).length) mount(paramsGrid, h('p', { class: 'muted' }, translate('This strategy has no parameters.')));
   }
@@ -431,7 +431,7 @@ async function mountResult(root, id, ctx, setTitle) {
   if (!ctx.alive) return;
   const cfg = res.config || {};
   const strat = res.strategy || {};
-  setTitle(`${strat.title || strat.name} · ${cfg.timeframe}`);
+  setTitle(`${translate(strat.title || strat.name)} · ${cfg.timeframe}`);
   const books = Object.keys(res.books || {});
   let bookName = res.primary && res.books[res.primary] ? res.primary : books[0];
   const syms = cfg.symbols || [];
@@ -439,7 +439,7 @@ async function mountResult(root, id, ctx, setTitle) {
   const header = h('section', { class: 'card result-head' },
     h('div', { style: { flex: '1 1 420px', minWidth: '0' } },
       h('a', { href: '#/backtest', class: 'back-link' }, icon('arrowLeft', 14), translate('All backtests')),
-      h('h1', { class: 'result-title' }, strat.title || strat.name, h('span', { class: 'title-params mono' }, paramsText(strat.params))),
+      h('h1', { class: 'result-title' }, translate(strat.title || strat.name), h('span', { class: 'title-params mono' }, paramsText(strat.params))),
       h('div', { class: 'meta-line', style: { marginTop: '8px' } },
         badge(cfg.mode, 'accent'), badge(cfg.timeframe, 'neutral'),
         h('span', { class: 'num' }, `${fmtDate(cfg.start)} → ${cfg.end ? fmtDate(cfg.end) : fmtDate(res.finished_at)}`),
@@ -524,7 +524,8 @@ function renderProfitComposition(holder, res, bookName) {
   for (const trade of trades) {
     const row = bySymbol.get(trade.symbol) || {
       symbol: trade.symbol, closed_trades: 0, open_trades: 0, wins: 0,
-      closed_pnl: 0, open_pnl: 0, pnl: 0, fees: 0,
+      closed_pnl: 0, open_pnl: 0, pnl: 0, pnl_local: 0, fees: 0, fees_local: 0,
+      currency: trade.currency || 'HKD',
     };
     if (trade.is_open) {
       row.open_trades += 1;
@@ -535,7 +536,9 @@ function renderProfitComposition(holder, res, bookName) {
       row.wins += trade.pnl > 0 ? 1 : 0;
     }
     row.pnl += trade.pnl || 0;
+    row.pnl_local += trade.pnl_local || 0;
     row.fees += trade.fees || 0;
+    row.fees_local += trade.fees_local || 0;
     bySymbol.set(trade.symbol, row);
   }
   const symbols = [...bySymbol.values()].sort((a, b) => b.pnl - a.pnl);
@@ -549,10 +552,13 @@ function renderProfitComposition(holder, res, bookName) {
       { key: 'entry_time', label: translate('Entry'), render: (t) => fmtDateTime(t.entry_time) },
       { key: 'exit_time', label: translate('Exit'), render: (t) => t.is_open ? '—' : fmtDateTime(t.exit_time) },
       { key: 'quantity', label: translate('Qty'), num: true, render: (t) => fmtInt(t.is_open ? (t.open_quantity || t.quantity) : t.quantity) },
+      { key: 'currency', label: translate('Original currency'), render: (t) => t.currency || 'HKD' },
       { key: 'entry_price', label: translate('Entry px'), num: true, render: (t) => fmtPrice(t.entry_price) },
       { key: 'exit_price', label: translate('Exit / mark px'), num: true, render: (t) => fmtPrice(t.exit_price) },
-      { key: 'pnl', label: translate('Net P/L'), num: true, render: (t) => h('span', { class: signCls(t.pnl) }, fmtSignedMoney(t.pnl, 0)) },
-      { key: 'fees', label: translate('Fees'), num: true, render: (t) => fmtMoney(t.fees, 0) },
+      { key: 'pnl', label: translate('P/L (HKD)'), num: true, render: (t) => h('span', { class: signCls(t.pnl) }, fmtSignedMoney(t.pnl, 0)) },
+      { key: 'pnl_local', label: translate('P/L (original)'), num: true, render: (t) => h('span', { class: signCls(t.pnl_local) }, `${fmtSignedMoney(t.pnl_local, 2)} ${t.currency || 'HKD'}`) },
+      { key: 'fees', label: translate('Fees (HKD)'), num: true, render: (t) => fmtMoney(t.fees, 2) },
+      { key: 'fees_local', label: translate('Fees (original)'), num: true, render: (t) => `${fmtMoney(t.fees_local, 2)} ${t.currency || 'HKD'}` },
       { key: 'exit_reason', label: translate('Close reason'), render: (t) => t.is_open ? translate('Not closed') : translate(t.exit_reason || '—') },
     ],
   });
@@ -563,9 +569,13 @@ function renderProfitComposition(holder, res, bookName) {
       { key: 'time', label: translate('Time'), render: (f) => fmtDateTime(f.time) },
       { key: 'side', label: translate('Side'), render: (f) => translate(f.side) },
       { key: 'quantity', label: translate('Qty'), num: true, render: (f) => fmtInt(f.quantity) },
+      { key: 'currency', label: translate('Original currency') },
       { key: 'price', label: translate('Price'), num: true, render: (f) => fmtPrice(f.price) },
-      { key: 'value', label: translate('Value'), num: true, render: (f) => fmtMoney(f.value, 0) },
-      { key: 'fees', label: translate('Fees'), num: true, render: (f) => fmtMoney(f.fees, 0) },
+      { key: 'value', label: translate('Value (original)'), num: true, render: (f) => fmtMoney(f.value, 2) },
+      { key: 'value_hkd', label: translate('Value (HKD)'), num: true, render: (f) => fmtMoney(f.value_hkd, 2) },
+      { key: 'fx_to_hkd', label: translate('USD/HKD rate'), num: true, render: (f) => fmtNum(f.fx_to_hkd, 4) },
+      { key: 'fees', label: translate('Fees (original)'), num: true, render: (f) => fmtMoney(f.fees, 2) },
+      { key: 'fees_hkd', label: translate('Fees (HKD)'), num: true, render: (f) => fmtMoney(f.fees_hkd, 2) },
       { key: 'reason', label: translate('Reason'), render: (f) => translate(f.reason || '—') },
     ],
   });
@@ -588,7 +598,8 @@ function renderProfitComposition(holder, res, bookName) {
       { key: 'closed_pnl', label: translate('Closed P/L'), num: true, render: (r) => h('span', { class: signCls(r.closed_pnl) }, fmtSignedMoney(r.closed_pnl, 0)) },
       { key: 'open_pnl', label: translate('Open P/L'), num: true, render: (r) => h('span', { class: signCls(r.open_pnl) }, fmtSignedMoney(r.open_pnl, 0)) },
       { key: 'pnl', label: translate('Total net P/L'), num: true, render: (r) => h('span', { class: signCls(r.pnl) }, fmtSignedMoney(r.pnl, 0)) },
-      { key: 'fees', label: translate('Fees'), num: true, render: (r) => fmtMoney(r.fees, 0) },
+      { key: 'pnl_local', label: translate('P/L (original)'), num: true, render: (r) => `${fmtSignedMoney(r.pnl_local, 2)} ${r.currency}` },
+      { key: 'fees', label: translate('Fees (HKD)'), num: true, render: (r) => fmtMoney(r.fees, 2) },
     ],
   });
   summaryTable.update(symbols);
@@ -602,7 +613,7 @@ function renderProfitComposition(holder, res, bookName) {
       kpi(translate('Total net P/L'), fmtSignedMoney(totalPnl, 0), { tone: signCls(totalPnl), sub: translate('Closed and marked open positions') }),
       kpi(translate('Closed P/L'), fmtSignedMoney(closedPnl, 0), { tone: signCls(closedPnl) }),
       kpi(translate('Open P/L'), fmtSignedMoney(openPnl, 0), { tone: signCls(openPnl), sub: translate('Marked to the end of the backtest') }),
-      kpi(translate('Fees'), fmtMoney(fees, 0))),
+      kpi(translate('Fees (HKD)'), fmtMoney(fees, 2))),
     card({ title: translate('Profit composition by symbol'), subtitle: translate('P/L is net of fees; select a symbol for its trade and operation details.'), body: summaryTable.el, flush: true }),
     card({ title: detailTitle, subtitle: translate('Round trips show entry and exit; operations list every individual fill.'), body: h('div', { class: 'stack-sm' }, tradeTable.el, fillTable.el), flush: true }));
 }
@@ -630,7 +641,7 @@ function renderBook(holder, res, name, ctx) {
     kpi(translate('Calmar'), fmtRatio(m.calmar), { sub: translate('CAGR / max DD') }),
     kpi(translate('Expectancy'), fmtSignedMoney(m.expectancy, 0), { tone: signCls(m.expectancy), sub: translate("payoff {0}", { 0: fmtRatio(m.payoff_ratio) }) }),
     kpi(translate('Exposure'), fmtPct(m.exposure, 1, false), { sub: translate("in market {0}", { 0: fmtPct(m.time_in_market, 0, false) }) }),
-    kpi(translate('Fees'), `HK$${fmtMoney(m.total_fees, 0)}`, { sub: translate("{0} of capital", { 0: fmtPct(m.fees_pct_of_capital, 2, false) }) }),
+    kpi(translate('Fees (HKD)'), `HK$${fmtMoney(m.total_fees, 2)}`, { sub: translate("{0} of capital", { 0: fmtPct(m.fees_pct_of_capital, 2, false) }) }),
     kpi(benchName, fmtPct(m.benchmark_total_return ?? m.buy_hold_return), { tone: signCls(m.benchmark_total_return ?? m.buy_hold_return), sub: m.beta != null ? `beta ${fmtRatio(m.beta)} · alpha ${fmtPct(m.alpha)}` : translate("same period") }));
 
   // equity chart: the strategy as a baseline around starting equity, comparisons as lines
@@ -670,11 +681,13 @@ function renderBook(holder, res, name, ctx) {
     { key: 'entry_time', label: translate('Entry'), render: (t) => h('span', { class: 'num' }, fmtDate(t.entry_time)) },
     { key: 'exit_time', label: translate('Exit'), render: (t) => (t.is_open ? badge('open', 'info') : h('span', { class: 'num' }, fmtDate(t.exit_time))) },
     { key: 'quantity', label: translate('Qty'), num: true, render: (t) => fmtInt(t.quantity) },
+    { key: 'currency', label: translate('Original currency') },
     { key: 'entry_price', label: translate('Entry px'), num: true, render: (t) => fmtPrice(t.entry_price) },
     { key: 'exit_price', label: translate('Exit px'), num: true, render: (t) => fmtPrice(t.exit_price) },
-    { key: 'pnl', label: translate('P/L'), num: true, render: (t) => h('span', { class: signCls(t.pnl) }, fmtSignedMoney(t.pnl, 0)) },
+    { key: 'pnl', label: translate('P/L (HKD)'), num: true, render: (t) => h('span', { class: signCls(t.pnl) }, fmtSignedMoney(t.pnl, 0)) },
+    { key: 'pnl_local', label: translate('P/L (original)'), num: true, render: (t) => `${fmtSignedMoney(t.pnl_local, 2)} ${t.currency || 'HKD'}` },
     { key: 'return_pct', label: translate('Return'), num: true, render: (t) => h('span', { class: signCls(t.return_pct) }, fmtPct(t.return_pct)) },
-    { key: 'fees', label: translate('Fees'), num: true, render: (t) => fmtMoney(t.fees, 0), cls: 'hide-sm' },
+    { key: 'fees', label: translate('Fees (HKD)'), num: true, render: (t) => fmtMoney(t.fees, 2), cls: 'hide-sm' },
     { key: 'bars_held', label: translate('Bars'), num: true, cls: 'hide-sm' },
     { key: 'mae_pct', label: 'MAE', num: true, render: (t) => fmtPct(t.mae_pct, 1), cls: 'hide-sm', title: translate('Maximum adverse excursion') },
     { key: 'mfe_pct', label: 'MFE', num: true, render: (t) => fmtPct(t.mfe_pct, 1), cls: 'hide-sm', title: translate('Maximum favourable excursion') },
@@ -684,17 +697,18 @@ function renderBook(holder, res, name, ctx) {
     const visibleTrades = symFilter ? trades.filter((t) => t.symbol === symFilter) : trades;
     const grouped = new Map();
     for (const trade of visibleTrades) {
-      const group = grouped.get(trade.symbol) || { symbol: trade.symbol, trades: [], closed: 0, open: 0, wins: 0, pnl: 0, fees: 0 };
+      const group = grouped.get(trade.symbol) || { symbol: trade.symbol, trades: [], closed: 0, open: 0, wins: 0, pnl: 0, pnl_local: 0, fees: 0, currency: trade.currency || 'HKD' };
       group.trades.push(trade);
       if (trade.is_open) group.open += 1;
       else { group.closed += 1; group.wins += trade.pnl > 0 ? 1 : 0; }
       group.pnl += trade.pnl || 0;
+      group.pnl_local += trade.pnl_local || 0;
       group.fees += trade.fees || 0;
       grouped.set(trade.symbol, group);
     }
     const groups = [...grouped.values()].sort((a, b) => b.pnl - a.pnl);
     if (!groups.length) {
-      mount(tradeGroupsBody, h('tr', { class: 'empty-row' }, h('td', { colspan: 8 }, translate('No trades'))));
+      mount(tradeGroupsBody, h('tr', { class: 'empty-row' }, h('td', { colspan: 9 }, translate('No trades'))));
       return;
     }
     const rendered = [];
@@ -715,6 +729,7 @@ function renderBook(holder, res, name, ctx) {
       h('td', { class: 'num' }, fmtInt(group.open)),
       h('td', { class: 'num' }, fmtPct(rate, 1, false)),
       h('td', { class: ['num', signCls(group.pnl)] }, fmtSignedMoney(group.pnl, 0)),
+      h('td', { class: ['num', signCls(group.pnl_local)] }, `${fmtSignedMoney(group.pnl_local, 2)} ${group.currency}`),
       h('td', { class: 'num' }, fmtMoney(group.fees, 0)),
       h('td', {}, h('button', {
         type: 'button', class: 'trade-expand',
@@ -723,7 +738,7 @@ function renderBook(holder, res, name, ctx) {
       }, expanded ? '−' : '+'))));
       if (expanded) {
         const details = dataTable({ caption: translate('Trades'), rows: group.trades, columns: tradeDetailColumns, sort: { key: 'entry_time', dir: 'desc' }, dense: true });
-        rendered.push(h('tr', { class: 'trade-detail-row' }, h('td', { colspan: 8, class: 'trade-detail-cell' }, details.el)));
+        rendered.push(h('tr', { class: 'trade-detail-row' }, h('td', { colspan: 9, class: 'trade-detail-cell' }, details.el)));
       }
     }
     mount(tradeGroupsBody, rendered);
@@ -735,18 +750,21 @@ function renderBook(holder, res, name, ctx) {
       h('th', { scope: 'col', class: 'num' }, translate('Closed trades')),
       h('th', { scope: 'col', class: 'num' }, translate('Open positions')),
       h('th', { scope: 'col', class: 'num' }, translate('Win rate')),
-      h('th', { scope: 'col', class: 'num' }, translate('P/L')),
-      h('th', { scope: 'col', class: 'num' }, translate('Fees')),
+      h('th', { scope: 'col', class: 'num' }, translate('P/L (HKD)')),
+      h('th', { scope: 'col', class: 'num' }, translate('P/L (original)')),
+      h('th', { scope: 'col', class: 'num' }, translate('Fees (HKD)')),
       h('th', { scope: 'col' }, translate('Details')))), tradeGroupsBody));
   function applyTradeFilter() { renderTradeGroups(); }
   renderTradeGroups();
   const wins = trades.filter((t) => !t.is_open && t.pnl > 0).length;
   const tradeCsvFields = [
-    ['symbol', translate('Symbol')], ['name', translate('Name')],
+    ['symbol', translate('Symbol')], ['name', translate('Name')], ['currency', translate('Original currency')],
     ['entry_time', translate('Entry time')], ['exit_time', translate('Exit time')],
     ['quantity', translate('Qty')], ['open_quantity', translate('Open quantity')],
     ['entry_price', translate('Entry px')], ['exit_price', translate('Exit px')],
-    ['pnl', translate('P/L')], ['return_pct', translate('Return')], ['fees', translate('Fees')],
+    ['pnl', translate('P/L (HKD)')], ['pnl_local', translate('P/L (original)')],
+    ['return_pct', translate('Return')], ['fees', translate('Fees (HKD)')], ['fees_local', translate('Fees (original)')],
+    ['fx_entry_to_hkd', translate('Entry USD/HKD rate')], ['fx_exit_to_hkd', translate('Exit USD/HKD rate')],
     ['bars_held', translate('Bars held')], ['days_held', translate('Days held')],
     ['exit_reason', translate('Close reason')], ['is_open', translate('Position open')],
     ['mae_pct', translate('MAE')], ['mfe_pct', translate('MFE')],
@@ -790,7 +808,7 @@ function renderBook(holder, res, name, ctx) {
       { key: 'symbol', label: translate('Symbol'), render: (r) => symbolDisplay(res, r.symbol) },
       { key: 'closed_trades', label: translate('Closed trades'), num: true },
       { key: 'wins', label: translate('Wins'), num: true },
-      { key: 'pnl', label: translate('P/L'), num: true, render: (r) => h('span', { class: signCls(r.pnl) }, fmtSignedMoney(r.pnl, 0)) },
+      { key: 'pnl', label: translate('P/L (HKD)'), num: true, render: (r) => h('span', { class: signCls(r.pnl) }, fmtSignedMoney(r.pnl, 0)) },
     ],
   });
   const ddFillsTable = dataTable({
@@ -802,8 +820,10 @@ function renderBook(holder, res, name, ctx) {
       { key: 'side', label: translate('Side'), render: (f) => translate(f.side) },
       { key: 'quantity', label: translate('Qty'), num: true, render: (f) => fmtInt(f.quantity) },
       { key: 'price', label: translate('Price'), num: true, render: (f) => fmtPrice(f.price) },
-      { key: 'value', label: translate('Value'), num: true, render: (f) => fmtMoney(f.value, 0) },
-      { key: 'fees', label: translate('Fees'), num: true, render: (f) => fmtMoney(f.fees, 0), cls: 'hide-sm' },
+      { key: 'currency', label: translate('Original currency') },
+      { key: 'fx_to_hkd', label: translate('USD/HKD rate'), num: true, render: (f) => fmtNum(f.fx_to_hkd, 4) },
+      { key: 'value_hkd', label: translate('Value (HKD)'), num: true, render: (f) => fmtMoney(f.value_hkd, 2) },
+      { key: 'fees_hkd', label: translate('Fees (HKD)'), num: true, render: (f) => fmtMoney(f.fees_hkd, 2), cls: 'hide-sm' },
       { key: 'reason', label: translate('Reason') },
     ],
   });
@@ -921,7 +941,7 @@ function warningsCard(res) {
   const la = res.lookahead;
   if (la) items.push(la.ok ? callout('success', translate('Look-ahead check passed'), la.summary) : callout('error', translate('Look-ahead bias detected'), translate("{0}. Results are not trustworthy until the strategy is fixed.", { 0: la.summary })));
   else items.push(callout('info', translate('Look-ahead check skipped'), translate('Enable "Check the strategy for look-ahead bias" to verify the strategy.')));
-  for (const w of res.warnings || []) items.push(callout('warning', null, w));
+  for (const w of res.warnings || []) items.push(callout('warning', null, translate(w)));
   const costs = res.costs || {};
   const hk = costs.HK || {};
   const costLine = costs.model === 'simple'
