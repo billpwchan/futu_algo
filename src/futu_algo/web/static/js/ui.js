@@ -1,3 +1,4 @@
+import { t as translate } from './i18n.js';
 // Reusable UI pieces: toasts, dialogs, tables, tiles, empty states.
 
 import { h, icon, mount, DASH } from './core.js';
@@ -16,14 +17,14 @@ export function toast(message, tone = 'info', { title, timeout } = {}) {
   const el = h('div', { class: `toast toast-${tone}`, role: tone === 'error' ? 'alert' : 'status' },
     h('span', { class: 'toast-icon' }, icon(TOAST_ICON[tone] || 'info', 16)),
     h('div', { class: 'toast-body' }, title ? h('div', { class: 'toast-title' }, title) : null, h('div', { class: 'toast-msg' }, message)),
-    h('button', { class: 'icon-btn toast-close', type: 'button', 'aria-label': 'Dismiss', onclick: close }, icon('x', 14)),
+    h('button', { class: 'icon-btn toast-close', type: 'button', 'aria-label': translate('Dismiss'), onclick: close }, icon('x', 14)),
   );
   root.appendChild(el);
   while (root.children.length > 3) root.firstElementChild.remove();
   setTimeout(close, timeout ?? (tone === 'error' ? 9000 : tone === 'warning' ? 7000 : 4500));
 }
 
-export function toastError(err, title = 'Request failed') {
+export function toastError(err, title = translate('Request failed')) {
   if (err?.name === 'AbortError') return;
   toast(err?.detail || err?.message || String(err), 'error', { title });
 }
@@ -54,7 +55,7 @@ export function modal({ title, body, actions = [], collect, initialFocus, wide =
     const form = h('form', { method: 'dialog', class: 'modal-form', onsubmit: (e) => { e.preventDefault(); const primary = actions.find((a) => a.primary) || actions[actions.length - 1]; finish(primary ? primary.value : true); } },
       h('div', { class: 'modal-head' },
         h('h2', { id: 'modal-title', class: 'modal-title' }, title),
-        h('button', { type: 'button', class: 'icon-btn', 'aria-label': 'Close', onclick: () => finish(null) }, icon('close', 16))),
+        h('button', { type: 'button', class: 'icon-btn', 'aria-label': translate('Close'), onclick: () => finish(null) }, icon('close', 16))),
       h('div', { class: 'modal-body' }, body),
       h('div', { class: 'modal-actions' }, actions.map((a) => h('button', {
         type: a.primary ? 'submit' : 'button',
@@ -72,11 +73,11 @@ export function modal({ title, body, actions = [], collect, initialFocus, wide =
   });
 }
 
-export async function confirmDialog(title, message, { confirmLabel = 'Confirm', danger = false, detail } = {}) {
+export async function confirmDialog(title, message, { confirmLabel = translate('Confirm'), danger = false, detail } = {}) {
   const body = h('div', {}, h('p', { class: 'modal-text' }, message), detail ? h('p', { class: 'modal-detail' }, detail) : null);
   const v = await modal({
     title, body,
-    actions: [{ label: 'Cancel', value: null }, { label: confirmLabel, value: true, tone: danger ? 'danger' : 'primary', primary: true }],
+    actions: [{ label: translate('Cancel'), value: null }, { label: confirmLabel, value: true, tone: danger ? 'danger' : 'primary', primary: true }],
     initialFocus: '.modal-actions .btn',
   });
   return v === true;
@@ -91,10 +92,10 @@ export async function promptDialog(title, { label, value = '', type = 'text', pl
     err);
   return modal({
     title, body, initialFocus: '#prompt-input',
-    actions: [{ label: 'Cancel', value: null }, { label: confirmLabel, value: 'ok', tone: 'primary', primary: true }],
+    actions: [{ label: translate('Cancel'), value: null }, { label: confirmLabel, value: 'ok', tone: 'primary', primary: true }],
     collect: () => {
       const v = input.value.trim();
-      if (required && !v) { err.textContent = 'Required'; err.hidden = false; return false; }
+      if (required && !v) { err.textContent = translate('Required'); err.hidden = false; return false; }
       return v;
     },
   });
@@ -106,11 +107,11 @@ export function badge(text, tone = 'neutral', attrs = {}) {
   return h('span', { class: `badge badge-${tone}`, ...attrs }, text);
 }
 
-export function spinner(label = 'Loading') {
+export function spinner(label = translate('Loading')) {
   return h('span', { class: 'spinner', role: 'status', 'aria-label': label });
 }
 
-export function loading(text = 'Loading…') {
+export function loading(text = translate('Loading…')) {
   return h('div', { class: 'loading' }, spinner(), h('span', {}, text));
 }
 
@@ -130,9 +131,9 @@ export function errorBox(err, retry) {
   return h('div', { class: 'callout callout-error', role: 'alert' },
     icon('alert', 16),
     h('div', { class: 'callout-body' },
-      h('div', { class: 'callout-title' }, err?.status === 404 ? 'Not found' : err?.status === 0 ? 'Server unreachable' : 'Could not load'),
+      h('div', { class: 'callout-title' }, err?.status === 404 ? translate('Not found') : err?.status === 0 ? translate('Server unreachable') : translate('Could not load')),
       h('div', {}, err?.detail || err?.message || String(err))),
-    retry ? h('button', { class: 'btn btn-sm', type: 'button', onclick: retry }, 'Retry') : null);
+    retry ? h('button', { class: 'btn btn-sm', type: 'button', onclick: retry }, translate('Retry')) : null);
 }
 
 export function callout(tone, title, body, iconName) {
@@ -327,7 +328,7 @@ export function toCSV(columns, rows) {
  * columns: [{key, label, num, value(row), render(row), sortable, cls, title, width}]
  * Returns {el, update(rows)}; keeps the sort across updates.
  */
-export function dataTable({ columns, rows = [], emptyText = 'No rows', sort, onRowClick, rowClass, maxHeight, caption, dense = false, rowTitle }) {
+export function dataTable({ columns, rows = [], emptyText = translate('No rows'), sort, onRowClick, rowClass, maxHeight, caption, dense = false, rowTitle }) {
   let state = sort ? { ...sort } : null;
   let data = rows;
   const thead = h('thead');

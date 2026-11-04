@@ -1,3 +1,4 @@
+import { t as translate } from './i18n.js';
 // Command palette (⌘K / Ctrl+K or "/") and single-key shortcuts ("g d", "t", "?").
 
 import { h, icon, mount, normalizeSymbol, getPrefs, setPref, isDark } from './core.js';
@@ -24,34 +25,34 @@ function buildItems() {
   const items = [];
   for (const p of pagesRef) {
     items.push({
-      group: 'Go to', label: p.label, icon: p.icon, hint: p.key ? `G ${p.key.toUpperCase()}` : '',
+      group: translate('Go to'), label: p.label, icon: p.icon, hint: p.key ? `G ${p.key.toUpperCase()}` : '',
       keywords: `${p.id} ${p.group} ${p.desc || ''}`, run: () => go(`#/${p.id}`),
     });
   }
   for (const s of symbols()) {
-    items.push({ group: 'Symbols', label: s.symbol, sub: s.name, icon: 'candles', hint: 'Open chart', keywords: s.name, run: () => go(`#/chart/${encodeURIComponent(s.symbol)}`) });
+    items.push({ group: translate('Symbols'), label: s.symbol, sub: s.name, icon: 'candles', hint: translate('Open chart'), keywords: s.name, run: () => go(`#/chart/${encodeURIComponent(s.symbol)}`) });
   }
   const e = engine();
   const running = e?.state === 'running';
   if (running) {
-    items.push({ group: 'Engine', label: 'Stop engine', icon: 'stop', run: actions.stop });
+    items.push({ group: translate('Engine'), label: translate('Stop engine'), icon: 'stop', run: actions.stop });
     items.push(e.halted
-      ? { group: 'Engine', label: 'Resume entries', icon: 'play', run: actions.resume }
-      : { group: 'Engine', label: 'Halt new entries', icon: 'pause', run: actions.halt });
-    items.push({ group: 'Engine', label: 'Cancel all open orders', icon: 'x', danger: true, run: actions.cancelAll });
-    items.push({ group: 'Engine', label: 'Flatten all positions', icon: 'flatten', danger: true, run: () => actions.flatten(null) });
-    items.push({ group: 'Engine', label: 'Send daily summary', icon: 'bell', run: actions.summary });
+      ? { group: translate('Engine'), label: translate('Resume entries'), icon: 'play', run: actions.resume }
+      : { group: translate('Engine'), label: translate('Halt new entries'), icon: 'pause', run: actions.halt });
+    items.push({ group: translate('Engine'), label: translate('Cancel all open orders'), icon: 'x', danger: true, run: actions.cancelAll });
+    items.push({ group: translate('Engine'), label: translate('Flatten all positions'), icon: 'flatten', danger: true, run: () => actions.flatten(null) });
+    items.push({ group: translate('Engine'), label: translate('Send daily summary'), icon: 'bell', run: actions.summary });
   } else if (!e || e.state === 'stopped' || e.state === 'error') {
-    items.push({ group: 'Engine', label: 'Start engine', icon: 'play', run: actions.start });
+    items.push({ group: translate('Engine'), label: translate('Start engine'), icon: 'play', run: actions.start });
   }
-  items.push({ group: 'Research', label: 'New backtest', icon: 'flask', run: () => go('#/backtest') });
-  items.push({ group: 'Research', label: 'Run a screen', icon: 'filter', run: () => go('#/screener') });
-  items.push({ group: 'Research', label: 'Fetch history into the cache', icon: 'download', run: () => go('#/data') });
-  items.push({ group: 'Preferences', label: isDark() ? 'Switch to light theme' : 'Switch to dark theme', icon: isDark() ? 'sun' : 'moon', hint: 'T', run: toggleTheme });
+  items.push({ group: translate('Research'), label: translate('New backtest'), icon: 'flask', run: () => go('#/backtest') });
+  items.push({ group: translate('Research'), label: translate('Run a screen'), icon: 'filter', run: () => go('#/screener') });
+  items.push({ group: translate('Research'), label: translate('Fetch history into the cache'), icon: 'download', run: () => go('#/data') });
+  items.push({ group: translate('Preferences'), label: isDark() ? translate('Switch to light theme') : translate('Switch to dark theme'), icon: isDark() ? 'sun' : 'moon', hint: 'T', run: toggleTheme });
   const updown = getPrefs().updown;
-  items.push({ group: 'Preferences', label: updown === 'red-up' ? 'Use green up / red down' : 'Use red up / green down', icon: 'activity', run: () => setPref('updown', updown === 'red-up' ? 'green-up' : 'red-up') });
-  items.push({ group: 'Help', label: 'Keyboard shortcuts', icon: 'keyboard', hint: '?', run: showShortcuts });
-  items.push({ group: 'Help', label: 'API documentation', icon: 'external', run: () => window.open('/api/docs', '_blank', 'noopener') });
+  items.push({ group: translate('Preferences'), label: updown === 'red-up' ? translate('Use green up / red down') : translate('Use red up / green down'), icon: 'activity', run: () => setPref('updown', updown === 'red-up' ? 'green-up' : 'red-up') });
+  items.push({ group: translate('Help'), label: translate('Keyboard shortcuts'), icon: 'keyboard', hint: '?', run: showShortcuts });
+  items.push({ group: translate('Help'), label: translate('API documentation'), icon: 'external', run: () => window.open('/api/docs', '_blank', 'noopener') });
   return items;
 }
 
@@ -79,11 +80,11 @@ export function openPalette(initial = '') {
   let shown = [];
   let active = 0;
   const input = h('input', {
-    class: 'palette-input', type: 'text', placeholder: 'Search pages, symbols and actions…', value: initial,
+    class: 'palette-input', type: 'text', placeholder: translate('Search pages, symbols and actions…'), value: initial,
     role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'palette-list', 'aria-autocomplete': 'list', autocomplete: 'off', spellcheck: 'false',
   });
-  const list = h('div', { class: 'palette-list', id: 'palette-list', role: 'listbox', 'aria-label': 'Results' });
-  dlg = h('dialog', { class: 'palette', 'aria-label': 'Command palette' },
+  const list = h('div', { class: 'palette-list', id: 'palette-list', role: 'listbox', 'aria-label': translate('Results') });
+  dlg = h('dialog', { class: 'palette', 'aria-label': translate('Command palette') },
     h('div', { class: 'palette-input-row' }, icon('search', 18), input, kbd('esc')),
     list,
     h('div', { class: 'palette-foot' },
@@ -110,7 +111,7 @@ export function openPalette(initial = '') {
     const sym = normalizeSymbol(input.value);
     const digits = (input.value.match(/\d/g) || []).length;
     if (digits >= 3 && /^HK\.\d{5}$/.test(sym) && !shown.some((it) => it.label === sym)) {
-      shown.unshift({ group: 'Symbols', label: sym, icon: 'candles', hint: 'Open chart', run: () => go(`#/chart/${encodeURIComponent(sym)}`) });
+      shown.unshift({ group: translate('Symbols'), label: sym, icon: 'candles', hint: translate('Open chart'), run: () => go(`#/chart/${encodeURIComponent(sym)}`) });
     }
     if (q) shown = shown.slice(0, 40);
     active = Math.min(active, Math.max(0, shown.length - 1));
@@ -155,12 +156,12 @@ export function openPalette(initial = '') {
 export function showShortcuts() {
   const row = (label, ...keys) => [h('span', {}, label), kbd(...keys)];
   const body = h('div', { class: 'shortcut-list' },
-    row('Command palette', MOD, 'K'),
-    row('Search', '/'),
+    row(translate('Command palette'), MOD, 'K'),
+    row(translate('Search'), '/'),
     pagesRef.filter((p) => p.key).map((p) => row(`Go to ${p.label}`, 'G', p.key.toUpperCase())),
-    row('Toggle light / dark theme', 'T'),
-    row('This help', '?'));
-  modal({ title: 'Keyboard shortcuts', body, actions: [{ label: 'Close', value: true, primary: true }] });
+    row(translate('Toggle light / dark theme'), 'T'),
+    row(translate('This help'), '?'));
+  modal({ title: translate('Keyboard shortcuts'), body, actions: [{ label: translate('Close'), value: true, primary: true }] });
 }
 
 function typing(e) {

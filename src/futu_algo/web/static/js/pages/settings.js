@@ -1,3 +1,4 @@
+import { t as translate, LOCALES, getLocale, setLocale } from '../i18n.js';
 // Settings: YAML config editor (validate / save), effective config, notifications, preferences, about.
 
 import { h, mount, getPrefs, setPref } from '../core.js';
@@ -34,7 +35,7 @@ function jsonTree(value, depth = 0) {
 
 function yamlEditor(text) {
   const gutter = h('pre', { class: 'code-gutter', 'aria-hidden': 'true' });
-  const area = h('textarea', { class: 'code-area', spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off', wrap: 'off', 'aria-label': 'Configuration YAML' });
+  const area = h('textarea', { class: 'code-area', spellcheck: 'false', autocapitalize: 'off', autocomplete: 'off', wrap: 'off', 'aria-label': translate('Configuration YAML') });
   area.value = text;
   let errLine = null;
   const renderGutter = () => {
@@ -62,10 +63,21 @@ function yamlEditor(text) {
 }
 
 export default {
-  title: () => 'Settings',
+  title: () => translate('Settings'),
   async mount(root, { ctx }) {
-    const editorHolder = h('div', {}, card({ title: 'Configuration', body: skeleton(10) }));
-    const effectiveHolder = h('div', {}, card({ title: 'Effective config', body: skeleton(6) }));
+    let hasUnsavedEdits = () => false;
+    async function changeLanguage(event) {
+      const select = event.target;
+      const next = select.value;
+      if (hasUnsavedEdits() && !await confirmDialog(translate('Discard unsaved changes?'),
+        translate('Switching language reloads the page and discards unsaved configuration edits.'))) {
+        select.value = getLocale();
+        return;
+      }
+      setLocale(next);
+    }
+    const editorHolder = h('div', {}, card({ title: translate('Configuration'), body: skeleton(10) }));
+    const effectiveHolder = h('div', {}, card({ title: translate('Effective config'), body: skeleton(6) }));
     const side = h('div', { class: 'stack' });
     mount(root, h('div', { class: 'settings-layout' }, h('div', { class: 'stack' }, editorHolder, effectiveHolder), side));
 
@@ -78,42 +90,47 @@ export default {
       h('span', { class: 'candle-demo candle-up' }), h('span', { class: 'candle-demo candle-down' }),
       h('span', { class: 'up' }, '▲ +1.25%'), h('span', { class: 'down' }, '▼ −0.80%'));
     const prefCard = card({
-      title: 'Appearance', subtitle: 'Stored in this browser',
+      title: translate('Appearance'), subtitle: translate('Stored in this browser'),
       body: h('div', { class: 'stack' },
-        h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Theme'),
-          h('div', { class: 'theme-cards', role: 'radiogroup', 'aria-label': 'Theme' },
-            themeCard('dark', 'Dark', h('span', { class: 'theme-swatch dark' }, h('i', { class: 'sw-l' }), h('i'))),
-            themeCard('light', 'Light', h('span', { class: 'theme-swatch' }, h('i', { class: 'sw-l' }), h('i'))),
-            themeCard('system', 'System', h('span', { class: 'theme-swatch system' })))),
-        h('div', { class: 'field' }, h('span', { class: 'field-label' }, 'Price colours'),
-          segmented([{ value: 'green-up', label: 'Green up' }, { value: 'red-up', label: 'Red up' }], prefs.updown, (v) => setPref('updown', v), { label: 'Price colours' }),
+        h('div', { class: 'field' },
+          h('label', { class: 'field-label', for: 'language-select' }, translate('Language')),
+          h('select', { id: 'language-select', class: 'input', onchange: changeLanguage },
+            Object.entries(LOCALES).map(([value, label]) => h('option', { value, selected: value === getLocale() }, label))),
+          h('span', { class: 'field-hint' }, translate('Language changes reload the page. Save any edits first.'))),
+        h('div', { class: 'field' }, h('span', { class: 'field-label' }, translate('Theme')),
+          h('div', { class: 'theme-cards', role: 'radiogroup', 'aria-label': translate('Theme') },
+            themeCard('dark', translate('Dark'), h('span', { class: 'theme-swatch dark' }, h('i', { class: 'sw-l' }), h('i'))),
+            themeCard('light', translate('Light'), h('span', { class: 'theme-swatch' }, h('i', { class: 'sw-l' }), h('i'))),
+            themeCard('system', translate('System'), h('span', { class: 'theme-swatch system' })))),
+        h('div', { class: 'field' }, h('span', { class: 'field-label' }, translate('Price colours')),
+          segmented([{ value: 'green-up', label: translate('Green up') }, { value: 'red-up', label: translate('Red up') }], prefs.updown, (v) => setPref('updown', v), { label: translate('Price colours') }),
           preview,
-          h('span', { class: 'field-hint' }, 'Applies to P/L, candles and fill markers. Red up is the mainland China convention.'))),
+          h('span', { class: 'field-hint' }, translate('Applies to P/L, candles and fill markers. Red up is the mainland China convention.')))),
     });
     const keysCard = card({
-      title: 'Keyboard',
-      actions: btn('All shortcuts', { size: 'sm', tone: 'ghost', onclick: showShortcuts }),
+      title: translate('Keyboard'),
+      actions: btn(translate('All shortcuts'), { size: 'sm', tone: 'ghost', onclick: showShortcuts }),
       body: h('div', { class: 'shortcut-list' },
-        h('span', {}, 'Command palette'), kbd(MOD, 'K'),
-        h('span', {}, 'Go to a page'), kbd('G', 'D'),
-        h('span', {}, 'Toggle theme'), kbd('T')),
+        h('span', {}, translate('Command palette')), kbd(MOD, 'K'),
+        h('span', {}, translate('Go to a page')), kbd('G', 'D'),
+        h('span', {}, translate('Toggle theme')), kbd('T')),
     });
 
     // ---------------------------------------------------------------- notifications
     const channels = app.status?.notifications || [];
     const notifyResult = h('div');
     const notifyCard = card({
-      title: 'Notifications',
+      title: translate('Notifications'),
       body: h('div', { class: 'stack-sm' },
-        h('div', { class: 'meta-line' }, channels.length ? channels.map((c) => badge(c, 'good', { class: 'badge badge-good badge-dot' })) : badge('no channel enabled', 'muted')),
-        h('p', { class: 'muted small' }, 'Channels are configured under notify.email / notify.telegram; secrets come from environment variables.'),
-        h('div', {}, btn('Send test notification', {
+        h('div', { class: 'meta-line' }, channels.length ? channels.map((c) => badge(c, 'good', { class: 'badge badge-good badge-dot' })) : badge(translate("no channel enabled"), 'muted')),
+        h('p', { class: 'muted small' }, translate('Channels are configured under notify.email / notify.telegram; secrets come from environment variables.')),
+        h('div', {}, btn(translate('Send test notification'), {
           tone: 'secondary', iconName: 'bell', disabled: !channels.length,
           onclick: (e) => busy(e.currentTarget, async () => {
             try {
               const r = await post('/api/notify/test', {});
-              mount(notifyResult, r.ok ? callout('success', 'Test sent', `Delivered via ${channels.join(', ')}.`) : callout('error', 'Some channels failed', (r.errors || []).join('; ')));
-            } catch (err) { toastError(err, 'Notification test failed'); }
+              mount(notifyResult, r.ok ? callout('success', translate('Test sent'), translate("Delivered via {0}.", { 0: channels.join(', ') })) : callout('error', translate('Some channels failed'), (r.errors || []).join('; ')));
+            } catch (err) { toastError(err, translate('Notification test failed')); }
           }),
         })),
         notifyResult),
@@ -122,17 +139,17 @@ export default {
     // ---------------------------------------------------------------- about
     const s = app.status || {};
     const aboutCard = card({
-      title: 'About',
+      title: translate('About'),
       body: h('div', { class: 'stack-sm' }, kv([
-        ['Version', h('span', { class: 'mono' }, s.version || '—')],
-        ['Config file', h('span', { class: 'mono break' }, s.config_path || 'none (defaults)')],
-        ['Market', `${s.market || '—'} (${s.market_tz || '—'})`],
-        ['Trading', `${envLabel(s)} · ${s.trading?.mode || '—'} · ${s.trading?.timeframe || '—'} bars`],
-        ['Data', s.offline ? 'offline (cache only)' : 'online (OpenD)'],
-        ['Auth', s.token_required ? 'console token required' : 'local only, no token'],
-        ['API', h('a', { href: '/api/docs', target: '_blank', rel: 'noopener' }, 'OpenAPI docs')],
-        ['Fonts', 'Geist, Geist Mono (OFL)'],
-      ]), h('p', { class: 'muted small' }, 'Charts by ', h('a', { href: 'https://www.tradingview.com/', target: '_blank', rel: 'noopener noreferrer' }, 'TradingView'), ' Lightweight Charts™ (Apache 2.0).')),
+        [translate('Version'), h('span', { class: 'mono' }, s.version || '—')],
+        [translate('Config file'), h('span', { class: 'mono break' }, s.config_path || translate("none (defaults)"))],
+        [translate('Market'), `${s.market || '—'} (${s.market_tz || '—'})`],
+        [translate('Trading'), translate('{env} · {mode} · {tf} bars', { env: envLabel(s), mode: s.trading?.mode || '—', tf: s.trading?.timeframe || '—' })],
+        [translate('Data'), s.offline ? translate("offline (cache only)") : translate("online (OpenD)")],
+        [translate('Auth'), s.token_required ? translate("console token required") : translate("local only, no token")],
+        ['API', h('a', { href: '/api/docs', target: '_blank', rel: 'noopener' }, translate('OpenAPI docs'))],
+        [translate('Fonts'), 'Geist, Geist Mono (OFL)'],
+      ]), h('p', { class: 'muted small' }, translate('Charts by '), h('a', { href: 'https://www.tradingview.com/', target: '_blank', rel: 'noopener noreferrer' }, 'TradingView'), ' Lightweight Charts™ (Apache 2.0).')),
     });
     mount(side, prefCard, notifyCard, keysCard, aboutCard);
 
@@ -142,64 +159,65 @@ export default {
       cfg = await api('/api/config');
     } catch (err) {
       if (!ctx.alive) return;
-      mount(editorHolder, card({ title: 'Configuration', body: errorBox(err) }));
+      mount(editorHolder, card({ title: translate('Configuration'), body: errorBox(err) }));
       mount(effectiveHolder);
       return;
     }
     if (!ctx.alive) return;
     const editor = yamlEditor(cfg.text || '');
     let saved = cfg.text || '';
+    hasUnsavedEdits = () => editor.area.value !== saved;
     const out = h('div', { class: 'editor-out', 'aria-live': 'polite' });
     const dirty = h('span', { class: 'toolbar-meta' });
-    const updateDirty = () => { mount(dirty, editor.area.value !== saved ? [h('span', { class: 'dot dot-warn' }), 'Unsaved changes'] : null); };
+    const updateDirty = () => { mount(dirty, editor.area.value !== saved ? [h('span', { class: 'dot dot-warn' }), translate('Unsaved changes')] : null); };
     editor.area.addEventListener('input', updateDirty);
 
     function showError(text) {
       const m = /line (\d+)/i.exec(text || '');
       const line = m ? Number(m[1]) : null;
       editor.setErrorLine(line);
-      mount(out, callout('error', 'Invalid configuration', h('div', {},
+      mount(out, callout('error', translate('Invalid configuration'), h('div', {},
         h('pre', { class: 'pre-wrap mono small' }, text),
-        line ? btn(`Go to line ${line}`, { size: 'sm', tone: 'ghost', onclick: () => editor.goto(line) }) : null)));
+        line ? btn(translate("Go to line {0}", { 0: line }), { size: 'sm', tone: 'ghost', onclick: () => editor.goto(line) }) : null)));
     }
     async function validate() {
       const r = await post('/api/config/validate', { text: editor.area.value });
       if (r.ok) {
         editor.setErrorLine(null);
-        mount(out, callout('success', 'Configuration is valid', 'It passes schema validation. Save it to use it after a restart.'));
+        mount(out, callout('success', translate('Configuration is valid'), translate('It passes schema validation. Save it to use it after a restart.')));
       } else showError(r.error);
       return r.ok;
     }
-    const validateBtn = btn('Validate', { iconName: 'check', onclick: (e) => busy(e.currentTarget, () => validate().catch((err) => toastError(err, 'Validate failed'))) });
-    const saveBtn = btn('Save', {
-      tone: 'primary', disabled: !cfg.editable, title: cfg.editable ? null : 'The server was started without --config',
+    const validateBtn = btn(translate('Validate'), { iconName: 'check', onclick: (e) => busy(e.currentTarget, () => validate().catch((err) => toastError(err, translate('Validate failed')))) });
+    const saveBtn = btn(translate('Save'), {
+      tone: 'primary', disabled: !cfg.editable, title: cfg.editable ? null : translate('The server was started without --config'),
       onclick: (e) => busy(e.currentTarget, async () => {
         try {
           if (!(await validate())) return;
-          const ok = await confirmDialog('Save configuration?', `Overwrite ${cfg.path}? A timestamped backup is written first. Changes take effect after a restart.`, { confirmLabel: 'Save' });
+          const ok = await confirmDialog(translate('Save configuration?'), translate("Overwrite {0}? A timestamped backup is written first. Changes take effect after a restart.", { 0: cfg.path }), { confirmLabel: translate('Save') });
           if (!ok) return;
           const r = await put('/api/config', { text: editor.area.value });
           saved = editor.area.value;
           updateDirty();
-          mount(out, callout('success', 'Saved — restart required', h('div', {}, h('div', {}, 'Saved to ', h('span', { class: 'mono break' }, r.saved)), h('div', {}, 'Backup: ', h('span', { class: 'mono break' }, r.backup)), h('div', {}, 'Restart futu_algo for the new settings to take effect.'))));
-          toast('Configuration saved; restart required', 'success');
+          mount(out, callout('success', translate('Saved — restart required'), h('div', {}, h('div', {}, translate('Saved to '), h('span', { class: 'mono break' }, r.saved)), h('div', {}, translate('Backup: '), h('span', { class: 'mono break' }, r.backup)), h('div', {}, translate('Restart futu_algo for the new settings to take effect.')))));
+          toast(translate('Configuration saved; restart required'), 'success');
         } catch (err) {
           if (err.status === 422) showError(err.detail);
-          else toastError(err, 'Save failed');
+          else toastError(err, translate('Save failed'));
         }
       }),
     });
-    const revertBtn = btn('Revert', { tone: 'ghost', onclick: () => { editor.area.value = saved; editor.area.dispatchEvent(new Event('input')); editor.setErrorLine(null); mount(out); } });
+    const revertBtn = btn(translate('Revert'), { tone: 'ghost', onclick: () => { editor.area.value = saved; editor.area.dispatchEvent(new Event('input')); editor.setErrorLine(null); mount(out); } });
 
     mount(editorHolder, card({
-      title: 'Configuration',
-      subtitle: cfg.path ? h('span', { class: 'mono break' }, cfg.path) : 'Read-only: started without a config file (showing the defaults as YAML)',
+      title: translate('Configuration'),
+      subtitle: cfg.path ? h('span', { class: 'mono break' }, cfg.path) : translate('Read-only: started without a config file (showing the defaults as YAML)'),
       body: h('div', { class: 'stack-sm' },
-        cfg.editable ? null : callout('info', 'Read-only', 'The server was started without --config, so there is no file to save to. You can still validate edits.'),
+        cfg.editable ? null : callout('info', translate('Read-only'), translate('The server was started without --config, so there is no file to save to. You can still validate edits.')),
         editor.el,
         h('div', { class: 'form-actions' }, saveBtn, validateBtn, revertBtn, h('span', { class: 'spacer' }), dirty),
         out),
     }));
-    mount(effectiveHolder, card({ title: 'Effective configuration', subtitle: 'What the running process uses; secrets appear as environment variable names', body: h('div', { class: 'json-tree mono' }, jsonTree(cfg.effective)) }));
+    mount(effectiveHolder, card({ title: translate('Effective configuration'), subtitle: translate('What the running process uses; secrets appear as environment variable names'), body: h('div', { class: 'json-tree mono' }, jsonTree(cfg.effective)) }));
   },
 };

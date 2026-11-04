@@ -20,6 +20,8 @@ class Fill:
     fees: FeeBreakdown
     reason: str
     bar_index: int
+    currency: str = "HKD"
+    fx_to_hkd: float = 1.0
 
     @property
     def value(self) -> float:
@@ -31,6 +33,18 @@ class Fill:
             return -(self.value + self.fees.total)
         return self.value - self.fees.total
 
+    @property
+    def value_hkd(self) -> float:
+        return self.value * self.fx_to_hkd
+
+    @property
+    def fees_hkd(self) -> float:
+        return self.fees.total * self.fx_to_hkd
+
+    @property
+    def cash_delta_hkd(self) -> float:
+        return self.cash_delta * self.fx_to_hkd
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "symbol": self.symbol,
@@ -40,6 +54,11 @@ class Fill:
             "price": self.price,
             "value": self.value,
             "fees": self.fees.total,
+            "currency": self.currency,
+            "fx_to_hkd": self.fx_to_hkd,
+            "value_hkd": self.value_hkd,
+            "fees_hkd": self.fees_hkd,
+            "cash_delta_hkd": self.cash_delta_hkd,
             **{f"fee_{k}": v for k, v in self.fees.as_dict().items() if k != "total"},
             "reason": self.reason,
         }
@@ -70,6 +89,12 @@ class Trade:
     # Shares still held when an open trade is marked (may be less than ``quantity`` after
     # partial, volume-capped exits).
     open_quantity: int = 0
+    entry_value_hkd: float | None = None
+    entry_fees_hkd: float | None = None
+    exit_value_hkd: float | None = None
+    exit_fees_hkd: float | None = None
+    mark_value_hkd: float | None = None
+    currency: str = "HKD"
 
     @property
     def entry_price(self) -> float:
@@ -83,10 +108,31 @@ class Trade:
 
     @property
     def fees(self) -> float:
+        if self.entry_fees_hkd is not None:
+            return self.entry_fees_hkd + (self.exit_fees_hkd or 0.0)
         return self.entry_fees + self.exit_fees
 
     @property
+    def fees_local(self) -> float:
+        return self.entry_fees + self.exit_fees
+
+    @property
+    def pnl_local(self) -> float:
+        realised = self.exit_value - self.exit_fees - self.entry_value - self.entry_fees
+        if self.is_open:
+            assert self.mark_price is not None
+            return realised + self.open_quantity * self.mark_price
+        return realised
+
+    @property
     def pnl(self) -> float:
+        if self.entry_value_hkd is not None and self.entry_fees_hkd is not None:
+            exit_value = self.exit_value_hkd or 0.0
+            exit_fees = self.exit_fees_hkd or 0.0
+            realised = exit_value - exit_fees - self.entry_value_hkd - self.entry_fees_hkd
+            if self.is_open:
+                return realised + (self.mark_value_hkd or 0.0)
+            return realised
         realised = self.exit_value - self.exit_fees - self.entry_value - self.entry_fees
         if self.is_open:
             assert self.mark_price is not None
@@ -95,7 +141,9 @@ class Trade:
 
     @property
     def return_pct(self) -> float:
-        basis = self.entry_value + self.entry_fees
+        basis = (self.entry_value_hkd + self.entry_fees_hkd
+                 if self.entry_value_hkd is not None and self.entry_fees_hkd is not None
+                 else self.entry_value + self.entry_fees)
         return self.pnl / basis if basis else 0.0
 
     @property
@@ -111,6 +159,10 @@ class Trade:
         return (self.exit_time - self.entry_time).total_seconds() / 86400
 
     def to_dict(self) -> dict[str, Any]:
+        fx_entry = self.entry_value_hkd / self.entry_value if self.entry_value and self.entry_value_hkd is not None else 1.0
+        fx_exit = self.exit_value_hkd / self.exit_value if self.exit_value and self.exit_value_hkd is not None else None
+        mark_local = self.open_quantity * self.mark_price if self.is_open and self.mark_price is not None else 0.0
+        fx_mark = self.mark_value_hkd / mark_local if mark_local and self.mark_value_hkd is not None else None
         return {
             "symbol": self.symbol,
             "entry_time": self.entry_time.isoformat(),
@@ -120,8 +172,14 @@ class Trade:
             "entry_price": self.entry_price,
             "exit_price": self.exit_price,
             "pnl": self.pnl,
+            "pnl_local": self.pnl_local,
             "return_pct": self.return_pct,
             "fees": self.fees,
+            "fees_local": self.fees_local,
+            "currency": self.currency,
+            "fx_entry_to_hkd": fx_entry,
+            "fx_exit_to_hkd": fx_exit,
+            "fx_mark_to_hkd": fx_mark,
             "bars_held": self.bars_held,
             "days_held": self.days_held,
             "exit_reason": self.exit_reason if not self.is_open else "open",
@@ -153,4 +211,4 @@ class Book:
 
     @property
     def total_fees(self) -> float:
-        return sum(f.fees.total for f in self.fills)
+        return sum(f.fees_hkd for f in self.fills)

@@ -276,6 +276,12 @@ class StateStore:
             return self._rows("SELECT * FROM fills WHERE time >= ? ORDER BY id DESC LIMIT ?", (since_iso, limit))
         return self._rows("SELECT * FROM fills ORDER BY id DESC LIMIT ?", (limit,))
 
+    def all_fills(self, env: str | None = None) -> list[dict[str, Any]]:
+        """Return the complete chronological fill ledger for position/P&L attribution."""
+        if env:
+            return self._rows("SELECT * FROM fills WHERE env = ? ORDER BY time, id", (env,))
+        return self._rows("SELECT * FROM fills ORDER BY time, id")
+
     # ------------------------------------------------------------------- equity
 
     def add_equity(self, when: datetime, equity: float, cash: float, market_value: float, env: str) -> None:

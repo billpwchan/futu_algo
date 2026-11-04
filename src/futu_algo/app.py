@@ -305,6 +305,50 @@ class App:
             if self.engine is not None:
                 self.engine.stop()
 
+    def reload_config(self, cfg: Any) -> list[str]:
+        """Apply a validated config and hot-reload the live universe when possible."""
+        with self._lock:
+            previous = self.cfg
+            running = self.engine is not None and self.engine.state == "running"
+            if running:
+                if cfg.trading.market != previous.trading.market:
+                    raise ConfigError("Cannot change trading.market while the engine is running")
+                if cfg.trading.env != previous.trading.env or cfg.trading.mode != previous.trading.mode:
+                    raise ConfigError("Cannot change trading.env or trading.mode while the engine is running")
+                if cfg.trading.timeframe != previous.trading.timeframe:
+                    raise ConfigError("Cannot change trading.timeframe while the engine is running")
+                old_data = previous.model_dump(mode="json", exclude={"base_dir", "source_path"})
+                new_data = cfg.model_dump(mode="json", exclude={"base_dir", "source_path"})
+                old_data["trading"].pop("universe", None)
+                new_data["trading"].pop("universe", None)
+                if old_data != new_data:
+                    raise ConfigError("While the engine is running, hot reload only supports trading.universe changes")
+                # Fetch lot sizes and names before publishing the new config to the engine.
+                needed = list(dict.fromkeys([*cfg.trading.symbols, *self.engine.symbols]))
+                instruments = self.instruments(needed)
+                self.engine.cfg = cfg
+                self.engine.tc = cfg.trading
+                try:
+                    retained = self.engine.reload_universe(instruments)
+                except Exception:
+                    self.engine.cfg = previous
+                    self.engine.tc = previous.trading
+                    raise
+                previous.__dict__.update(cfg.__dict__)
+                self.cfg = previous
+                self.engine.cfg = previous
+                self.engine.tc = previous.trading
+                if self._data is not None:
+                    self._data = None
+                return retained
+            previous.__dict__.update(cfg.__dict__)
+            self.cfg = previous
+            if self._data is not None:
+                self._data = None
+            self.notifier = Notifier(previous.notify, self.bus)
+            self.market = MARKETS[previous.trading.market]
+            return []
+
     # --------------------------------------------------------------- services
 
     def start_services(self, *, scheduler: bool = True) -> None:

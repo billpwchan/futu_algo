@@ -1,16 +1,17 @@
+import { t as translate } from '../i18n.js';
 // Logs: persisted events with kind / level filters and live append from the stream.
 
 import { h, mount, icon, storage, fmtDateTime } from '../core.js';
 import { api, KINDS, stream } from '../api.js';
 import { card, chips, segmented, errorBox, loading, btn } from '../ui.js';
-import { kindBadge, levelBadge } from '../common.js';
+import { eventMessage, kindBadge, levelBadge } from '../common.js';
 
 const LEVELS = ['debug', 'info', 'warning', 'error'];
 const KEY = 'futu_algo.logFilters';
 const MAX = 1500;
 
 export default {
-  title: () => 'Logs',
+  title: () => translate('Logs'),
   async mount(root, { ctx }) {
     const saved = storage.get(KEY, {});
     const kinds = new Set(saved.kinds || KINDS.filter((k) => k !== 'bar'));
@@ -23,13 +24,13 @@ export default {
     const persist = () => storage.set(KEY, { kinds: [...kinds], level: minLevel });
     const list = h('tbody');
     const table = h('div', { class: 'table-wrap logs-wrap' }, h('table', { class: 'table table-dense logs-table' },
-      h('caption', { class: 'sr-only' }, 'Event log'),
-      h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, 'Time (HKT)'), h('th', { scope: 'col' }, 'Level'), h('th', { scope: 'col' }, 'Kind'), h('th', { scope: 'col', class: 'hide-sm' }, 'Symbol'), h('th', { scope: 'col' }, 'Message'))),
+      h('caption', { class: 'sr-only' }, translate('Event log')),
+      h('thead', {}, h('tr', {}, h('th', { scope: 'col' }, translate('Time (HKT)')), h('th', { scope: 'col' }, translate('Level')), h('th', { scope: 'col' }, translate('Kind')), h('th', { scope: 'col', class: 'hide-sm' }, translate('Symbol')), h('th', { scope: 'col' }, translate('Message')))),
       list));
     const count = h('span', { class: 'toolbar-meta' });
-    const pauseBtn = btn('Pause', { size: 'sm', tone: 'ghost', iconName: 'pause', onclick: () => { paused = !paused; renderPause(); if (!paused) render(); } });
+    const pauseBtn = btn(translate('Pause'), { size: 'sm', tone: 'ghost', iconName: 'pause', onclick: () => { paused = !paused; renderPause(); if (!paused) render(); } });
     function renderPause() {
-      pauseBtn.replaceChildren(icon(paused ? 'play' : 'pause', 14), h('span', {}, paused ? `Resume${pending ? ` (${pending} new)` : ''}` : 'Pause'));
+      pauseBtn.replaceChildren(icon(paused ? 'play' : 'pause', 14), h('span', {}, paused ? (pending ? translate('Resume ({count} new)', { count: pending }) : translate('Resume')) : translate('Pause')));
       pauseBtn.classList.toggle('active', paused);
     }
 
@@ -38,8 +39,8 @@ export default {
 
     function row(ev) {
       const data = ev.data && typeof ev.data === 'object' && Object.keys(ev.data).length ? ev.data : null;
-      const msg = h('td', { class: 'log-msg' }, ev.message);
-      const tr = h('tr', { class: [`lvl-${ev.level}`, data && 'clickable'], title: data ? 'Click for details' : null },
+      const msg = h('td', { class: 'log-msg' }, eventMessage(ev));
+      const tr = h('tr', { class: [`lvl-${ev.level}`, data && 'clickable'], title: data ? translate('Click for details') : null },
         h('td', { class: 'log-time nowrap', title: `${fmtDateTime(ev.time)} HKT` }, fmtDateTime(ev.time)),
         h('td', {}, levelBadge(ev.level)),
         h('td', {}, kindBadge(ev.kind)),
@@ -60,14 +61,14 @@ export default {
       const rows = events.filter(passes);
       pending = 0;
       renderPause();
-      count.textContent = `${rows.length} of ${events.length} events`;
-      if (!rows.length) mount(list, h('tr', { class: 'empty-row' }, h('td', { colspan: 5 }, events.length ? 'No events match the filters' : 'No events recorded yet')));
+      count.textContent = translate("{0} of {1} events", { 0: rows.length, 1: events.length });
+      if (!rows.length) mount(list, h('tr', { class: 'empty-row' }, h('td', { colspan: 5 }, events.length ? translate('No events match the filters') : translate('No events recorded yet'))));
       else mount(list, rows.slice(0, 500).map(row));
     }
 
-    const kindChips = chips(KINDS.map((k) => ({ value: k, label: k === 'daily_summary' ? 'summary' : k })), kinds, () => { persist(); load(); }, { label: 'Kinds' });
-    const levelSeg = segmented(LEVELS.map((l) => ({ value: l, label: l === 'debug' ? 'Debug+' : l === 'info' ? 'Info+' : l === 'warning' ? 'Warn+' : 'Error' })), minLevel, (v) => { minLevel = v; persist(); render(); }, { label: 'Minimum level', size: 'sm' });
-    const search = h('div', { class: 'input-icon' }, icon('search', 13), h('input', { class: 'input input-sm', type: 'search', placeholder: 'Search messages…', 'aria-label': 'Search messages', oninput: (e) => { text = e.target.value.trim().toLowerCase(); render(); } }));
+    const kindChips = chips(KINDS.map((k) => ({ value: k, label: translate(k === 'daily_summary' ? 'summary' : k) })), kinds, () => { persist(); load(); }, { label: translate('Kinds') });
+    const levelSeg = segmented(LEVELS.map((l) => ({ value: l, label: l === 'debug' ? translate('Debug+') : l === 'info' ? translate('Info+') : l === 'warning' ? translate('Warn+') : translate('Error') })), minLevel, (v) => { minLevel = v; persist(); render(); }, { label: translate('Minimum level'), size: 'sm' });
+    const search = h('div', { class: 'input-icon' }, icon('search', 13), h('input', { class: 'input input-sm', type: 'search', placeholder: translate('Search messages…'), 'aria-label': translate('Search messages'), oninput: (e) => { text = e.target.value.trim().toLowerCase(); render(); } }));
     const holder = h('div', {}, loading());
 
     mount(root, card({
@@ -104,14 +105,14 @@ export default {
       if (events.some((e) => e.kind === ev.kind && e.message === ev.message && Math.abs(Date.parse(e.time) - Date.parse(ev.time)) < 2000)) return;
       events.unshift(ev);
       if (events.length > MAX) events.pop();
-      if (!passes(ev)) { count.textContent = `${events.filter(passes).length} of ${events.length} events`; return; }
+      if (!passes(ev)) { count.textContent = translate("{0} of {1} events", { 0: events.filter(passes).length, 1: events.length }); return; }
       if (paused) { pending += 1; renderPause(); return; }
       list.querySelector('.empty-row')?.remove();
       const tr = row(ev);
       tr.classList.add('row-new');
       list.prepend(tr);
       while (list.children.length > 500) list.lastElementChild.remove();
-      count.textContent = `${events.filter(passes).length} of ${events.length} events`;
+      count.textContent = translate("{0} of {1} events", { 0: events.filter(passes).length, 1: events.length });
     });
   },
 };

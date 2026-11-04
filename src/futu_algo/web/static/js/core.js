@@ -1,6 +1,8 @@
 // Core helpers: DOM builder, icons, formatters, storage, preferences and a tiny event hub.
 // Everything that renders data goes through textContent / DOM building; never innerHTML.
 
+import { intlLocale } from './i18n.js';
+
 export const HK_TZ = 'Asia/Hong_Kong';
 export const HK_OFFSET_S = 8 * 3600; // Hong Kong has no DST
 
@@ -101,6 +103,7 @@ const ICONS = {
   inbox: 'M22 12h-6l-2 3h-4l-2-3H2M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z',
   command: 'M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 0 0 0-6z',
   hash: 'M4 9h16M4 15h16M10 3 8 21M16 3l-2 18',
+  bookmark: 'M6 4h12v17l-6-4-6 4z',
 };
 
 export function icon(name, size = 16) {
@@ -191,8 +194,8 @@ export function isDark() {
 
 const nfCache = new Map();
 function nf(min, max, extra = {}) {
-  const key = `${min}|${max}|${JSON.stringify(extra)}`;
-  if (!nfCache.has(key)) nfCache.set(key, new Intl.NumberFormat('en-US', { minimumFractionDigits: min, maximumFractionDigits: max, ...extra }));
+  const key = `${intlLocale()}|${min}|${max}|${JSON.stringify(extra)}`;
+  if (!nfCache.has(key)) nfCache.set(key, new Intl.NumberFormat(intlLocale(), { minimumFractionDigits: min, maximumFractionDigits: max, ...extra }));
   return nfCache.get(key);
 }
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -280,10 +283,11 @@ export function relTime(v) {
   const d = toDate(v);
   if (!d) return DASH;
   const s = Math.round((Date.now() - d.getTime()) / 1000);
-  if (Math.abs(s) < 60) return `${s}s ago`;
-  if (Math.abs(s) < 3600) return `${Math.round(s / 60)}m ago`;
-  if (Math.abs(s) < 86400) return `${Math.round(s / 3600)}h ago`;
-  return `${Math.round(s / 86400)}d ago`;
+  const rtf = new Intl.RelativeTimeFormat(intlLocale(), { style: 'short' });
+  if (Math.abs(s) < 60) return rtf.format(-s, 'second');
+  if (Math.abs(s) < 3600) return rtf.format(-Math.round(s / 60), 'minute');
+  if (Math.abs(s) < 86400) return rtf.format(-Math.round(s / 3600), 'hour');
+  return rtf.format(-Math.round(s / 86400), 'day');
 }
 export function humanize(key) {
   return String(key).replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()).replace(/\bPct\b/, '%').replace(/\bPe\b/, 'PE').replace(/\bTtm\b/, 'TTM');
