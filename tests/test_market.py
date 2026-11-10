@@ -76,6 +76,8 @@ def test_hk_costs_line_by_line():
     assert buy.total == pytest.approx(43.54)
     odd = model.fees("BUY", 100, 200.01, TENCENT, date(2025, 9, 1))
     assert odd.stamp_duty == 21.0  # any fraction of a dollar rounds up
+    small = model.fees("BUY", 100, 100.0, TENCENT, date(2025, 9, 1))  # HK$10,000
+    assert small.exchange == pytest.approx(0.57)  # 0.565 rounds half up to the cent
 
 
 def test_hk_settlement_schedule_change():

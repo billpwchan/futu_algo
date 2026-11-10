@@ -88,7 +88,8 @@ def _cents(value: float) -> float:
     """Round a regulatory fee to the cent, with a one-cent floor for any non-zero charge."""
     if value <= 0:
         return 0.0
-    return max(0.01, math.floor(value * 100 + 0.5) / 100)
+    # Products such as 10,000 x 0.00565% land a hair below the half cent in binary floating point.
+    return max(0.01, math.floor(round(value * 100, 6) + 0.5) / 100)
 
 
 # --------------------------------------------------------------------------- HK
