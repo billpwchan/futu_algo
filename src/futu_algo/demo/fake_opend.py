@@ -49,13 +49,16 @@ def _seed(*parts: object) -> int:
 
 def _minutes_of_day(day: date) -> pd.DatetimeIndex:
     base = pd.Timestamp(day, tz=HK.tz)
-    times = [base + pd.Timedelta(hours=9, minutes=30)]  # opening auction bar
+    auction_minute = 9 * 60 + 30
+    auction = pd.DatetimeIndex([base + pd.Timedelta(minutes=auction_minute)])
+    minutes = [np.array([0], dtype=np.int64)]  # opening auction bar
     for start, end in HK.sessions:
-        m = start.hour * 60 + start.minute + 1
-        while m <= end.hour * 60 + end.minute:
-            times.append(base + pd.Timedelta(minutes=m))
-            m += 1
-    return pd.DatetimeIndex(times, name="time")
+        minutes.append(np.arange(start.hour * 60 + start.minute + 1 - auction_minute,
+                                 end.hour * 60 + end.minute + 1 - auction_minute,
+                                 dtype=np.int64))
+    offsets = pd.to_timedelta(np.concatenate(minutes), unit="m")
+    times = auction.repeat(len(offsets)) + offsets
+    return pd.DatetimeIndex(times, name="time").as_unit(auction.unit)
 
 
 class SyntheticMarket:
